@@ -875,9 +875,16 @@ function checkWin() {
     );
 }
 
-/** Win check for tutorial: any non-empty tube must have uniform colour (2-ball tubes). */
+/** Win check for tutorial: each non-empty tube is uniform AND no colour appears in two tubes. */
 function checkWinTutorial() {
-    return G.tubes.every(t => t.length === 0 || t.every(c => c === t[0]));
+    const seen = new Set();
+    for (const t of G.tubes) {
+        if (t.length === 0) continue;
+        if (!t.every(c => c === t[0])) return false;  // not uniform
+        if (seen.has(t[0]))            return false;  // colour split across tubes
+        seen.add(t[0]);
+    }
+    return true;
 }
 
 /** True if a tube already holds 4 matching balls (drives "solved" glow). */
