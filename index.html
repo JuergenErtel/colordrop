@@ -1501,12 +1501,11 @@ function playSound(name) {
 function updateHUD() {
     const mc  = document.getElementById('moveCount');
     mc.textContent = G.moves;
-    if (G.moves === 0) {
-        mc.className = '';
-    } else {
+    mc.classList.remove('move-good', 'move-ok', 'move-over');
+    if (G.moves > 0) {
         const par = parForLevel(LEVEL.current);
-        mc.className = G.moves <= par       ? 'move-good' :
-                       G.moves <= par * 1.5 ? 'move-ok'   : 'move-over';
+        mc.classList.add(G.moves <= par       ? 'move-good' :
+                         G.moves <= par * 1.5 ? 'move-ok'   : 'move-over');
     }
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
     document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
