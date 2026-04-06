@@ -233,8 +233,13 @@
         }
         .win-sub b { color: var(--gold); font-weight: 500; }
 
-        .win-btn {
+        .win-actions {
+            display: flex;
+            gap: .75rem;
             margin-top: .4rem;
+        }
+
+        .win-btn {
             font-family: var(--f-mono);
             font-size: .78rem;
             letter-spacing: .15em;
@@ -248,6 +253,16 @@
             transition: background .15s, border-color .15s;
         }
         .win-btn:hover { background: rgba(247,201,72,.20); border-color: rgba(247,201,72,.65); }
+        .win-btn--secondary {
+            background: rgba(255,255,255,.06);
+            border-color: rgba(255,255,255,.15);
+            color: var(--muted);
+        }
+        .win-btn--secondary:hover {
+            background: rgba(255,255,255,.12);
+            border-color: rgba(255,255,255,.30);
+            color: var(--text);
+        }
     </style>
 </head>
 
@@ -282,8 +297,11 @@
         <div class="win-card">
             <div class="win-icon">🏆</div>
             <h2 class="win-title">Solved!</h2>
-            <p class="win-sub">Completed in <b id="finalMoves">0</b> moves</p>
-            <button class="win-btn" id="playAgain">Play Again</button>
+            <p class="win-sub">Level <b id="finalLevel">1</b> — <b id="finalMoves">0</b> Züge</p>
+            <div class="win-actions">
+                <button class="win-btn" id="nextLevelBtn">Next Level →</button>
+                <button class="win-btn win-btn--secondary" id="menuBtn">Menu</button>
+            </div>
         </div>
     </div>
 
@@ -1148,6 +1166,7 @@ function updateHUD() {
 }
 
 function showWin() {
+    document.getElementById('finalLevel').textContent = LEVEL.current;
     document.getElementById('finalMoves').textContent = G.moves;
     document.getElementById('overlay').classList.add('show');
 }
@@ -1190,6 +1209,14 @@ canvas.addEventListener('touchstart', e => {
 
 document.getElementById('undoBtn' ).addEventListener('click', undo);
 document.getElementById('resetBtn').addEventListener('click', () => generateLevel(LEVEL.current));
+document.getElementById('nextLevelBtn').addEventListener('click', () => {
+    LEVEL.current++;
+    generateLevel(LEVEL.current);
+});
+document.getElementById('menuBtn').addEventListener('click', () => {
+    LEVEL.current = 1;
+    generateLevel(1);
+});
 
 window.addEventListener('resize', resizeCanvas);
 
