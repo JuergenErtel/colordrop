@@ -1514,6 +1514,62 @@ function buildLevelSelect() {
     });
 }
 
+/* ── Tutorial ─────────────────────────────────────────── */
+
+function startTutorial() {
+    // Reset game state with the fixed tutorial puzzle
+    G.tutorial     = true;
+    G.tutStep      = 0;
+    G.won          = false;
+    G.moves        = 0;
+    G.selected     = -1;
+    G.selectedTime = -1;
+    G.history      = [];
+    G.flashTube    = -1;
+    G.flashUntil   = 0;
+    G.solvedTubes  = new Set();
+    ANIM.arc       = null;
+    ANIM.bounceMap = new Map();
+    ANIM.particles = [];
+    ANIM.busy      = false;
+
+    // Load fixed tutorial tubes (deep copy so mutations don't affect constant)
+    G.tubes = TUTORIAL_TUBES.map(t => [...t]);
+
+    // Close any open overlays
+    closeLevelSelect();
+    document.getElementById('overlay').classList.remove('show');
+
+    updateHUD();
+    advanceTutStep();
+}
+
+function endTutorial() {
+    localStorage.setItem('colordrop_tut_done', '1');
+    G.tutorial = false;
+    G.tutStep  = 0;
+    document.getElementById('tutBubble').classList.add('hidden');
+    generateLevel(1);
+}
+
+function advanceTutStep() {
+    const bubble  = document.getElementById('tutBubble');
+    const textEl  = document.getElementById('tutText');
+    const skipBtn = document.getElementById('tutSkip');
+
+    if (G.tutStep >= TUTORIAL_SCRIPT.length) {
+        // All steps done — show win message
+        textEl.textContent  = 'Gelöst! Du kennst jetzt alle Regeln.';
+        skipBtn.textContent = 'Los geht\'s →';
+        bubble.classList.remove('hidden');
+        return;
+    }
+
+    textEl.textContent  = TUTORIAL_SCRIPT[G.tutStep].text;
+    skipBtn.textContent = 'Überspringen';
+    bubble.classList.remove('hidden');
+}
+
 /** Show the level select overlay and scroll to the first unsolved playable level. */
 function openLevelSelect() {
     buildLevelSelect();
@@ -1629,6 +1685,7 @@ document.getElementById('nextLevelBtn').addEventListener('click', () => {
     generateLevel(LEVEL.current + 1);
 });
 document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect);
+document.getElementById('tutSkip'   ).addEventListener('click', endTutorial);
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -1639,7 +1696,11 @@ window.addEventListener('resize', resizeCanvas);
 
 resizeCanvas();                  // size canvas before first paint
 requestAnimationFrame(render);   // start render loop (shows animated background)
-openLevelSelect();               // player picks their level
+if (!localStorage.getItem('colordrop_tut_done')) {
+    startTutorial();             // first ever launch → guided tutorial
+} else {
+    openLevelSelect();           // returning player → level select
+}
 </script>
 </body>
 </html>
