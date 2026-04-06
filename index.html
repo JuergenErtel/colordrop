@@ -758,6 +758,19 @@ function roundRect(ctx, x, y, w, h, r) {
  *  - Destination must have space (< 4 balls)
  *  - Destination must be empty  OR  its top ball matches the moving ball
  */
+
+/** Tutorial helper: true if tube `i` is a valid drop target for the currently selected ball. */
+function isValidTarget(i) {
+    if (G.selected === -1) return false;
+    return canMove(G.selected, i);
+}
+
+/** Tutorial helper: true if tube `i` has ≥ 2 balls with the same colour on top. */
+function tubeHasTopMatch(i) {
+    const t = G.tubes[i];
+    return t.length >= 2 && t[t.length - 1] === t[t.length - 2];
+}
+
 function canMove(from, to) {
     if (from === to) return false;
 
@@ -1180,6 +1193,7 @@ function render(ts) {
 
     drawParticles();
     drawConfetti();
+    drawTutorialHighlight();
 
     requestAnimationFrame(render);
 }
@@ -1188,6 +1202,32 @@ function render(ts) {
 /* ═══════════════════════════════════════════════════════════
    DRAW: BACKGROUND
 ═══════════════════════════════════════════════════════════ */
+
+/** Draws a pulsing highlight ring around tutorial-relevant tubes. */
+function drawTutorialHighlight() {
+    if (!G.tutorial || G.tutStep >= TUTORIAL_SCRIPT.length) return;
+    const step  = TUTORIAL_SCRIPT[G.tutStep];
+    const alpha = 0.45 + 0.35 * Math.sin(Date.now() / 280);
+
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+    ctx.lineWidth   = 3;
+
+    for (let i = 0; i < G.tubes.length; i++) {
+        const highlight =
+            step.highlight === 'all'       ? true :
+            step.highlight === 'targets'   ? isValidTarget(i) :
+            step.highlight === 'top-match' ? tubeHasTopMatch(i) : false;
+        if (!highlight) continue;
+
+        const cx  = tubeCX(i);
+        const pad = 6;
+        roundRect(ctx, cx - TUBE_W / 2 - pad, TUBE_TOP - pad, TUBE_W + pad * 2, TUBE_H + pad * 2, 14);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
 
 function drawBackground(ts) {
     const t  = ts * 0.0002;
