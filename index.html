@@ -121,6 +121,11 @@
             color: var(--gold);
         }
 
+        /* Move counter colour coding relative to par */
+        .move-good { color: #b2ff59; }   /* ≤ par           — lime green  */
+        .move-ok   { color: #ff7043; }   /* ≤ par × 1.5     — orange      */
+        .move-over { color: #f50057; }   /* > par × 1.5     — pink/red    */
+
         #c {
             display: block;
             cursor: pointer;
@@ -518,15 +523,15 @@ const LEVEL = { current: 1 };
 
 /**
  * Returns configuration for a given level number.
- * Five tiers with smooth colour progression; always 2 empty tubes.
+ * Five tiers with smooth colour progression; 2 empty tubes up to HARD, 1 at EXPERT+.
  * @returns {{ colors: string[], empty: number, tier: string }}
  */
 function levelConfig(n) {
     if (n <=  3) return { colors: ['cyan','magenta'],                                    empty: 2, tier: 'EASY'   };
     if (n <=  8) return { colors: ['cyan','magenta','lime'],                             empty: 2, tier: 'MEDIUM' };
     if (n <= 15) return { colors: ['cyan','magenta','lime','yellow'],                    empty: 2, tier: 'HARD'   };
-    if (n <= 25) return { colors: ['cyan','magenta','lime','yellow','orange'],           empty: 2, tier: 'EXPERT' };
-    return           { colors: ['cyan','magenta','lime','yellow','orange','pink'], empty: 2, tier: 'MASTER' };
+    if (n <= 25) return { colors: ['cyan','magenta','lime','yellow','orange'],           empty: 1, tier: 'EXPERT' };
+    return           { colors: ['cyan','magenta','lime','yellow','orange','pink'], empty: 1, tier: 'MASTER' };
 }
 
 /** Par = colours × 5. Scales fairly across all tiers. */
@@ -1494,7 +1499,15 @@ function playSound(name) {
 }
 
 function updateHUD() {
-    document.getElementById('moveCount').textContent  = G.moves;
+    const mc  = document.getElementById('moveCount');
+    mc.textContent = G.moves;
+    if (G.moves === 0) {
+        mc.className = '';
+    } else {
+        const par = parForLevel(LEVEL.current);
+        mc.className = G.moves <= par       ? 'move-good' :
+                       G.moves <= par * 1.5 ? 'move-ok'   : 'move-over';
+    }
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
     document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
