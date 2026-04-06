@@ -668,6 +668,7 @@ function handleInput(lx, ly) {
         if (dst.length > 0 && dst.length < 4) {
             G.selected     = idx;
             G.selectedTime = G.frameTime;
+            playSound('select');
         } else {
             triggerFlash(idx);
         }
@@ -824,14 +825,14 @@ function updateArc(ts) {
         amplitude: 14,
     });
 
+    playSound('pop');     // ball has landed — fires before chime so order is: thud → reward
+
     // Tube explosion (once per solved tube)
     if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube])) {
         G.solvedTubes.add(toTube);
         triggerTubeExplosion(toTube);
         playSound('solved');
     }
-
-    playSound('pop');     // ball has landed
 
     ANIM.arc  = null;
     ANIM.busy = false;
