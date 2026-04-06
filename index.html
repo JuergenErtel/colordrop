@@ -1413,7 +1413,7 @@ function updateHUD() {
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
     document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
-    document.getElementById('menuBtnHud').disabled    = ANIM.busy;
+    document.getElementById('menuBtnHud').disabled    = ANIM.busy || G.won;
 }
 
 function showWin() {
