@@ -408,8 +408,9 @@ function checkWinState(tubes) {
 function generateLevel(n) {
     LEVEL.current  = n;
     const cfg      = levelConfig(n);
-    const shuffleCount = 20 + n * 3;
+    const shuffleCount = Math.min(20 + n * 3, 200);   // cap to avoid long loops at high levels
     let tubes;
+    let retries = 0;
 
     do {
         // 1. Start from solved state
@@ -434,7 +435,7 @@ function generateLevel(n) {
             const { si, di } = candidates[Math.floor(Math.random() * candidates.length)];
             tubes[di].push(tubes[si].pop());
         }
-    } while (checkWinState(tubes));   // retry if accidentally solved
+    } while (checkWinState(tubes) && ++retries < 20);   // retry if accidentally solved (safety cap)
 
     // 3. Write into game state
     G.tubes        = tubes;
