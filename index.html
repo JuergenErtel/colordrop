@@ -520,38 +520,36 @@ function roundRect(ctx, x, y, w, h, r) {
      *                   →  flash red    (target is full)
      */
     function handleInput(lx, ly) {
-        if (G.won) return;
+        if (G.won)      return;
+        if (ANIM.busy)  return;   // block during arc animation
 
         const idx = tubeAt(lx, ly);
 
         if (idx === -1) {
-            // Tapped empty canvas area → deselect
-            G.selected = -1;
+            G.selected     = -1;
+            G.selectedTime = -1;
             return;
         }
 
         if (G.selected === -1) {
-            // Nothing selected: select tapped tube if non-empty
-            if (G.tubes[idx].length > 0) G.selected = idx;
-
+            if (G.tubes[idx].length > 0) {
+                G.selected     = idx;
+                G.selectedTime = G.frameTime;
+            }
         } else if (idx === G.selected) {
-            // Tapped already-selected tube → deselect
-            G.selected = -1;
-
+            G.selected     = -1;
+            G.selectedTime = -1;
         } else if (canMove(G.selected, idx)) {
-            // Valid move: execute, then clear selection
-            const from = G.selected;
-            G.selected = -1;
+            const from     = G.selected;
+            G.selected     = -1;
+            G.selectedTime = -1;
             doMove(from, idx);
-
         } else {
-            // Invalid move
             const dst = G.tubes[idx];
             if (dst.length > 0 && dst.length < 4) {
-                // Colour mismatch on a non-full tube → switch selection to it
-                G.selected = idx;
+                G.selected     = idx;
+                G.selectedTime = G.frameTime;
             } else {
-                // Destination is full → brief red flash, keep current selection
                 triggerFlash(idx);
             }
         }
@@ -572,6 +570,163 @@ function roundRect(ctx, x, y, w, h, r) {
         G.flashTube  = idx;
         G.flashUntil = performance.now() + 320;
     }
+
+/* ═══════════════════════════════════════════════════════════
+   PARTICLE SYSTEM
+═══════════════════════════════════════════════════════════ */
+
+function spawnParticle(x, y, vx, vy, color, size, life, gravity) {
+    if (ANIM.particles.length >= MAX_PARTS) return;
+    ANIM.particles.push({ x, y, vx, vy, color, size,
+                          life, maxLife: life, gravity });
+}
+
+/** Advance all particles by dt seconds; remove dead ones. */
+function updateParticles(dt) {
+    for (let i = ANIM.particles.length - 1; i >= 0; i--) {
+        const p = ANIM.particles[i];
+        p.x    += p.vx * dt;
+        p.y    += p.vy * dt;
+        p.vy   += p.gravity * dt;
+        p.life -= dt;
+        if (p.life <= 0) ANIM.particles.splice(i, 1);
+    }
+}
+
+/** Draw all particles using additive blending for neon glow. */
+function drawParticles() {
+    if (!ANIM.particles.length) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const p of ANIM.particles) {
+        ctx.globalAlpha = (p.life / p.maxLife) * 0.85;
+        ctx.fillStyle   = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(p.size * (p.life / p.maxLife), 0.5), 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+/**
+ * Burst of 35 particles from the centre of a completed tube.
+ * Called once per tube — G.solvedTubes prevents re-triggering.
+ */
+function triggerTubeExplosion(tubeIdx) {
+    const cx  = tubeCX(tubeIdx);
+    const cy  = TUBE_TOP + TUBE_H * 0.4;
+    const col = PALETTE[G.tubes[tubeIdx][0]];
+    const colors = [col.base, col.bright, '#ffffff'];
+    for (let i = 0; i < 35; i++) {
+        const angle = Math.PI * 2 * Math.random();
+        const speed = 50 + Math.random() * 100;   // px/s
+        spawnParticle(
+            cx + (Math.random()-.5) * 8,
+            cy + (Math.random()-.5) * 8,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed - 30,          // upward bias
+            colors[Math.floor(Math.random() * colors.length)],
+            2 + Math.random() * 3,                 // size
+            0.6 + Math.random() * 0.6,             // life (s)
+            220                                    // gravity px/s²
+        );
+    }
+}
+
+/**
+ * Two waves of firework bursts across the canvas.
+ * Wave 1: 7 bursts staggered by 200 ms.
+ * Wave 2: starts 1000 ms later, 7 bursts staggered by 150 ms.
+ */
+function scheduleWinFireworks() {
+    const colorKeys = Object.keys(PALETTE);
+    const positions = [
+        {x:CW*.15,y:CH*.25},{x:CW*.85,y:CH*.20},{x:CW*.50,y:CH*.15},
+        {x:CW*.25,y:CH*.45},{x:CW*.75,y:CH*.42},{x:CW*.10,y:CH*.52},{x:CW*.90,y:CH*.55},
+    ];
+
+    function burst(cx, cy, count, minSpeed, maxSpeed) {
+        for (let i = 0; i < count; i++) {
+            const col   = PALETTE[colorKeys[Math.floor(Math.random()*colorKeys.length)]];
+            const angle = Math.PI * 2 * Math.random();
+            const speed = minSpeed + Math.random() * (maxSpeed - minSpeed);
+            spawnParticle(
+                cx + (Math.random()-.5)*10,
+                cy + (Math.random()-.5)*10,
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed - 60,
+                [col.base, col.bright, '#ffffff'][Math.floor(Math.random()*3)],
+                2 + Math.random() * 4,
+                0.8 + Math.random() * 1.0,
+                180
+            );
+        }
+    }
+
+    // Wave 1
+    positions.forEach((p, i) =>
+        setTimeout(() => burst(p.x, p.y, 45, 80, 280), i * 200)
+    );
+    // Wave 2 (offset positions slightly for variety)
+    setTimeout(() => {
+        positions.forEach((p, i) =>
+            setTimeout(() =>
+                burst(p.x + (Math.random()-.5)*80, p.y + (Math.random()-.5)*60, 30, 60, 200),
+                i * 150
+            )
+        );
+    }, 1000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATION UPDATES
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Called every frame. If arc is complete:
+ *   1. Add bounce entry for the landed ball.
+ *   2. Trigger tube explosion if tube is now solved.
+ *   3. Clear arc + unblock input.
+ *   4. Check win condition.
+ */
+function updateArc(ts) {
+    if (!ANIM.arc) return;
+    const elapsed = ts - ANIM.arc.startTime;
+    if (elapsed < ANIM.arc.duration) return;
+
+    const { toTube } = ANIM.arc;
+    const ballIdx    = G.tubes[toTube].length - 1;
+
+    // Start bounce on the landed ball
+    ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
+        startTime: ts,
+        duration:  DUR_BOUNCE,
+        amplitude: 14,
+    });
+
+    // Tube explosion (once per solved tube)
+    if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube])) {
+        G.solvedTubes.add(toTube);
+        triggerTubeExplosion(toTube);
+    }
+
+    ANIM.arc  = null;
+    ANIM.busy = false;
+
+    // Win check (after arc clears so overlay appears after animation)
+    if (checkWin()) {
+        G.won = true;
+        scheduleWinFireworks();
+        setTimeout(showWin, 600);
+    }
+}
+
+/** Remove completed bounce entries from the map. */
+function updateBounces(ts) {
+    for (const [key, b] of ANIM.bounceMap) {
+        if (ts - b.startTime >= b.duration) ANIM.bounceMap.delete(key);
+    }
+}
 
 
     /* ═══════════════════════════════════════════════════════════
