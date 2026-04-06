@@ -126,6 +126,40 @@
         .move-ok   { color: #ff7043; }   /* ≤ par × 1.5     — orange      */
         .move-over { color: #f50057; }   /* > par × 1.5     — pink/red    */
 
+        /* ── Tutorial bubble ────────────────────────────────── */
+        .tut-bubble {
+            position: fixed;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(420px, 90vw);
+            background: rgba(15,20,32,.92);
+            border: 1px solid rgba(255,255,255,.18);
+            border-radius: 14px;
+            padding: .9rem 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .8rem;
+            font-size: .9rem;
+            color: #e8eaf0;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 50;
+            transition: opacity .2s;
+        }
+        .tut-bubble.hidden { opacity: 0; pointer-events: none; }
+        .tut-skip {
+            flex-shrink: 0;
+            font-size: .75rem;
+            color: rgba(255,255,255,.45);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: .2rem .4rem;
+            text-decoration: underline;
+        }
+
         #c {
             display: block;
             cursor: pointer;
@@ -419,6 +453,12 @@
                 <button class="win-btn win-btn--secondary" id="menuBtn">Menu</button>
             </div>
         </div>
+    </div>
+
+    <!-- Tutorial bubble -->
+    <div id="tutBubble" class="tut-bubble hidden">
+        <span id="tutText"></span>
+        <button id="tutSkip" class="tut-skip">Überspringen</button>
     </div>
 
     <script>
