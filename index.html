@@ -244,57 +244,70 @@
     <script>
     'use strict';
 
-    /* ═══════════════════════════════════════════════════════════
-       CONSTANTS — internal coordinate system (CSS scales this)
-    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════════════════════ */
 
-    const CW = 420;   // canvas logical width
-    const CH = 500;   // canvas logical height
+const CW = 420, CH = 520;            // canvas logical size
 
-    // ── Tube geometry ─────────────────────────────────────────
-    const TUBE_W   = 68;            // outer width (px)
-    const TUBE_H   = 240;           // outer height (px)
-    const TUBE_BOT = 428;           // y of tube bottom edge
-    const TUBE_TOP = TUBE_BOT - TUBE_H;  // = 188
+const TUBE_W   = 68;                 // tube outer width
+const TUBE_H   = 240;                // tube outer height
+const TUBE_BOT = 440;                // y of tube bottom edge
+const TUBE_TOP = TUBE_BOT - TUBE_H; // = 200
 
-    // ── Ball geometry ─────────────────────────────────────────
-    const BALL_R   = 26;            // radius
-    const BALL_D   = BALL_R * 2;    // diameter = 52
-    const BALL_GAP = 3;             // vertical gap between adjacent balls
-    const BALL_PAD = 10;            // padding from tube-bottom wall to lowest ball centre
+const BALL_R   = 26;                 // ball radius
+const BALL_D   = BALL_R * 2;         // diameter = 52
+const BALL_GAP = 3;                  // gap between stacked balls
+const BALL_PAD = 10;                 // gap from tube bottom to lowest ball centre
 
-    // ── Floating (selected) ball ──────────────────────────────
-    const FLOAT_Y_BASE = 110;       // baseline y of the hovering ball
+const FLOAT_Y_BASE = 118;            // hovering ball baseline y
 
-    // ── Ball colour palette ───────────────────────────────────
-    // Each entry has: base colour, glow (rgba), specular hi colour
-    const PALETTE = {
-        red:    { base: '#ff4757', glow: 'rgba(255, 71, 87, .60)',  hi: '#ffb0b8' },
-        blue:   { base: '#2979ff', glow: 'rgba( 41,121,255, .60)',  hi: '#90b8ff' },
-        teal:   { base: '#00bcd4', glow: 'rgba(  0,188,212, .60)',  hi: '#80eaf5' },
-        amber:  { base: '#ff9100', glow: 'rgba(255,145,  0, .60)',  hi: '#ffcc80' },
-        lime:   { base: '#00e676', glow: 'rgba(  0,230,118, .60)',  hi: '#80ffc0' },
-        purple: { base: '#d500f9', glow: 'rgba(213,  0,249, .60)',  hi: '#f080ff' },
-    };
+const DUR_LIFT   = 220;              // ms – selection lift animation
+const DUR_ARC    = 380;              // ms – parabolic arc
+const DUR_BOUNCE = 480;              // ms – landing bounce
+const MAX_PARTS  = 350;              // particle cap
 
+/* ═══════════════════════════════════════════════════════════
+   COLOUR PALETTE  (neon, 3 shades each)
+═══════════════════════════════════════════════════════════ */
 
-    /* ═══════════════════════════════════════════════════════════
-       GAME STATE  (single mutable object – easy to snapshot for undo)
-    ═══════════════════════════════════════════════════════════ */
+const PALETTE = {
+    cyan:    { base:'#00e5ff', bright:'#80ffff', dark:'#003844', glow:'rgba(0,229,255,.7)'   },
+    magenta: { base:'#e040fb', bright:'#ff9fff', dark:'#450053', glow:'rgba(224,64,251,.7)'  },
+    lime:    { base:'#b2ff59', bright:'#dfffaa', dark:'#2a5c00', glow:'rgba(178,255,89,.7)'  },
+    yellow:  { base:'#ffe57f', bright:'#fffacc', dark:'#5c4400', glow:'rgba(255,229,127,.7)' },
+    orange:  { base:'#ff7043', bright:'#ffb5a0', dark:'#5c1800', glow:'rgba(255,112,67,.7)'  },
+    pink:    { base:'#f50057', bright:'#ff80a3', dark:'#5c0020', glow:'rgba(245,0,87,.7)'    },
+};
 
-    const G = {
-        tubes:      [],   // Array<Array<string>> – index 0 = bottom, last = top
-        selected:   -1,   // index of currently selected tube (-1 = none)
-        moves:      0,
-        history:    [],   // undo stack; each entry is a deep copy of G.tubes
-        won:        false,
+/* ═══════════════════════════════════════════════════════════
+   GAME STATE
+═══════════════════════════════════════════════════════════ */
 
-        // Visual feedback
-        flashTube:  -1,   // tube index showing a red "invalid" flash
-        flashUntil: 0,    // performance.now() timestamp when flash ends
+const G = {
+    tubes:        [],    // Array<Array<string>> index 0=bottom, last=top
+    selected:     -1,    // selected tube index (-1=none)
+    selectedTime: -1,    // rAF timestamp when selection was made (lift anim)
+    moves:        0,
+    history:      [],    // undo stack of deep-copied tube arrays
+    won:          false,
+    flashTube:    -1,    // tube showing red flash
+    flashUntil:   0,     // performance.now() timestamp when flash ends
+    frameTime:    0,     // current rAF timestamp
+    lastTime:     -1,    // previous rAF timestamp (delta-time)
+    solvedTubes:  new Set(), // tubes already exploded (no double-trigger)
+};
 
-        frameTime:  0,    // last rAF timestamp (drives subtle float animation)
-    };
+/* ═══════════════════════════════════════════════════════════
+   ANIMATION STATE
+═══════════════════════════════════════════════════════════ */
+
+const ANIM = {
+    arc:       null,         // ArcAnim | null
+    bounceMap: new Map(),    // "tubeIdx-ballIdx" → BounceAnim
+    particles: [],           // Particle[]
+    busy:      false,        // blocks input during arc
+};
 
 
     /* ═══════════════════════════════════════════════════════════
