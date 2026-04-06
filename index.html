@@ -1222,7 +1222,7 @@ function drawTutorialHighlight() {
 
         const cx  = tubeCX(i);
         const pad = 6;
-        roundRect(ctx, cx - TUBE_W / 2 - pad, TUBE_TOP - pad, TUBE_W + pad * 2, TUBE_H + pad * 2, 14);
+        roundRect(ctx, cx - TUBE_W / 2 - pad, TUBE_TOP - pad, TUBE_W + pad * 2, TUBE_H + pad * 2, [14, 14, 14, 14]);
         ctx.stroke();
     }
 
