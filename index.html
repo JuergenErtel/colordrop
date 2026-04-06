@@ -309,6 +309,87 @@ const ANIM = {
     busy:      false,        // blocks input during arc
 };
 
+/* ═══════════════════════════════════════════════════════════
+   LEVEL STATE
+═══════════════════════════════════════════════════════════ */
+
+const LEVEL = { current: 1 };
+
+/**
+ * Returns tube/colour configuration for a given level number.
+ * Tier 1 (1–5):  4 tubes, 2 colours, 2 empty.
+ * Tier 2 (6–15): 5 tubes, 3 colours, 2 empty.
+ * Tier 3 (16+):  7 tubes, 5 colours, 2 empty.
+ */
+function levelConfig(n) {
+    if (n <= 5)  return { colors: ['cyan','magenta'],                        empty: 2 };
+    if (n <= 15) return { colors: ['cyan','magenta','lime'],                 empty: 2 };
+    return           { colors: ['cyan','magenta','lime','yellow','orange'], empty: 2 };
+}
+
+/**
+ * Pure win-check on an arbitrary tubes array — no G side-effects.
+ * Used by generateLevel to detect accidental re-solved states.
+ */
+function checkWinState(tubes) {
+    return tubes.every(t => t.length === 0 || (t.length === 4 && t.every(c => c === t[0])));
+}
+
+/**
+ * Build a level by backwards-shuffling from a solved state.
+ * Guaranteed solvable because every move is a legal game move.
+ *
+ * @param {number} n  Level number (1-based)
+ */
+function generateLevel(n) {
+    LEVEL.current  = n;
+    const cfg      = levelConfig(n);
+
+    // 1. Start from solved state
+    const tubes = cfg.colors.map(c => [c, c, c, c]);
+    for (let i = 0; i < cfg.empty; i++) tubes.push([]);
+
+    // 2. Apply random valid moves to shuffle (more moves = harder)
+    const shuffleCount = 20 + n * 3;
+    for (let s = 0; s < shuffleCount; s++) {
+        const candidates = [];
+        for (let si = 0; si < tubes.length; si++) {
+            if (tubes[si].length === 0) continue;
+            for (let di = 0; di < tubes.length; di++) {
+                if (di === si) continue;
+                if (tubes[di].length >= 4) continue;
+                if (tubes[di].length > 0 &&
+                    tubes[di][tubes[di].length - 1] !== tubes[si][tubes[si].length - 1]) continue;
+                candidates.push({ si, di });
+            }
+        }
+        if (candidates.length > 0) {
+            const { si, di } = candidates[Math.floor(Math.random() * candidates.length)];
+            tubes[di].push(tubes[si].pop());
+        }
+    }
+
+    // 3. Retry if shuffle accidentally produced a solved state
+    if (checkWinState(tubes)) { generateLevel(n); return; }
+
+    // 4. Write into game state
+    G.tubes        = tubes;
+    G.selected     = -1;
+    G.selectedTime = -1;
+    G.moves        = 0;
+    G.history      = [];
+    G.won          = false;
+    G.flashTube    = -1;
+    G.flashUntil   = 0;
+    G.solvedTubes  = new Set();
+    ANIM.arc       = null;
+    ANIM.bounceMap = new Map();
+    ANIM.particles = [];
+    ANIM.busy      = false;
+
+    updateHUD();
+    hideOverlay();
+}
 
 /* ═══════════════════════════════════════════════════════════
    EASE FUNCTIONS
@@ -1069,8 +1150,8 @@ window.addEventListener('resize', resizeCanvas);
    BOOTSTRAP
 ═══════════════════════════════════════════════════════════ */
 
-resizeCanvas();   // size canvas before first paint
-initLevel();      // build level 1
+resizeCanvas();         // size canvas before first paint
+generateLevel(1);       // build level 1
 requestAnimationFrame(render);  // start game loop
 </script>
 </body>
