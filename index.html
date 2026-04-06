@@ -435,7 +435,8 @@ function generateLevel(n) {
             const { si, di } = candidates[Math.floor(Math.random() * candidates.length)];
             tubes[di].push(tubes[si].pop());
         }
-    } while (checkWinState(tubes) && ++retries < 20);   // retry if accidentally solved (safety cap)
+    } while ((checkWinState(tubes) || tubes.some(t => t.length === 4 && t.every(c => c === t[0]))) && ++retries < 20);
+    // retry if fully solved OR if any single tube is already complete (pre-solved tube = spoiled puzzle)
 
     // 3. Write into game state
     G.tubes        = tubes;
