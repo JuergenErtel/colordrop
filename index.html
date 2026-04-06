@@ -766,156 +766,235 @@ function updateBounces(ts) {
         // ── Tubes and their balls ──────────────────────────────
         for (let i = 0; i < G.tubes.length; i++) drawTube(i);
 
-        // ── Floating ball (drawn on top of all tubes) ──────────
-        if (G.selected !== -1) {
-            const tube = G.tubes[G.selected];
-            if (tube.length > 0) {
-                const cx   = tubeCX(G.selected);
-                // Gentle sinusoidal hover — amplitude 5 px at ~0.45 Hz
-                const fy   = FLOAT_Y_BASE + Math.sin(ts * 0.0028) * 5;
-                drawBall(cx, fy, tube[tube.length - 1], /*floating=*/ true);
-            }
-        }
-
         requestAnimationFrame(render);
     }
 
 
     /* ═══════════════════════════════════════════════════════════
-       DRAW TUBE
+       DRAW: BACKGROUND
     ═══════════════════════════════════════════════════════════ */
 
-    function drawTube(i) {
-        const tube = G.tubes[i];
-        const cx   = tubeCX(i);
-        const tx   = cx - TUBE_W / 2;   // left edge x
+    function drawBackground(ts) {
+        const t  = ts * 0.0002;
+        const cx = CW * (0.5 + 0.15 * Math.sin(t));
+        const cy = CH * (0.3  + 0.10 * Math.cos(t * 0.7));
+        const r  = Math.hypot(CW, CH) * 0.65;
 
-        const sel      = G.selected === i;
-        const solved   = isSolved(tube);
-        const flashing = (G.flashTube === i) && (G.frameTime < G.flashUntil);
+        const grad = ctx.createRadialGradient(cx, cy, 0, CW/2, CH/2, r);
+        grad.addColorStop(0,   `hsl(${265+12*Math.sin(t*1.2)},60%,9%)`);
+        grad.addColorStop(0.5, `hsl(${230+ 8*Math.cos(t)     },55%,6%)`);
+        grad.addColorStop(1,   `hsl(${210+10*Math.sin(t*0.8) },50%,4%)`);
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, CW, CH);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DRAW: TUBE  (glassmorphism)
+    ═══════════════════════════════════════════════════════════ */
+
+    function drawTube(i, ts = 0) {
+        const tube      = G.tubes[i];
+        const cx        = tubeCX(i);
+        const tx        = cx - TUBE_W / 2;
+        const sel       = G.selected === i && !ANIM.busy;
+        const solved    = isSolved(tube);
+        const flashing  = G.flashTube === i && G.frameTime < G.flashUntil;
+        const arcDest   = ANIM.arc && ANIM.arc.toTube === i;
 
         ctx.save();
 
-        // ── Outer glow (selection / solved / invalid flash) ──────
+        // ── Outer glow ───────────────────────────────────────────
         if (flashing) {
-            ctx.shadowColor = 'rgba(255, 50, 50, .62)';
+            ctx.shadowColor = 'rgba(255,50,50,.62)';
             ctx.shadowBlur  = 34;
         } else if (sel) {
-            ctx.shadowColor = 'rgba(247, 201, 72, .44)';
+            ctx.shadowColor = 'rgba(247,201,72,.44)';
             ctx.shadowBlur  = 30;
         } else if (solved) {
-            ctx.shadowColor = 'rgba( 80, 255, 150, .32)';
-            ctx.shadowBlur  = 24;
+            const pulse     = 0.5 + 0.5 * Math.sin(ts * 0.003);
+            ctx.shadowColor = 'rgba(80,255,150,.32)';
+            ctx.shadowBlur  = 15 + pulse * 15;
         }
 
-        // ── Tube body: rounded rect – square top, rounded bottom ─
-        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [4, 4, 24, 24]);
-
-        // Glass fill: subtle left-bright horizontal gradient
-        const fill = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
-        fill.addColorStop(0,    'rgba(255,255,255,.08)');
-        fill.addColorStop(.35,  'rgba(255,255,255,.03)');
-        fill.addColorStop(1,    'rgba(  0,  0,  0,.10)');
-        ctx.fillStyle = fill;
+        // ── Layer 1: dark base fill ───────────────────────────────
+        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+        ctx.fillStyle = 'rgba(15,20,40,0.65)';
         ctx.fill();
 
-        // Border – colour varies with state
-        ctx.strokeStyle = flashing ? 'rgba(255, 80, 80, .72)'
-                        : sel      ? 'rgba(247,201, 72, .62)'
-                        : solved   ? 'rgba( 80,255,150, .40)'
-                        :             'rgba(255,255,255, .11)';
-        ctx.lineWidth = 2;
+        // ── Layer 2: horizontal glass gradient ────────────────────
+        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+        const glassGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
+        glassGrad.addColorStop(0,    'rgba(255,255,255,.09)');
+        glassGrad.addColorStop(0.45, 'rgba(255,255,255,.03)');
+        glassGrad.addColorStop(1,    'rgba(255,255,255,.00)');
+        ctx.fillStyle = glassGrad;
+        ctx.fill();
+
+        // ── Layer 3: border gradient (bright left, dim right) ─────
+        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+        const borderGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
+        borderGrad.addColorStop(0,   flashing ? 'rgba(255,80,80,.72)'
+                                    : sel     ? 'rgba(247,201,72,.62)'
+                                    : solved  ? 'rgba(80,255,150,.40)'
+                                    :            'rgba(255,255,255,.30)');
+        borderGrad.addColorStop(1,   flashing ? 'rgba(255,80,80,.25)'
+                                    : sel     ? 'rgba(247,201,72,.20)'
+                                    : solved  ? 'rgba(80,255,150,.12)'
+                                    :            'rgba(255,255,255,.05)');
+        ctx.strokeStyle = borderGrad;
+        ctx.lineWidth   = 1.5;
         ctx.stroke();
 
         ctx.restore();
 
-        // ── Left-edge glass-reflection highlight ──────────────────
+        // ── Layer 4: left-edge reflection strip ───────────────────
         ctx.save();
-        // Clip so the highlight strip stays inside the tube shape
-        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [4, 4, 24, 24]);
+        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
         ctx.clip();
-
         ctx.beginPath();
         ctx.rect(tx + 5, TUBE_TOP + 14, 3.5, TUBE_H - 36);
-
-        const hi = ctx.createLinearGradient(0, TUBE_TOP + 14, 0, TUBE_TOP + TUBE_H - 36);
-        hi.addColorStop(0,   'rgba(255,255,255,.24)');
-        hi.addColorStop(.5,  'rgba(255,255,255,.07)');
-        hi.addColorStop(1,   'rgba(255,255,255,.00)');
-        ctx.fillStyle = hi;
+        const hiGrad = ctx.createLinearGradient(0, TUBE_TOP + 14, 0, TUBE_TOP + TUBE_H - 36);
+        hiGrad.addColorStop(0,   'rgba(255,255,255,.24)');
+        hiGrad.addColorStop(0.5, 'rgba(255,255,255,.07)');
+        hiGrad.addColorStop(1,   'rgba(255,255,255,.00)');
+        ctx.fillStyle = hiGrad;
         ctx.fill();
         ctx.restore();
 
-        // ── Balls inside the tube ──────────────────────────────────
-        // When a tube is selected its top ball floats away; skip rendering it here
-        const drawCount = sel ? tube.length - 1 : tube.length;
-        for (let bi = 0; bi < drawCount; bi++) {
-            drawBall(cx, ballCY(bi), tube[bi], /*floating=*/ false);
+        // ── Balls inside tube ──────────────────────────────────────
+        // If arc is flying INTO this tube, skip its top ball (it's in flight)
+        const renderCount = arcDest ? tube.length - 1 : tube.length;
+        for (let bi = 0; bi < renderCount; bi++) {
+            // Bounce offset: ball starts above and springs to rest
+            const bounceKey = `${i}-${bi}`;
+            const bounce    = ANIM.bounceMap.get(bounceKey);
+            let yOff = 0;
+            if (bounce) {
+                const bt = Math.min((ts - bounce.startTime) / bounce.duration, 1);
+                yOff = -bounce.amplitude * (1 - easeOutBounce(bt));
+            }
+            drawBall(cx, ballCY(bi) + yOff, tube[bi], false);
         }
     }
 
 
     /* ═══════════════════════════════════════════════════════════
-       DRAW BALL
+       DRAW: BALL  (3-D neon sphere)
     ═══════════════════════════════════════════════════════════ */
 
     /**
-     * Renders a gem-like ball at (cx, cy) with a 3-D specular overlay.
-     *
-     * @param {number}  cx       – centre X
-     * @param {number}  cy       – centre Y
-     * @param {string}  colorId  – key in PALETTE
-     * @param {boolean} floating – true → coloured glow instead of drop shadow
+     * @param {boolean} floating  true → coloured glow halo instead of drop shadow
      */
     function drawBall(cx, cy, colorId, floating) {
         const col = PALETTE[colorId];
         if (!col) return;
 
-        // ── 1. Drop shadow / glow ─────────────────────────────────
         ctx.save();
+
+        // ── Shadow / glow ────────────────────────────────────────
         if (floating) {
             ctx.shadowColor = col.glow;
-            ctx.shadowBlur  = 30;
+            ctx.shadowBlur  = 32;
         } else {
-            ctx.shadowColor   = 'rgba(0,0,0,.50)';
-            ctx.shadowBlur    = 9;
+            ctx.shadowColor   = 'rgba(0,0,0,.55)';
+            ctx.shadowBlur    = 10;
             ctx.shadowOffsetY = 4;
         }
 
-        // Base circle
+        // ── Layer 1: 3-D radial gradient (bright centre → dark rim) ──
         ctx.beginPath();
         ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
-        ctx.fillStyle = col.base;
+        const sphere = ctx.createRadialGradient(
+            cx - BALL_R*.25, cy - BALL_R*.28, BALL_R*.05,   // bright spot
+            cx,              cy,              BALL_R          // rim
+        );
+        sphere.addColorStop(0,   col.bright);
+        sphere.addColorStop(0.5, col.base);
+        sphere.addColorStop(1,   col.dark);
+        ctx.fillStyle = sphere;
         ctx.fill();
         ctx.restore();
 
-        // ── 2. Specular overlay: radial gradient for 3-D sphere ────
         ctx.save();
+        // ── Layer 2: specular overlay ─────────────────────────────
         ctx.beginPath();
         ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
-
-        // Highlight offset toward upper-left (mimics top-left light source)
-        const specGrad = ctx.createRadialGradient(
-            cx - BALL_R * .30, cy - BALL_R * .38,  1,   // inner: bright spot
-            cx,                cy,                 BALL_R // outer: dark rim
+        const spec = ctx.createRadialGradient(
+            cx - BALL_R*.30, cy - BALL_R*.38, 1,
+            cx,              cy,              BALL_R
         );
-        specGrad.addColorStop(0,    'rgba(255,255,255,.60)');
-        specGrad.addColorStop(.42,  'rgba(255,255,255,.10)');
-        specGrad.addColorStop(1,    'rgba(  0,  0,  0,.20)');
-        ctx.fillStyle = specGrad;
+        spec.addColorStop(0,    'rgba(255,255,255,.62)');
+        spec.addColorStop(0.40, 'rgba(255,255,255,.10)');
+        spec.addColorStop(1,    'rgba(0,0,0,.22)');
+        ctx.fillStyle = spec;
         ctx.fill();
 
-        // Small sharp glint (pinpoint of light)
+        // ── Layer 3: sharp glint ──────────────────────────────────
         ctx.beginPath();
-        ctx.arc(
-            cx - BALL_R * .28,
-            cy - BALL_R * .30,
-            BALL_R * .17,
-            0, Math.PI * 2
-        );
-        ctx.fillStyle = 'rgba(255,255,255,.75)';
+        ctx.arc(cx - BALL_R*.28, cy - BALL_R*.30, BALL_R*.17, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,.78)';
         ctx.fill();
         ctx.restore();
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DRAW: FLOATING BALL  (selected, hovering above tube)
+    ═══════════════════════════════════════════════════════════ */
+
+    function drawFloatingBall(ts) {
+        if (G.selected === -1) return;
+        const tube = G.tubes[G.selected];
+        if (!tube.length) return;
+
+        const cx    = tubeCX(G.selected);
+        const color = tube[tube.length - 1];
+
+        // Lift animation: ease from resting position to float position
+        const restY    = ballCY(tube.length - 1);
+        const targetY  = floatY(ts);
+        const elapsed  = G.selectedTime >= 0 ? ts - G.selectedTime : DUR_LIFT;
+        const liftT    = Math.min(elapsed / DUR_LIFT, 1);
+        const ballY    = restY + (targetY - restY) * easeOutBack(liftT);
+
+        // Scale pulse once fully lifted
+        const pulse    = liftT >= 1 ? 1 + Math.sin(ts * 0.005) * 0.04 : 1;
+
+        ctx.save();
+        ctx.translate(cx, ballY);
+        ctx.scale(pulse, pulse);
+        drawBall(0, 0, color, /*floating=*/ true);
+        ctx.restore();
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DRAW: ARC BALL  (ball flying along parabolic path)
+    ═══════════════════════════════════════════════════════════ */
+
+    function drawArcBall(ts) {
+        const a       = ANIM.arc;
+        const elapsed = ts - a.startTime;
+        const rawT    = Math.min(elapsed / a.duration, 1);
+        const easedT  = easeInOut(rawT);
+        const pos     = bezier2(easedT, a.p0, a.p1, a.p2);
+
+        // Trail particle (dt-normalised probability)
+        const dt = G.lastTime > 0 ? Math.min((ts - G.lastTime) / 1000, 0.05) : 0.016;
+        if (rawT < 0.92 && Math.random() < 0.4 * dt * 60) {
+            const col = PALETTE[a.color];
+            spawnParticle(
+                pos.x + (Math.random()-.5)*4,
+                pos.y + (Math.random()-.5)*4,
+                (Math.random()-.5)*20,
+                -25 - Math.random()*20,
+                col.glow,
+                2 + Math.random()*2,
+                0.18 + Math.random()*0.08,
+                60
+            );
+        }
+
+        drawBall(pos.x, pos.y, a.color, /*floating=*/ true);
     }
 
 
