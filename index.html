@@ -92,7 +92,7 @@
             justify-content: space-between;
             padding: 10px 14px;
             background: rgba(8,12,20,.55);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);           /* progressive enhancement — graceful in unsupported browsers */
             -webkit-backdrop-filter: blur(8px);
             border-bottom: 1px solid rgba(255,255,255,.08);
             border-radius: 20px 20px 0 0;
@@ -1144,7 +1144,7 @@ function drawArcBall(ts, dt) {
 function updateHUD() {
     document.getElementById('moveCount').textContent  = G.moves;
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current;
-    document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy;
+    document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
 }
 
 function showWin() {
