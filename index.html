@@ -382,29 +382,26 @@ function roundRect(ctx, x, y, w, h, r) {
      * Retries if the initial state happens to be already solved.
      */
     function initLevel() {
-        const colours = ['red', 'blue'];
-
-        // Build pool of 8 balls (4 of each colour)
-        const pool = colours.flatMap(c => [c, c, c, c]);
-
-        // Fisher-Yates shuffle
-        for (let i = pool.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [pool[i], pool[j]] = [pool[j], pool[i]];
+        const cols = ['cyan', 'magenta'];
+        const pool = cols.flatMap(c => [c,c,c,c]);
+        for (let i = pool.length-1; i > 0; i--) {
+            const j = Math.floor(Math.random()*(i+1));
+            [pool[i],pool[j]] = [pool[j],pool[i]];
         }
-
-        // First two tubes get the shuffled balls; last two are empty
-        G.tubes    = [ pool.slice(0, 4), pool.slice(4, 8), [], [] ];
-        G.selected = -1;
-        G.moves    = 0;
-        G.history  = [];
-        G.won      = false;
-        G.flashTube  = -1;
-        G.flashUntil = 0;
-
-        // Edge case: re-roll if randomly already solved (very rare)
+        G.tubes        = [ pool.slice(0,4), pool.slice(4,8), [], [] ];
+        G.selected     = -1;
+        G.selectedTime = -1;
+        G.moves        = 0;
+        G.history      = [];
+        G.won          = false;
+        G.flashTube    = -1;
+        G.flashUntil   = 0;
+        G.solvedTubes  = new Set();
+        ANIM.arc       = null;
+        ANIM.bounceMap = new Map();
+        ANIM.particles = [];
+        ANIM.busy      = false;
         if (checkWin()) { initLevel(); return; }
-
         updateHUD();
         hideOverlay();
     }
@@ -443,29 +440,50 @@ function roundRect(ctx, x, y, w, h, r) {
      * Pushes a snapshot onto the undo stack before mutating state.
      */
     function doMove(from, to) {
-        // Save deep copy for undo BEFORE mutation
+        // ── Undo snapshot (logic is immediate, as in v1) ──
         G.history.push(G.tubes.map(t => [...t]));
 
-        // Move the top ball
-        G.tubes[to].push(G.tubes[from].pop());
-        G.moves++;
+        // Capture start position BEFORE mutating (floating ball's current y)
+        const startX = tubeCX(from);
+        const startY = floatY(G.frameTime);
 
+        // Mutate logical state
+        const color = G.tubes[from][G.tubes[from].length - 1];
+        G.tubes[from].pop();
+        G.tubes[to].push(color);
+        G.moves++;
         updateHUD();
 
-        // Check win after every move
-        if (checkWin()) {
-            G.won = true;
-            setTimeout(showWin, 420);   // short delay feels more satisfying
-        }
+        // ── Start arc animation ──
+        const endX  = tubeCX(to);
+        const endY  = ballCY(G.tubes[to].length - 1);
+        const peakY = Math.min(startY, endY) - 90;
+
+        ANIM.arc = {
+            color,
+            toTube:    to,
+            p0: { x: startX, y: startY },
+            p1: { x: (startX + endX) / 2, y: peakY },
+            p2: { x: endX,   y: endY   },
+            startTime: G.frameTime,
+            duration:  DUR_ARC,
+        };
+        ANIM.busy = true;
     }
 
     /** Revert the last move. */
     function undo() {
-        if (!G.history.length) return;
-        G.tubes    = G.history.pop();
-        G.selected = -1;
-        G.moves    = Math.max(0, G.moves - 1);
-        G.won      = false;
+        if (!G.history.length || ANIM.busy) return;
+        G.tubes        = G.history.pop();
+        G.selected     = -1;
+        G.selectedTime = -1;
+        G.moves        = Math.max(0, G.moves - 1);
+        G.won          = false;
+        // Recalculate solved set after undo
+        G.solvedTubes = new Set();
+        for (let i = 0; i < G.tubes.length; i++) {
+            if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
+        }
         updateHUD();
         hideOverlay();
     }
