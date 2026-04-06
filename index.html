@@ -875,6 +875,11 @@ function checkWin() {
     );
 }
 
+/** Win check for tutorial: any non-empty tube must have uniform colour (2-ball tubes). */
+function checkWinTutorial() {
+    return G.tubes.every(t => t.length === 0 || t.every(c => c === t[0]));
+}
+
 /** True if a tube already holds 4 matching balls (drives "solved" glow). */
 function isSolved(tube) {
     return tube.length === 4 && tube.every(c => c === tube[0]);
@@ -1162,7 +1167,7 @@ function updateArc(ts) {
     }
 
     // Win check (after arc clears so overlay appears after animation)
-    if (checkWin()) {
+    if (G.tutorial ? checkWinTutorial() : checkWin()) {
         G.won = true;
         spawnConfetti();
         scheduleWinFireworks();
