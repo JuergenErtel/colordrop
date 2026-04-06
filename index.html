@@ -335,6 +335,7 @@
         .ls-inner {
             width: 100%;
             max-width: 480px;
+            position: relative;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -373,6 +374,26 @@
         .ls-tier-label.hard   { color: #ffe57f; }
         .ls-tier-label.expert { color: #ff7043; }
         .ls-tier-label.master { color: #f50057; }
+
+        .ls-tut-btn {
+            position: absolute;
+            top: 1.4rem;
+            right: 1.5rem;
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.18);
+            color: rgba(255,255,255,.55);
+            font-size: .85rem;
+            font-family: var(--f-mono);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s;
+        }
+        .ls-tut-btn:hover { background: rgba(255,255,255,.15); }
 
         .ls-grid {
             display: grid;
@@ -436,6 +457,7 @@
         <div class="ls-inner">
             <h1 class="ls-title">Color Drop</h1>
             <p class="ls-tagline">sort · stack · solve</p>
+            <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
             <div class="ls-tiers" id="lsTiers"></div>
         </div>
     </div>
@@ -1748,6 +1770,7 @@ document.getElementById('nextLevelBtn').addEventListener('click', () => {
 });
 document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect);
 document.getElementById('tutSkip'   ).addEventListener('click', endTutorial);
+document.getElementById('tutBtn'    ).addEventListener('click', () => { closeLevelSelect(); startTutorial(); });
 
 window.addEventListener('resize', resizeCanvas);
 
