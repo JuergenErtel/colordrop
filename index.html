@@ -310,6 +310,69 @@ const ANIM = {
 };
 
 
+/* ═══════════════════════════════════════════════════════════
+   EASE FUNCTIONS
+═══════════════════════════════════════════════════════════ */
+
+function easeInOut(t)    { return t < .5 ? 2*t*t : -1+(4-2*t)*t; }
+function easeOutBack(t)  {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3*Math.pow(t-1,3) + c1*Math.pow(t-1,2);
+}
+function easeOutBounce(t) {
+    const n = 7.5625, d = 2.75;
+    if (t < 1/d)     return n*t*t;
+    if (t < 2/d)     return n*(t-=1.5/d)*t + 0.75;
+    if (t < 2.5/d)   return n*(t-=2.25/d)*t + 0.9375;
+    return n*(t-=2.625/d)*t + 0.984375;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MATH / LAYOUT HELPERS
+═══════════════════════════════════════════════════════════ */
+
+/** Quadratic Bézier point at t along p0→p1→p2 */
+function bezier2(t, p0, p1, p2) {
+    const u = 1 - t;
+    return {
+        x: u*u*p0.x + 2*u*t*p1.x + t*t*p2.x,
+        y: u*u*p0.y + 2*u*t*p1.y + t*t*p2.y,
+    };
+}
+
+/** Centre-X of tube i — evenly distributed across CW */
+function tubeCX(i) {
+    const n   = G.tubes.length;
+    const gap = (CW - n * TUBE_W) / (n + 1);
+    return gap + i * (TUBE_W + gap) + TUBE_W / 2;
+}
+
+/** Centre-Y of ball at stack index bi (0=bottom) */
+function ballCY(bi) {
+    return TUBE_BOT - BALL_PAD - BALL_R - bi * (BALL_D + BALL_GAP);
+}
+
+/** Current y of the floating hover position (oscillates gently) */
+function floatY(ts) {
+    return FLOAT_Y_BASE + Math.sin(ts * 0.0028) * 5;
+}
+
+/** Rounded-rect path — [TL,TR,BR,BL] corner radii */
+function roundRect(ctx, x, y, w, h, r) {
+    const [tl, tr, br, bl] = r;
+    ctx.beginPath();
+    ctx.moveTo(x+tl, y);
+    ctx.lineTo(x+w-tr, y);
+    ctx.arcTo(x+w, y,   x+w, y+tr,   tr);
+    ctx.lineTo(x+w, y+h-br);
+    ctx.arcTo(x+w, y+h, x+w-br, y+h, br);
+    ctx.lineTo(x+bl, y+h);
+    ctx.arcTo(x,   y+h, x,   y+h-bl, bl);
+    ctx.lineTo(x, y+tl);
+    ctx.arcTo(x,   y,   x+tl, y,     tl);
+    ctx.closePath();
+}
+
     /* ═══════════════════════════════════════════════════════════
        LEVEL INITIALISATION
     ═══════════════════════════════════════════════════════════ */
@@ -490,29 +553,6 @@ const ANIM = {
     function triggerFlash(idx) {
         G.flashTube  = idx;
         G.flashUntil = performance.now() + 320;
-    }
-
-
-    /* ═══════════════════════════════════════════════════════════
-       LAYOUT HELPERS
-    ═══════════════════════════════════════════════════════════ */
-
-    /**
-     * Horizontal centre-X of tube `i`.
-     * Distributes all tubes evenly across the canvas width.
-     */
-    function tubeCX(i) {
-        const n   = G.tubes.length;                    // 4 tubes
-        const gap = (CW - n * TUBE_W) / (n + 1);      // equal spacing
-        return gap + i * (TUBE_W + gap) + TUBE_W / 2;
-    }
-
-    /**
-     * Vertical centre-Y of ball at stack index `bi` (0 = bottom ball).
-     * Balls are drawn from bottom up; higher index → smaller y.
-     */
-    function ballCY(bi) {
-        return TUBE_BOT - BALL_PAD - BALL_R - bi * (BALL_D + BALL_GAP);
     }
 
 
@@ -703,33 +743,6 @@ const ANIM = {
         ctx.fillStyle = 'rgba(255,255,255,.75)';
         ctx.fill();
         ctx.restore();
-    }
-
-
-    /* ═══════════════════════════════════════════════════════════
-       UTILITY – custom roundRect (avoids ctx.roundRect browser compat issues)
-    ═══════════════════════════════════════════════════════════ */
-
-    /**
-     * Build a rounded-rectangle path without calling ctx.roundRect()
-     * (added in 2022; this polyfill works everywhere).
-     *
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {number[]} r  - corner radii [topLeft, topRight, bottomRight, bottomLeft]
-     */
-    function roundRect(ctx, x, y, w, h, r) {
-        const [tl, tr, br, bl] = r;
-        ctx.beginPath();
-        ctx.moveTo(x + tl, y);
-        ctx.lineTo(x + w - tr, y);
-        ctx.arcTo(x + w, y,     x + w, y + tr,     tr);
-        ctx.lineTo(x + w, y + h - br);
-        ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
-        ctx.lineTo(x + bl, y + h);
-        ctx.arcTo(x,     y + h, x,     y + h - bl, bl);
-        ctx.lineTo(x, y + tl);
-        ctx.arcTo(x,     y,     x + tl, y,          tl);
-        ctx.closePath();
     }
 
 
