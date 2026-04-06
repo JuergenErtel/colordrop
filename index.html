@@ -523,35 +523,6 @@ function roundRect(ctx, x, y, w, h, r) {
    LEVEL INITIALISATION
 ═══════════════════════════════════════════════════════════ */
 
-/**
- * Level 1:  2 colours × 4 balls each  →  2 mixed full tubes + 2 empty tubes.
- * Retries if the initial state happens to be already solved.
- */
-function initLevel() {
-    const cols = ['cyan', 'magenta'];
-    const pool = cols.flatMap(c => [c,c,c,c]);
-    for (let i = pool.length-1; i > 0; i--) {
-        const j = Math.floor(Math.random()*(i+1));
-        [pool[i],pool[j]] = [pool[j],pool[i]];
-    }
-    G.tubes        = [ pool.slice(0,4), pool.slice(4,8), [], [] ];
-    G.selected     = -1;
-    G.selectedTime = -1;
-    G.moves        = 0;
-    G.history      = [];
-    G.won          = false;
-    G.flashTube    = -1;
-    G.flashUntil   = 0;
-    G.solvedTubes  = new Set();
-    ANIM.arc       = null;
-    ANIM.bounceMap = new Map();
-    ANIM.particles = [];
-    ANIM.busy      = false;
-    if (checkWin()) { initLevel(); return; }
-    updateHUD();
-    hideOverlay();
-}
-
 
 /* ═══════════════════════════════════════════════════════════
    GAME LOGIC
@@ -586,8 +557,9 @@ function canMove(from, to) {
  * Pushes a snapshot onto the undo stack before mutating state.
  */
 function doMove(from, to) {
-    // ── Undo snapshot (logic is immediate, as in v1) ──
+    // ── Undo snapshot — capped at 5 entries ──
     G.history.push(G.tubes.map(t => [...t]));
+    if (G.history.length > 5) G.history.shift();
 
     // Capture start position BEFORE mutating (floating ball's current y)
     const startX = tubeCX(from);
@@ -681,6 +653,7 @@ function handleInput(lx, ly) {
         if (G.tubes[idx].length > 0) {
             G.selected     = idx;
             G.selectedTime = G.frameTime;
+            playSound('select');
         }
     } else if (idx === G.selected) {
         G.selected     = -1;
@@ -715,6 +688,7 @@ function tubeAt(lx, ly) {
 function triggerFlash(idx) {
     G.flashTube  = idx;
     G.flashUntil = G.frameTime + 320;
+    playSound('invalid');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -854,7 +828,10 @@ function updateArc(ts) {
     if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube])) {
         G.solvedTubes.add(toTube);
         triggerTubeExplosion(toTube);
+        playSound('solved');
     }
+
+    playSound('pop');     // ball has landed
 
     ANIM.arc  = null;
     ANIM.busy = false;
@@ -864,6 +841,7 @@ function updateArc(ts) {
     if (checkWin()) {
         G.won = true;
         scheduleWinFireworks();
+        playSound('win');
         setTimeout(showWin, 600);
     }
 }
@@ -1159,6 +1137,14 @@ function drawArcBall(ts, dt) {
 /* ═══════════════════════════════════════════════════════════
    UI HELPERS
 ═══════════════════════════════════════════════════════════ */
+
+/**
+ * Sound hook — wire up audio files here when ready.
+ * @param {'select'|'pop'|'invalid'|'solved'|'win'} name
+ */
+function playSound(name) { // eslint-disable-line no-unused-vars
+    // TODO: Audio-Integration
+}
 
 function updateHUD() {
     document.getElementById('moveCount').textContent  = G.moves;
