@@ -376,8 +376,9 @@
             <div class="canvas-inner">
                 <canvas id="c"></canvas>
                 <div class="hud-overlay">
+                    <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
-                    <span class="hud-level" id="levelLabel">LEVEL 1</span>
+                    <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>
             </div>
@@ -1412,6 +1413,7 @@ function updateHUD() {
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
     document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
+    document.getElementById('menuBtnHud').disabled    = ANIM.busy;
 }
 
 function showWin() {
@@ -1462,15 +1464,13 @@ canvas.addEventListener('touchstart', e => {
     handleInput(p.x, p.y);
 }, { passive: false });
 
-document.getElementById('undoBtn' ).addEventListener('click', undo);
-document.getElementById('resetBtn').addEventListener('click', () => generateLevel(LEVEL.current));
+document.getElementById('menuBtnHud' ).addEventListener('click', openLevelSelect);
+document.getElementById('undoBtn'    ).addEventListener('click', undo);
+document.getElementById('resetBtn'   ).addEventListener('click', () => generateLevel(LEVEL.current));
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
     generateLevel(LEVEL.current + 1);
 });
-document.getElementById('menuBtn').addEventListener('click', () => {
-    LEVEL.current = 1;
-    generateLevel(1);
-});
+document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect);
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -1479,9 +1479,9 @@ window.addEventListener('resize', resizeCanvas);
    BOOTSTRAP
 ═══════════════════════════════════════════════════════════ */
 
-resizeCanvas();         // size canvas before first paint
-generateLevel(1);       // build level 1
-requestAnimationFrame(render);  // start game loop
+resizeCanvas();                  // size canvas before first paint
+requestAnimationFrame(render);   // start render loop (shows animated background)
+openLevelSelect();               // player picks their level
 </script>
 </body>
 </html>
