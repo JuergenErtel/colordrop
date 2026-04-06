@@ -556,11 +556,14 @@ function generateLevel(n) {
     LEVEL.current  = n;
     const cfg      = levelConfig(n);
     const shuffleCount = Math.min(20 + n * 3, 200);   // cap to avoid long loops at high levels
-    const rng          = mulberry32(n);                // deterministic: same level → same puzzle
     let tubes;
     let retries = 0;
 
     do {
+        // Fresh PRNG each attempt: same level always produces the same final puzzle,
+        // but each retry uses an independent seed so bad shuffles don't repeat.
+        const rng = mulberry32(n + retries * 997);
+
         // 1. Start from solved state
         tubes = cfg.colors.map(c => [c, c, c, c]);
         for (let i = 0; i < cfg.empty; i++) tubes.push([]);
@@ -583,7 +586,7 @@ function generateLevel(n) {
             const { si, di } = candidates[Math.floor(rng() * candidates.length)];
             tubes[di].push(tubes[si].pop());
         }
-    } while ((checkWinState(tubes) || tubes.some(t => t.length === 4 && t.every(c => c === t[0]))) && ++retries < 20);
+    } while ((checkWinState(tubes) || tubes.some(t => t.length === 4 && t.every(c => c === t[0]))) && ++retries < 100);
     // retry if fully solved OR if any single tube is already complete (pre-solved tube = spoiled puzzle)
 
     // 3. Write into game state
