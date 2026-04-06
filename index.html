@@ -233,6 +233,20 @@
         }
         .win-sub b { color: var(--gold); font-weight: 500; }
 
+        .win-stars {
+            font-size: 1.6rem;
+            letter-spacing: .1em;
+            line-height: 1;
+        }
+
+        .win-par {
+            font-size: .68rem;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: -.2rem;
+        }
+
         .win-actions {
             display: flex;
             gap: .75rem;
@@ -298,6 +312,8 @@
             <div class="win-icon">🏆</div>
             <h2 class="win-title">Solved!</h2>
             <p class="win-sub">Level <b id="finalLevel">1</b> — <b id="finalMoves">0</b> Züge</p>
+            <div class="win-stars" id="winStars">⭐⭐⭐</div>
+            <p class="win-par" id="winPar">Par: 10</p>
             <div class="win-actions">
                 <button class="win-btn" id="nextLevelBtn">Next Level →</button>
                 <button class="win-btn win-btn--secondary" id="menuBtn">Menu</button>
@@ -1174,6 +1190,36 @@ function drawArcBall(ts, dt) {
    UI HELPERS
 ═══════════════════════════════════════════════════════════ */
 
+/* ── Progress persistence ───────────────────────────────── */
+
+/** @returns {Object.<string, number>}  level → best stars (1–3) */
+function loadProgress() {
+    try { return JSON.parse(localStorage.getItem('colordrop_v1') || '{}'); }
+    catch { return {}; }
+}
+
+/**
+ * Save stars for a level — only if the new result is better.
+ * @param {number} levelNum
+ * @param {number} stars   1–3
+ */
+function saveStars(levelNum, stars) {
+    const data = loadProgress();
+    if ((data[levelNum] || 0) < stars) {
+        data[levelNum] = stars;
+        localStorage.setItem('colordrop_v1', JSON.stringify(data));
+    }
+}
+
+/**
+ * The highest level the player is allowed to start.
+ * Always at least 1.
+ */
+function maxUnlockedLevel() {
+    const keys = Object.keys(loadProgress()).map(Number);
+    return keys.length === 0 ? 1 : Math.max(...keys) + 1;
+}
+
 /**
  * Sound hook — wire up audio files here when ready.
  * @param {'select'|'pop'|'invalid'|'solved'|'win'} name
@@ -1184,15 +1230,20 @@ function playSound(name) {
 
 function updateHUD() {
     document.getElementById('moveCount').textContent  = G.moves;
-    document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current;
+    document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
     document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
 }
 
 function showWin() {
     if (!G.won) return;   // player reset before the 600 ms timer fired
+    const par   = parForLevel(LEVEL.current);
+    const stars = calcStars(G.moves, par);
+    saveStars(LEVEL.current, stars);
     document.getElementById('finalLevel').textContent = LEVEL.current;
     document.getElementById('finalMoves').textContent = G.moves;
+    document.getElementById('winStars').textContent   = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    document.getElementById('winPar').textContent     = 'Par: ' + par;
     document.getElementById('overlay').classList.add('show');
 }
 
