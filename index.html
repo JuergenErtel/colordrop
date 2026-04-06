@@ -420,6 +420,13 @@
     'use strict';
 
 /* ═══════════════════════════════════════════════════════════
+   ZZFX — Zuper Zmall Audio Library v2.0.1 (Frank Force, MIT)
+   Source embedded to keep single-file architecture intact.
+   AudioContext is created lazily in playSound() for iOS compat.
+═══════════════════════════════════════════════════════════ */
+let zzfx,zzfxX;zzfx=(...t)=>zzfxP(zzfxG(...t));zzfxG=(e=1,f=.05,a=220,b=0,l=0,M=.1,m=0,F=1,N=0,z=0,Y=0,X=0,P=0,I=0,Q=0,R=0,d=0,S=1,c=0,T=0)=>{let q=44100,w=2*Math.PI,L=q*b+9,r=q*l,v=q/a,h=0,n=0,D=0,k=1,A=[],C=zzfxX.createBuffer(1,L+r,q),G=C.getChannelData(0);for(T=c*[0,1,1.07,1.26,1.5,1.77][T|0]*w/q,a=w*a/q;h<L+r;h++){let p=h<L?h/L:1-(h-L)/r;let s=a*(1+(N*Math.sin(2*Math.PI*h/q)+z*Math.sin(h/v*w))+f);s+=T*Math.sin(h/q*2*Math.PI);D+=s;n+=([Math.sin(D),Math.sign(Math.sin(D)),1-2*(Math.floor(2*D/w)%2),((2*D/w%2)-1+2)%2-1][m|0]||Math.sin(D));let u=p*S*(k=Y?k+X/q:1)*e;G[h]=(Math.abs(n/++Q)>1?n/Math.abs(n):n)*u*Math.min(1,1+R*(h/q));Q=m||Q>99?1:Q}return G};zzfxP=(...t)=>{let e=zzfxX.createBuffer(t.length,t[0].length,44100),f=zzfxX.createBufferSource();for(let a in t)e.getChannelData(a).set(t[a]);f.buffer=e;f.connect(zzfxX.destination);f.start();return f};
+
+/* ═══════════════════════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════════════════════ */
 
@@ -1404,11 +1411,31 @@ function closeLevelSelect() {
 }
 
 /**
- * Sound hook — wire up audio files here when ready.
+ * Play a synthesized sound effect via ZzFX.
+ * AudioContext is created lazily so iOS doesn't block before first gesture.
  * @param {'select'|'pop'|'invalid'|'solved'|'win'} name
  */
 function playSound(name) {
-    // TODO: Audio-Integration
+    try {
+        if (!zzfxX) zzfxX = new AudioContext();
+        if (zzfxX.state === 'suspended') zzfxX.resume();
+        switch (name) {
+            // Light click when selecting a ball
+            case 'select':  zzfx(.35, .05, 900,    0, .01, .03, 0, 2);               break;
+            // Satisfying thud when ball lands (pitch drops)
+            case 'pop':     zzfx(.5,  .03, 220,    0, .04, .1,  0, 1.2, -10);        break;
+            // Harsh buzz for invalid move
+            case 'invalid': zzfx(.4,  .1,  120, .01, .04, .06, 3,  .5);             break;
+            // Bright chime when a tube is completed (pitch rises)
+            case 'solved':  zzfx(.4,  .02, 660, .02, .08, .12, 0, 1.5, 5);          break;
+            // C-major arpeggio (C5 → E5 → G5)
+            case 'win':
+                zzfx(.5, .02, 523, .02, .10, .12, 0, 1.5);
+                setTimeout(() => zzfx(.5, .02, 659, .02, .10, .12, 0, 1.5), 130);
+                setTimeout(() => zzfx(.6, .02, 784, .03, .15, .18, 0, 1.5), 260);
+                break;
+        }
+    } catch(e) {}   // silently ignore if AudioContext is unavailable
 }
 
 function updateHUD() {
