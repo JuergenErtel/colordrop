@@ -889,6 +889,12 @@ function handleInput(lx, ly) {
             G.selected     = idx;
             G.selectedTime = G.frameTime;
             playSound('select');
+            // Tutorial: advance from step 0 ('select') to step 1
+            if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
+                TUTORIAL_SCRIPT[G.tutStep].waitFor === 'select') {
+                G.tutStep++;
+                advanceTutStep();
+            }
         }
     } else if (idx === G.selected) {
         G.selected     = -1;
@@ -1126,13 +1132,29 @@ function updateArc(ts) {
     ANIM.busy = false;
     updateHUD();   // re-enable undo button now that arc is done
 
+    // Tutorial: advance 'move' step after each landing
+    if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
+        TUTORIAL_SCRIPT[G.tutStep].waitFor === 'move') {
+        G.tutStep++;
+        advanceTutStep();
+    }
+
     // Win check (after arc clears so overlay appears after animation)
     if (checkWin()) {
         G.won = true;
         spawnConfetti();
         scheduleWinFireworks();
         playSound('win');
-        setTimeout(showWin, 600);
+        if (G.tutorial) {
+            // Tutorial win: advance 'win' step, show completion message (no win overlay)
+            if (G.tutStep < TUTORIAL_SCRIPT.length &&
+                TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
+                G.tutStep++;
+                advanceTutStep();
+            }
+        } else {
+            setTimeout(showWin, 600);
+        }
     }
 }
 
