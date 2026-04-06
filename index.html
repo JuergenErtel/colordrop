@@ -468,6 +468,25 @@ const PALETTE = {
 };
 
 /* ═══════════════════════════════════════════════════════════
+   TUTORIAL
+═══════════════════════════════════════════════════════════ */
+
+// Fixed 3-move mini-puzzle: 2 colours, 2 balls each, 1 empty tube.
+// Optimal solution: tube1→tube2, tube0→tube1, tube0→tube2 (3 moves).
+const TUTORIAL_TUBES = [
+    ['cyan', 'magenta'],   // index 0: bottom → top
+    ['magenta', 'cyan'],   // index 1
+    [],                     // index 2: empty
+];
+
+const TUTORIAL_SCRIPT = [
+    { text: 'Tippe auf eine Röhre um die oberste Kugel aufzunehmen.', highlight: 'all',       waitFor: 'select' },
+    { text: 'Tippe auf eine andere Röhre um sie abzulegen.',          highlight: 'targets',   waitFor: 'move'   },
+    { text: 'Gut! Stapele gleiche Farben — eine Röhre, eine Farbe.',  highlight: 'top-match', waitFor: 'move'   },
+    { text: 'Noch ein Zug — du schaffst das!',                        highlight: 'all',       waitFor: 'win'    },
+];
+
+/* ═══════════════════════════════════════════════════════════
    SEEDED PRNG
 ═══════════════════════════════════════════════════════════ */
 
@@ -497,6 +516,8 @@ const G = {
     moves:        0,
     history:      [],    // undo stack of deep-copied tube arrays
     won:          false,
+    tutorial:     false,   // true = tutorial mode active
+    tutStep:      0,        // index into TUTORIAL_SCRIPT
     flashTube:    -1,    // tube showing red flash
     flashUntil:   0,     // rAF timestamp when flash ends
     frameTime:    0,     // current rAF timestamp
