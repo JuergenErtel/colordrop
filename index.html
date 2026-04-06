@@ -519,9 +519,6 @@ function roundRect(ctx, x, y, w, h, r) {
     ctx.closePath();
 }
 
-/* ═══════════════════════════════════════════════════════════
-   LEVEL INITIALISATION
-═══════════════════════════════════════════════════════════ */
 
 
 /* ═══════════════════════════════════════════════════════════
@@ -1143,7 +1140,7 @@ function drawArcBall(ts, dt) {
  * Sound hook — wire up audio files here when ready.
  * @param {'select'|'pop'|'invalid'|'solved'|'win'} name
  */
-function playSound(name) { // eslint-disable-line no-unused-vars
+function playSound(name) {
     // TODO: Audio-Integration
 }
 
@@ -1151,9 +1148,11 @@ function updateHUD() {
     document.getElementById('moveCount').textContent  = G.moves;
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current;
     document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
+    document.getElementById('resetBtn').disabled      = G.won;
 }
 
 function showWin() {
+    if (!G.won) return;   // player reset before the 600 ms timer fired
     document.getElementById('finalLevel').textContent = LEVEL.current;
     document.getElementById('finalMoves').textContent = G.moves;
     document.getElementById('overlay').classList.add('show');
@@ -1198,8 +1197,7 @@ canvas.addEventListener('touchstart', e => {
 document.getElementById('undoBtn' ).addEventListener('click', undo);
 document.getElementById('resetBtn').addEventListener('click', () => generateLevel(LEVEL.current));
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
-    LEVEL.current++;
-    generateLevel(LEVEL.current);
+    generateLevel(LEVEL.current + 1);
 });
 document.getElementById('menuBtn').addEventListener('click', () => {
     LEVEL.current = 1;
