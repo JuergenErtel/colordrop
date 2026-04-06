@@ -373,203 +373,203 @@ function roundRect(ctx, x, y, w, h, r) {
     ctx.closePath();
 }
 
-    /* ═══════════════════════════════════════════════════════════
-       LEVEL INITIALISATION
-    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   LEVEL INITIALISATION
+═══════════════════════════════════════════════════════════ */
 
-    /**
-     * Level 1:  2 colours × 4 balls each  →  2 mixed full tubes + 2 empty tubes.
-     * Retries if the initial state happens to be already solved.
-     */
-    function initLevel() {
-        const cols = ['cyan', 'magenta'];
-        const pool = cols.flatMap(c => [c,c,c,c]);
-        for (let i = pool.length-1; i > 0; i--) {
-            const j = Math.floor(Math.random()*(i+1));
-            [pool[i],pool[j]] = [pool[j],pool[i]];
-        }
-        G.tubes        = [ pool.slice(0,4), pool.slice(4,8), [], [] ];
+/**
+ * Level 1:  2 colours × 4 balls each  →  2 mixed full tubes + 2 empty tubes.
+ * Retries if the initial state happens to be already solved.
+ */
+function initLevel() {
+    const cols = ['cyan', 'magenta'];
+    const pool = cols.flatMap(c => [c,c,c,c]);
+    for (let i = pool.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [pool[i],pool[j]] = [pool[j],pool[i]];
+    }
+    G.tubes        = [ pool.slice(0,4), pool.slice(4,8), [], [] ];
+    G.selected     = -1;
+    G.selectedTime = -1;
+    G.moves        = 0;
+    G.history      = [];
+    G.won          = false;
+    G.flashTube    = -1;
+    G.flashUntil   = 0;
+    G.solvedTubes  = new Set();
+    ANIM.arc       = null;
+    ANIM.bounceMap = new Map();
+    ANIM.particles = [];
+    ANIM.busy      = false;
+    if (checkWin()) { initLevel(); return; }
+    updateHUD();
+    hideOverlay();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   GAME LOGIC
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Returns true if moving the top ball of tubes[from] onto tubes[to] is legal.
+ *
+ * Rules:
+ *  - Source must be non-empty
+ *  - Destination must have space (< 4 balls)
+ *  - Destination must be empty  OR  its top ball matches the moving ball
+ */
+function canMove(from, to) {
+    if (from === to) return false;
+
+    const src = G.tubes[from];
+    const dst = G.tubes[to];
+
+    if (src.length === 0) return false;   // nothing to move
+    if (dst.length >= 4)  return false;   // destination full
+
+    // Empty destination: always legal
+    if (dst.length === 0) return true;
+
+    // Non-empty: colours must match
+    return dst[dst.length - 1] === src[src.length - 1];
+}
+
+/**
+ * Execute a valid move from `from` to `to`.
+ * Pushes a snapshot onto the undo stack before mutating state.
+ */
+function doMove(from, to) {
+    // ── Undo snapshot (logic is immediate, as in v1) ──
+    G.history.push(G.tubes.map(t => [...t]));
+
+    // Capture start position BEFORE mutating (floating ball's current y)
+    const startX = tubeCX(from);
+    const startY = floatY(G.frameTime);
+
+    // Mutate logical state
+    const color = G.tubes[from][G.tubes[from].length - 1];
+    G.tubes[from].pop();
+    G.tubes[to].push(color);
+    G.moves++;
+    updateHUD();
+
+    // ── Start arc animation ──
+    const endX  = tubeCX(to);
+    const endY  = ballCY(G.tubes[to].length - 1);
+    const peakY = Math.min(startY, endY) - 90;
+
+    ANIM.arc = {
+        color,
+        toTube:    to,
+        p0: { x: startX, y: startY },
+        p1: { x: (startX + endX) / 2, y: peakY },
+        p2: { x: endX,   y: endY   },
+        startTime: G.frameTime,
+        duration:  DUR_ARC,
+    };
+    ANIM.busy = true;
+}
+
+/** Revert the last move. */
+function undo() {
+    if (!G.history.length || ANIM.busy) return;
+    G.tubes        = G.history.pop();
+    G.selected     = -1;
+    G.selectedTime = -1;
+    G.moves        = Math.max(0, G.moves - 1);
+    G.won          = false;
+    // Recalculate solved set after undo
+    G.solvedTubes = new Set();
+    for (let i = 0; i < G.tubes.length; i++) {
+        if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
+    }
+    updateHUD();
+    hideOverlay();
+}
+
+/**
+ * Win condition: every tube is either
+ *   (a) empty, or
+ *   (b) contains exactly 4 balls of the same colour.
+ */
+function checkWin() {
+    return G.tubes.every(t =>
+        t.length === 0 ||
+        (t.length === 4 && t.every(c => c === t[0]))
+    );
+}
+
+/** True if a tube already holds 4 matching balls (drives "solved" glow). */
+function isSolved(tube) {
+    return tube.length === 4 && tube.every(c => c === tube[0]);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INPUT HANDLING
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * State machine for click/tap:
+ *
+ *  (none selected)  →  select tube  (if non-empty)
+ *  (tube selected)  →  deselect     (same tube tapped again)
+ *                   →  do move      (valid target)
+ *                   →  switch sel   (colour mismatch, target non-empty)
+ *                   →  flash red    (target is full)
+ */
+function handleInput(lx, ly) {
+    if (G.won)      return;
+    if (ANIM.busy)  return;   // block during arc animation
+
+    const idx = tubeAt(lx, ly);
+
+    if (idx === -1) {
         G.selected     = -1;
         G.selectedTime = -1;
-        G.moves        = 0;
-        G.history      = [];
-        G.won          = false;
-        G.flashTube    = -1;
-        G.flashUntil   = 0;
-        G.solvedTubes  = new Set();
-        ANIM.arc       = null;
-        ANIM.bounceMap = new Map();
-        ANIM.particles = [];
-        ANIM.busy      = false;
-        if (checkWin()) { initLevel(); return; }
-        updateHUD();
-        hideOverlay();
+        return;
     }
 
-
-    /* ═══════════════════════════════════════════════════════════
-       GAME LOGIC
-    ═══════════════════════════════════════════════════════════ */
-
-    /**
-     * Returns true if moving the top ball of tubes[from] onto tubes[to] is legal.
-     *
-     * Rules:
-     *  - Source must be non-empty
-     *  - Destination must have space (< 4 balls)
-     *  - Destination must be empty  OR  its top ball matches the moving ball
-     */
-    function canMove(from, to) {
-        if (from === to) return false;
-
-        const src = G.tubes[from];
-        const dst = G.tubes[to];
-
-        if (src.length === 0) return false;   // nothing to move
-        if (dst.length >= 4)  return false;   // destination full
-
-        // Empty destination: always legal
-        if (dst.length === 0) return true;
-
-        // Non-empty: colours must match
-        return dst[dst.length - 1] === src[src.length - 1];
-    }
-
-    /**
-     * Execute a valid move from `from` to `to`.
-     * Pushes a snapshot onto the undo stack before mutating state.
-     */
-    function doMove(from, to) {
-        // ── Undo snapshot (logic is immediate, as in v1) ──
-        G.history.push(G.tubes.map(t => [...t]));
-
-        // Capture start position BEFORE mutating (floating ball's current y)
-        const startX = tubeCX(from);
-        const startY = floatY(G.frameTime);
-
-        // Mutate logical state
-        const color = G.tubes[from][G.tubes[from].length - 1];
-        G.tubes[from].pop();
-        G.tubes[to].push(color);
-        G.moves++;
-        updateHUD();
-
-        // ── Start arc animation ──
-        const endX  = tubeCX(to);
-        const endY  = ballCY(G.tubes[to].length - 1);
-        const peakY = Math.min(startY, endY) - 90;
-
-        ANIM.arc = {
-            color,
-            toTube:    to,
-            p0: { x: startX, y: startY },
-            p1: { x: (startX + endX) / 2, y: peakY },
-            p2: { x: endX,   y: endY   },
-            startTime: G.frameTime,
-            duration:  DUR_ARC,
-        };
-        ANIM.busy = true;
-    }
-
-    /** Revert the last move. */
-    function undo() {
-        if (!G.history.length || ANIM.busy) return;
-        G.tubes        = G.history.pop();
+    if (G.selected === -1) {
+        if (G.tubes[idx].length > 0) {
+            G.selected     = idx;
+            G.selectedTime = G.frameTime;
+        }
+    } else if (idx === G.selected) {
         G.selected     = -1;
         G.selectedTime = -1;
-        G.moves        = Math.max(0, G.moves - 1);
-        G.won          = false;
-        // Recalculate solved set after undo
-        G.solvedTubes = new Set();
-        for (let i = 0; i < G.tubes.length; i++) {
-            if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
-        }
-        updateHUD();
-        hideOverlay();
-    }
-
-    /**
-     * Win condition: every tube is either
-     *   (a) empty, or
-     *   (b) contains exactly 4 balls of the same colour.
-     */
-    function checkWin() {
-        return G.tubes.every(t =>
-            t.length === 0 ||
-            (t.length === 4 && t.every(c => c === t[0]))
-        );
-    }
-
-    /** True if a tube already holds 4 matching balls (drives "solved" glow). */
-    function isSolved(tube) {
-        return tube.length === 4 && tube.every(c => c === tube[0]);
-    }
-
-
-    /* ═══════════════════════════════════════════════════════════
-       INPUT HANDLING
-    ═══════════════════════════════════════════════════════════ */
-
-    /**
-     * State machine for click/tap:
-     *
-     *  (none selected)  →  select tube  (if non-empty)
-     *  (tube selected)  →  deselect     (same tube tapped again)
-     *                   →  do move      (valid target)
-     *                   →  switch sel   (colour mismatch, target non-empty)
-     *                   →  flash red    (target is full)
-     */
-    function handleInput(lx, ly) {
-        if (G.won)      return;
-        if (ANIM.busy)  return;   // block during arc animation
-
-        const idx = tubeAt(lx, ly);
-
-        if (idx === -1) {
-            G.selected     = -1;
-            G.selectedTime = -1;
-            return;
-        }
-
-        if (G.selected === -1) {
-            if (G.tubes[idx].length > 0) {
-                G.selected     = idx;
-                G.selectedTime = G.frameTime;
-            }
-        } else if (idx === G.selected) {
-            G.selected     = -1;
-            G.selectedTime = -1;
-        } else if (canMove(G.selected, idx)) {
-            const from     = G.selected;
-            G.selected     = -1;
-            G.selectedTime = -1;
-            doMove(from, idx);
+    } else if (canMove(G.selected, idx)) {
+        const from     = G.selected;
+        G.selected     = -1;
+        G.selectedTime = -1;
+        doMove(from, idx);
+    } else {
+        const dst = G.tubes[idx];
+        if (dst.length > 0 && dst.length < 4) {
+            G.selected     = idx;
+            G.selectedTime = G.frameTime;
         } else {
-            const dst = G.tubes[idx];
-            if (dst.length > 0 && dst.length < 4) {
-                G.selected     = idx;
-                G.selectedTime = G.frameTime;
-            } else {
-                triggerFlash(idx);
-            }
+            triggerFlash(idx);
         }
     }
+}
 
-    /** Returns the index of the tube whose hit-box contains (lx, ly), else -1. */
-    function tubeAt(lx, ly) {
-        for (let i = 0; i < G.tubes.length; i++) {
-            const tx = tubeCX(i) - TUBE_W / 2;
-            if (lx >= tx && lx <= tx + TUBE_W &&
-                ly >= TUBE_TOP && ly <= TUBE_TOP + TUBE_H) return i;
-        }
-        return -1;
+/** Returns the index of the tube whose hit-box contains (lx, ly), else -1. */
+function tubeAt(lx, ly) {
+    for (let i = 0; i < G.tubes.length; i++) {
+        const tx = tubeCX(i) - TUBE_W / 2;
+        if (lx >= tx && lx <= tx + TUBE_W &&
+            ly >= TUBE_TOP && ly <= TUBE_TOP + TUBE_H) return i;
     }
+    return -1;
+}
 
-    /** Schedule a 320 ms red flash on tube `idx`. */
-    function triggerFlash(idx) {
-        G.flashTube  = idx;
-        G.flashUntil = performance.now() + 320;
-    }
+/** Schedule a 320 ms red flash on tube `idx`. */
+function triggerFlash(idx) {
+    G.flashTube  = idx;
+    G.flashUntil = performance.now() + 320;
+}
 
 /* ═══════════════════════════════════════════════════════════
    PARTICLE SYSTEM
@@ -729,338 +729,350 @@ function updateBounces(ts) {
 }
 
 
-    /* ═══════════════════════════════════════════════════════════
-       CANVAS SETUP & RESIZE
-    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   CANVAS SETUP & RESIZE
+═══════════════════════════════════════════════════════════ */
 
-    const canvas = document.getElementById('c');
-    const ctx    = canvas.getContext('2d');
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
 
-    /**
-     * Set the canvas's internal (logical) resolution and let CSS scale it
-     * to fit the viewport. This way all drawing code uses fixed coordinates.
-     */
-    function resizeCanvas() {
-        canvas.width  = CW;
-        canvas.height = CH;
+/**
+ * Set the canvas's internal (logical) resolution and let CSS scale it
+ * to fit the viewport. This way all drawing code uses fixed coordinates.
+ */
+function resizeCanvas() {
+    canvas.width  = CW;
+    canvas.height = CH;
 
-        const maxPx  = Math.min(window.innerWidth - 32, 480);
-        const scale  = maxPx / CW;
-        canvas.style.width  = maxPx + 'px';
-        canvas.style.height = Math.round(CH * scale) + 'px';
+    const maxPx   = Math.min(window.innerWidth - 32, 480);
+    const scale   = maxPx / CW;
+    canvas.style.width  = maxPx + 'px';
+    canvas.style.height = Math.round(CH * scale) + 'px';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER LOOP
+═══════════════════════════════════════════════════════════ */
+
+function render(ts) {
+    // Delta-time (seconds), capped to 50 ms to survive tab switches
+    const dt = G.lastTime < 0
+        ? 0.016
+        : Math.min((ts - G.lastTime) / 1000, 0.05);
+    G.lastTime  = ts;
+    G.frameTime = ts;
+
+    // ── Update animation state ────────────────────────────────
+    updateArc(ts);
+    updateBounces(ts);
+    updateParticles(dt);
+
+    // ── Draw ──────────────────────────────────────────────────
+    drawBackground(ts);
+
+    for (let i = 0; i < G.tubes.length; i++) drawTube(i, ts);
+
+    if (ANIM.arc)                        drawArcBall(ts);
+    if (G.selected !== -1 && !ANIM.busy) drawFloatingBall(ts);
+
+    drawParticles();
+
+    requestAnimationFrame(render);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DRAW: BACKGROUND
+═══════════════════════════════════════════════════════════ */
+
+function drawBackground(ts) {
+    const t  = ts * 0.0002;
+    const cx = CW * (0.5 + 0.15 * Math.sin(t));
+    const cy = CH * (0.3  + 0.10 * Math.cos(t * 0.7));
+    const r  = Math.hypot(CW, CH) * 0.65;
+
+    const grad = ctx.createRadialGradient(cx, cy, 0, CW/2, CH/2, r);
+    grad.addColorStop(0,   `hsl(${265+12*Math.sin(t*1.2)},60%,9%)`);
+    grad.addColorStop(0.5, `hsl(${230+ 8*Math.cos(t)     },55%,6%)`);
+    grad.addColorStop(1,   `hsl(${210+10*Math.sin(t*0.8) },50%,4%)`);
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CW, CH);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DRAW: TUBE  (glassmorphism)
+═══════════════════════════════════════════════════════════ */
+
+function drawTube(i, ts = 0) {
+    const tube      = G.tubes[i];
+    const cx        = tubeCX(i);
+    const tx        = cx - TUBE_W / 2;
+    const sel       = G.selected === i && !ANIM.busy;
+    const solved    = isSolved(tube);
+    const flashing  = G.flashTube === i && G.frameTime < G.flashUntil;
+    const arcDest   = ANIM.arc && ANIM.arc.toTube === i;
+
+    ctx.save();
+
+    // ── Outer glow ───────────────────────────────────────────
+    if (flashing) {
+        ctx.shadowColor = 'rgba(255,50,50,.62)';
+        ctx.shadowBlur  = 34;
+    } else if (sel) {
+        ctx.shadowColor = 'rgba(247,201,72,.44)';
+        ctx.shadowBlur  = 30;
+    } else if (solved) {
+        const pulse     = 0.5 + 0.5 * Math.sin(ts * 0.003);
+        ctx.shadowColor = 'rgba(80,255,150,.32)';
+        ctx.shadowBlur  = 15 + pulse * 15;
     }
 
+    // ── Layer 1: dark base fill ───────────────────────────────
+    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+    ctx.fillStyle = 'rgba(15,20,40,0.65)';
+    ctx.fill();
 
-    /* ═══════════════════════════════════════════════════════════
-       RENDER LOOP
-    ═══════════════════════════════════════════════════════════ */
+    // ── Layer 2: horizontal glass gradient ────────────────────
+    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+    const glassGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
+    glassGrad.addColorStop(0,    'rgba(255,255,255,.09)');
+    glassGrad.addColorStop(0.45, 'rgba(255,255,255,.03)');
+    glassGrad.addColorStop(1,    'rgba(255,255,255,.00)');
+    ctx.fillStyle = glassGrad;
+    ctx.fill();
 
-    function render(ts) {
-        G.frameTime = ts;
+    // ── Layer 3: border gradient (bright left, dim right) ─────
+    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+    const borderGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
+    borderGrad.addColorStop(0,   flashing ? 'rgba(255,80,80,.72)'
+                                : sel     ? 'rgba(247,201,72,.62)'
+                                : solved  ? 'rgba(80,255,150,.40)'
+                                :            'rgba(255,255,255,.30)');
+    borderGrad.addColorStop(1,   flashing ? 'rgba(255,80,80,.25)'
+                                : sel     ? 'rgba(247,201,72,.20)'
+                                : solved  ? 'rgba(80,255,150,.12)'
+                                :            'rgba(255,255,255,.05)');
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth   = 1.5;
+    ctx.stroke();
 
-        // ── Background ─────────────────────────────────────────
-        // A near-black fill gives the canvas its own "card" identity
-        ctx.fillStyle = '#0c1020';
-        ctx.fillRect(0, 0, CW, CH);
+    ctx.restore();
 
-        // ── Tubes and their balls ──────────────────────────────
-        for (let i = 0; i < G.tubes.length; i++) drawTube(i);
+    // ── Layer 4: left-edge reflection strip ───────────────────
+    ctx.save();
+    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.rect(tx + 5, TUBE_TOP + 14, 3.5, TUBE_H - 36);
+    const hiGrad = ctx.createLinearGradient(0, TUBE_TOP + 14, 0, TUBE_TOP + TUBE_H - 36);
+    hiGrad.addColorStop(0,   'rgba(255,255,255,.24)');
+    hiGrad.addColorStop(0.5, 'rgba(255,255,255,.07)');
+    hiGrad.addColorStop(1,   'rgba(255,255,255,.00)');
+    ctx.fillStyle = hiGrad;
+    ctx.fill();
+    ctx.restore();
 
-        requestAnimationFrame(render);
-    }
-
-
-    /* ═══════════════════════════════════════════════════════════
-       DRAW: BACKGROUND
-    ═══════════════════════════════════════════════════════════ */
-
-    function drawBackground(ts) {
-        const t  = ts * 0.0002;
-        const cx = CW * (0.5 + 0.15 * Math.sin(t));
-        const cy = CH * (0.3  + 0.10 * Math.cos(t * 0.7));
-        const r  = Math.hypot(CW, CH) * 0.65;
-
-        const grad = ctx.createRadialGradient(cx, cy, 0, CW/2, CH/2, r);
-        grad.addColorStop(0,   `hsl(${265+12*Math.sin(t*1.2)},60%,9%)`);
-        grad.addColorStop(0.5, `hsl(${230+ 8*Math.cos(t)     },55%,6%)`);
-        grad.addColorStop(1,   `hsl(${210+10*Math.sin(t*0.8) },50%,4%)`);
-
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, CW, CH);
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       DRAW: TUBE  (glassmorphism)
-    ═══════════════════════════════════════════════════════════ */
-
-    function drawTube(i, ts = 0) {
-        const tube      = G.tubes[i];
-        const cx        = tubeCX(i);
-        const tx        = cx - TUBE_W / 2;
-        const sel       = G.selected === i && !ANIM.busy;
-        const solved    = isSolved(tube);
-        const flashing  = G.flashTube === i && G.frameTime < G.flashUntil;
-        const arcDest   = ANIM.arc && ANIM.arc.toTube === i;
-
-        ctx.save();
-
-        // ── Outer glow ───────────────────────────────────────────
-        if (flashing) {
-            ctx.shadowColor = 'rgba(255,50,50,.62)';
-            ctx.shadowBlur  = 34;
-        } else if (sel) {
-            ctx.shadowColor = 'rgba(247,201,72,.44)';
-            ctx.shadowBlur  = 30;
-        } else if (solved) {
-            const pulse     = 0.5 + 0.5 * Math.sin(ts * 0.003);
-            ctx.shadowColor = 'rgba(80,255,150,.32)';
-            ctx.shadowBlur  = 15 + pulse * 15;
+    // ── Balls inside tube ──────────────────────────────────────
+    // If arc is flying INTO this tube, skip its top ball (it's in flight)
+    const renderCount = arcDest ? tube.length - 1 : tube.length;
+    for (let bi = 0; bi < renderCount; bi++) {
+        // Bounce offset: ball starts above and springs to rest
+        const bounceKey = `${i}-${bi}`;
+        const bounce    = ANIM.bounceMap.get(bounceKey);
+        let yOff = 0;
+        if (bounce) {
+            const bt = Math.min((ts - bounce.startTime) / bounce.duration, 1);
+            yOff = -bounce.amplitude * (1 - easeOutBounce(bt));
         }
+        drawBall(cx, ballCY(bi) + yOff, tube[bi], false);
+    }
+}
 
-        // ── Layer 1: dark base fill ───────────────────────────────
-        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-        ctx.fillStyle = 'rgba(15,20,40,0.65)';
-        ctx.fill();
 
-        // ── Layer 2: horizontal glass gradient ────────────────────
-        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-        const glassGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
-        glassGrad.addColorStop(0,    'rgba(255,255,255,.09)');
-        glassGrad.addColorStop(0.45, 'rgba(255,255,255,.03)');
-        glassGrad.addColorStop(1,    'rgba(255,255,255,.00)');
-        ctx.fillStyle = glassGrad;
-        ctx.fill();
+/* ═══════════════════════════════════════════════════════════
+   DRAW: BALL  (3-D neon sphere)
+═══════════════════════════════════════════════════════════ */
 
-        // ── Layer 3: border gradient (bright left, dim right) ─────
-        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-        const borderGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
-        borderGrad.addColorStop(0,   flashing ? 'rgba(255,80,80,.72)'
-                                    : sel     ? 'rgba(247,201,72,.62)'
-                                    : solved  ? 'rgba(80,255,150,.40)'
-                                    :            'rgba(255,255,255,.30)');
-        borderGrad.addColorStop(1,   flashing ? 'rgba(255,80,80,.25)'
-                                    : sel     ? 'rgba(247,201,72,.20)'
-                                    : solved  ? 'rgba(80,255,150,.12)'
-                                    :            'rgba(255,255,255,.05)');
-        ctx.strokeStyle = borderGrad;
-        ctx.lineWidth   = 1.5;
-        ctx.stroke();
+/**
+ * @param {boolean} floating  true → coloured glow halo instead of drop shadow
+ */
+function drawBall(cx, cy, colorId, floating) {
+    const col = PALETTE[colorId];
+    if (!col) return;
 
-        ctx.restore();
+    ctx.save();
 
-        // ── Layer 4: left-edge reflection strip ───────────────────
-        ctx.save();
-        roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-        ctx.clip();
-        ctx.beginPath();
-        ctx.rect(tx + 5, TUBE_TOP + 14, 3.5, TUBE_H - 36);
-        const hiGrad = ctx.createLinearGradient(0, TUBE_TOP + 14, 0, TUBE_TOP + TUBE_H - 36);
-        hiGrad.addColorStop(0,   'rgba(255,255,255,.24)');
-        hiGrad.addColorStop(0.5, 'rgba(255,255,255,.07)');
-        hiGrad.addColorStop(1,   'rgba(255,255,255,.00)');
-        ctx.fillStyle = hiGrad;
-        ctx.fill();
-        ctx.restore();
-
-        // ── Balls inside tube ──────────────────────────────────────
-        // If arc is flying INTO this tube, skip its top ball (it's in flight)
-        const renderCount = arcDest ? tube.length - 1 : tube.length;
-        for (let bi = 0; bi < renderCount; bi++) {
-            // Bounce offset: ball starts above and springs to rest
-            const bounceKey = `${i}-${bi}`;
-            const bounce    = ANIM.bounceMap.get(bounceKey);
-            let yOff = 0;
-            if (bounce) {
-                const bt = Math.min((ts - bounce.startTime) / bounce.duration, 1);
-                yOff = -bounce.amplitude * (1 - easeOutBounce(bt));
-            }
-            drawBall(cx, ballCY(bi) + yOff, tube[bi], false);
-        }
+    // ── Shadow / glow ────────────────────────────────────────
+    if (floating) {
+        ctx.shadowColor = col.glow;
+        ctx.shadowBlur  = 32;
+    } else {
+        ctx.shadowColor   = 'rgba(0,0,0,.55)';
+        ctx.shadowBlur    = 10;
+        ctx.shadowOffsetY = 4;
     }
 
+    // ── Layer 1: 3-D radial gradient (bright centre → dark rim) ──
+    ctx.beginPath();
+    ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
+    const sphere = ctx.createRadialGradient(
+        cx - BALL_R*.25, cy - BALL_R*.28, BALL_R*.05,   // bright spot
+        cx,              cy,              BALL_R          // rim
+    );
+    sphere.addColorStop(0,   col.bright);
+    sphere.addColorStop(0.5, col.base);
+    sphere.addColorStop(1,   col.dark);
+    ctx.fillStyle = sphere;
+    ctx.fill();
+    ctx.restore();
 
-    /* ═══════════════════════════════════════════════════════════
-       DRAW: BALL  (3-D neon sphere)
-    ═══════════════════════════════════════════════════════════ */
+    ctx.save();
+    // ── Layer 2: specular overlay ─────────────────────────────
+    ctx.beginPath();
+    ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
+    const spec = ctx.createRadialGradient(
+        cx - BALL_R*.30, cy - BALL_R*.38, 1,
+        cx,              cy,              BALL_R
+    );
+    spec.addColorStop(0,    'rgba(255,255,255,.62)');
+    spec.addColorStop(0.40, 'rgba(255,255,255,.10)');
+    spec.addColorStop(1,    'rgba(0,0,0,.22)');
+    ctx.fillStyle = spec;
+    ctx.fill();
 
-    /**
-     * @param {boolean} floating  true → coloured glow halo instead of drop shadow
-     */
-    function drawBall(cx, cy, colorId, floating) {
-        const col = PALETTE[colorId];
-        if (!col) return;
+    // ── Layer 3: sharp glint ──────────────────────────────────
+    ctx.beginPath();
+    ctx.arc(cx - BALL_R*.28, cy - BALL_R*.30, BALL_R*.17, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,.78)';
+    ctx.fill();
+    ctx.restore();
+}
 
-        ctx.save();
+/* ═══════════════════════════════════════════════════════════
+   DRAW: FLOATING BALL  (selected, hovering above tube)
+═══════════════════════════════════════════════════════════ */
 
-        // ── Shadow / glow ────────────────────────────────────────
-        if (floating) {
-            ctx.shadowColor = col.glow;
-            ctx.shadowBlur  = 32;
-        } else {
-            ctx.shadowColor   = 'rgba(0,0,0,.55)';
-            ctx.shadowBlur    = 10;
-            ctx.shadowOffsetY = 4;
-        }
+function drawFloatingBall(ts) {
+    if (G.selected === -1) return;
+    const tube = G.tubes[G.selected];
+    if (!tube.length) return;
 
-        // ── Layer 1: 3-D radial gradient (bright centre → dark rim) ──
-        ctx.beginPath();
-        ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
-        const sphere = ctx.createRadialGradient(
-            cx - BALL_R*.25, cy - BALL_R*.28, BALL_R*.05,   // bright spot
-            cx,              cy,              BALL_R          // rim
+    const cx    = tubeCX(G.selected);
+    const color = tube[tube.length - 1];
+
+    // Lift animation: ease from resting position to float position
+    const restY    = ballCY(tube.length - 1);
+    const targetY  = floatY(ts);
+    const elapsed  = G.selectedTime >= 0 ? ts - G.selectedTime : DUR_LIFT;
+    const liftT    = Math.min(elapsed / DUR_LIFT, 1);
+    const ballY    = restY + (targetY - restY) * easeOutBack(liftT);
+
+    // Scale pulse once fully lifted
+    const pulse    = liftT >= 1 ? 1 + Math.sin(ts * 0.005) * 0.04 : 1;
+
+    ctx.save();
+    ctx.translate(cx, ballY);
+    ctx.scale(pulse, pulse);
+    drawBall(0, 0, color, /*floating=*/ true);
+    ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DRAW: ARC BALL  (ball flying along parabolic path)
+═══════════════════════════════════════════════════════════ */
+
+function drawArcBall(ts) {
+    const a       = ANIM.arc;
+    const elapsed = ts - a.startTime;
+    const rawT    = Math.min(elapsed / a.duration, 1);
+    const easedT  = easeInOut(rawT);
+    const pos     = bezier2(easedT, a.p0, a.p1, a.p2);
+
+    // Trail particle (dt-normalised probability)
+    const dt = G.lastTime > 0 ? Math.min((ts - G.lastTime) / 1000, 0.05) : 0.016;
+    if (rawT < 0.92 && Math.random() < 0.4 * dt * 60) {
+        const col = PALETTE[a.color];
+        spawnParticle(
+            pos.x + (Math.random()-.5)*4,
+            pos.y + (Math.random()-.5)*4,
+            (Math.random()-.5)*20,
+            -25 - Math.random()*20,
+            col.glow,
+            2 + Math.random()*2,
+            0.18 + Math.random()*0.08,
+            60
         );
-        sphere.addColorStop(0,   col.bright);
-        sphere.addColorStop(0.5, col.base);
-        sphere.addColorStop(1,   col.dark);
-        ctx.fillStyle = sphere;
-        ctx.fill();
-        ctx.restore();
-
-        ctx.save();
-        // ── Layer 2: specular overlay ─────────────────────────────
-        ctx.beginPath();
-        ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
-        const spec = ctx.createRadialGradient(
-            cx - BALL_R*.30, cy - BALL_R*.38, 1,
-            cx,              cy,              BALL_R
-        );
-        spec.addColorStop(0,    'rgba(255,255,255,.62)');
-        spec.addColorStop(0.40, 'rgba(255,255,255,.10)');
-        spec.addColorStop(1,    'rgba(0,0,0,.22)');
-        ctx.fillStyle = spec;
-        ctx.fill();
-
-        // ── Layer 3: sharp glint ──────────────────────────────────
-        ctx.beginPath();
-        ctx.arc(cx - BALL_R*.28, cy - BALL_R*.30, BALL_R*.17, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255,255,255,.78)';
-        ctx.fill();
-        ctx.restore();
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       DRAW: FLOATING BALL  (selected, hovering above tube)
-    ═══════════════════════════════════════════════════════════ */
-
-    function drawFloatingBall(ts) {
-        if (G.selected === -1) return;
-        const tube = G.tubes[G.selected];
-        if (!tube.length) return;
-
-        const cx    = tubeCX(G.selected);
-        const color = tube[tube.length - 1];
-
-        // Lift animation: ease from resting position to float position
-        const restY    = ballCY(tube.length - 1);
-        const targetY  = floatY(ts);
-        const elapsed  = G.selectedTime >= 0 ? ts - G.selectedTime : DUR_LIFT;
-        const liftT    = Math.min(elapsed / DUR_LIFT, 1);
-        const ballY    = restY + (targetY - restY) * easeOutBack(liftT);
-
-        // Scale pulse once fully lifted
-        const pulse    = liftT >= 1 ? 1 + Math.sin(ts * 0.005) * 0.04 : 1;
-
-        ctx.save();
-        ctx.translate(cx, ballY);
-        ctx.scale(pulse, pulse);
-        drawBall(0, 0, color, /*floating=*/ true);
-        ctx.restore();
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       DRAW: ARC BALL  (ball flying along parabolic path)
-    ═══════════════════════════════════════════════════════════ */
-
-    function drawArcBall(ts) {
-        const a       = ANIM.arc;
-        const elapsed = ts - a.startTime;
-        const rawT    = Math.min(elapsed / a.duration, 1);
-        const easedT  = easeInOut(rawT);
-        const pos     = bezier2(easedT, a.p0, a.p1, a.p2);
-
-        // Trail particle (dt-normalised probability)
-        const dt = G.lastTime > 0 ? Math.min((ts - G.lastTime) / 1000, 0.05) : 0.016;
-        if (rawT < 0.92 && Math.random() < 0.4 * dt * 60) {
-            const col = PALETTE[a.color];
-            spawnParticle(
-                pos.x + (Math.random()-.5)*4,
-                pos.y + (Math.random()-.5)*4,
-                (Math.random()-.5)*20,
-                -25 - Math.random()*20,
-                col.glow,
-                2 + Math.random()*2,
-                0.18 + Math.random()*0.08,
-                60
-            );
-        }
-
-        drawBall(pos.x, pos.y, a.color, /*floating=*/ true);
-    }
+    drawBall(pos.x, pos.y, a.color, /*floating=*/ true);
+}
 
 
-    /* ═══════════════════════════════════════════════════════════
-       UI HELPERS
-    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════════════════ */
 
-    function updateHUD() {
-        document.getElementById('moveCount').textContent = G.moves;
-    }
+function updateHUD() {
+    document.getElementById('moveCount').textContent = G.moves;
+}
 
-    function showWin() {
-        document.getElementById('finalMoves').textContent = G.moves;
-        document.getElementById('overlay').classList.add('show');
-    }
+function showWin() {
+    document.getElementById('finalMoves').textContent = G.moves;
+    document.getElementById('overlay').classList.add('show');
+}
 
-    function hideOverlay() {
-        document.getElementById('overlay').classList.remove('show');
-    }
-
-
-    /* ═══════════════════════════════════════════════════════════
-       POINTER / TOUCH EVENTS
-    ═══════════════════════════════════════════════════════════ */
-
-    /**
-     * Convert a MouseEvent or TouchEvent to logical canvas coordinates,
-     * accounting for any CSS scaling applied to the canvas element.
-     */
-    function toCanvas(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = CW / rect.width;
-        const scaleY = CH / rect.height;
-        const src    = e.touches ? e.touches[0] : e;
-        return {
-            x: (src.clientX - rect.left) * scaleX,
-            y: (src.clientY - rect.top)  * scaleY,
-        };
-    }
-
-    canvas.addEventListener('click', e => {
-        const p = toCanvas(e);
-        handleInput(p.x, p.y);
-    });
-
-    // touchstart + preventDefault stops the 300 ms mobile tap delay
-    canvas.addEventListener('touchstart', e => {
-        e.preventDefault();
-        const p = toCanvas(e);
-        handleInput(p.x, p.y);
-    }, { passive: false });
-
-    document.getElementById('undoBtn'   ).addEventListener('click', undo);
-    document.getElementById('resetBtn'  ).addEventListener('click', initLevel);
-    document.getElementById('playAgain' ).addEventListener('click', initLevel);
-
-    window.addEventListener('resize', resizeCanvas);
+function hideOverlay() {
+    document.getElementById('overlay').classList.remove('show');
+}
 
 
-    /* ═══════════════════════════════════════════════════════════
-       BOOTSTRAP
-    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   POINTER / TOUCH EVENTS
+═══════════════════════════════════════════════════════════ */
 
-    resizeCanvas();   // size canvas before first paint
-    initLevel();      // build level 1
-    requestAnimationFrame(render);  // start game loop
-    </script>
+/**
+ * Convert a MouseEvent or TouchEvent to logical canvas coordinates,
+ * accounting for any CSS scaling applied to the canvas element.
+ */
+function toCanvas(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CW / rect.width;
+    const scaleY = CH / rect.height;
+    const src    = e.touches ? e.touches[0] : e;
+    return {
+        x: (src.clientX - rect.left) * scaleX,
+        y: (src.clientY - rect.top)  * scaleY,
+    };
+}
+
+canvas.addEventListener('click', e => {
+    const p = toCanvas(e);
+    handleInput(p.x, p.y);
+});
+
+// touchstart + preventDefault stops the 300 ms mobile tap delay
+canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const p = toCanvas(e);
+    handleInput(p.x, p.y);
+}, { passive: false });
+
+document.getElementById('undoBtn'   ).addEventListener('click', undo);
+document.getElementById('resetBtn'  ).addEventListener('click', initLevel);
+document.getElementById('playAgain' ).addEventListener('click', initLevel);
+
+window.addEventListener('resize', resizeCanvas);
+
+
+/* ═══════════════════════════════════════════════════════════
+   BOOTSTRAP
+═══════════════════════════════════════════════════════════ */
+
+resizeCanvas();   // size canvas before first paint
+initLevel();      // build level 1
+requestAnimationFrame(render);  // start game loop
+</script>
 </body>
 </html>
