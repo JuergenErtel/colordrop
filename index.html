@@ -344,35 +344,35 @@ function checkWinState(tubes) {
 function generateLevel(n) {
     LEVEL.current  = n;
     const cfg      = levelConfig(n);
-
-    // 1. Start from solved state
-    const tubes = cfg.colors.map(c => [c, c, c, c]);
-    for (let i = 0; i < cfg.empty; i++) tubes.push([]);
-
-    // 2. Apply random valid moves to shuffle (more moves = harder)
     const shuffleCount = 20 + n * 3;
-    for (let s = 0; s < shuffleCount; s++) {
-        const candidates = [];
-        for (let si = 0; si < tubes.length; si++) {
-            if (tubes[si].length === 0) continue;
-            for (let di = 0; di < tubes.length; di++) {
-                if (di === si) continue;
-                if (tubes[di].length >= 4) continue;
-                if (tubes[di].length > 0 &&
-                    tubes[di][tubes[di].length - 1] !== tubes[si][tubes[si].length - 1]) continue;
-                candidates.push({ si, di });
+    let tubes;
+
+    do {
+        // 1. Start from solved state
+        tubes = cfg.colors.map(c => [c, c, c, c]);
+        for (let i = 0; i < cfg.empty; i++) tubes.push([]);
+
+        // 2. Apply random valid moves to shuffle (more moves = harder)
+        for (let s = 0; s < shuffleCount; s++) {
+            const candidates = [];
+            for (let si = 0; si < tubes.length; si++) {
+                if (tubes[si].length === 0) continue;
+                for (let di = 0; di < tubes.length; di++) {
+                    if (di === si) continue;
+                    if (tubes[di].length >= 4) continue;
+                    if (tubes[di].length > 0 &&
+                        tubes[di][tubes[di].length - 1] !== tubes[si][tubes[si].length - 1]) continue;
+                    candidates.push({ si, di });
+                }
             }
-        }
-        if (candidates.length > 0) {
+            // No legal move available; puzzle remains solvable, shuffle depth may be reduced.
+            if (candidates.length === 0) continue;
             const { si, di } = candidates[Math.floor(Math.random() * candidates.length)];
             tubes[di].push(tubes[si].pop());
         }
-    }
+    } while (checkWinState(tubes));   // retry if accidentally solved
 
-    // 3. Retry if shuffle accidentally produced a solved state
-    if (checkWinState(tubes)) { generateLevel(n); return; }
-
-    // 4. Write into game state
+    // 3. Write into game state
     G.tubes        = tubes;
     G.selected     = -1;
     G.selectedTime = -1;
