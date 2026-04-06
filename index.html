@@ -1709,7 +1709,7 @@ function updateHUD() {
                          G.moves <= par * 1.5 ? 'move-ok'   : 'move-over');
     }
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
-    document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy || G.won;
+    document.getElementById('undoBtn').disabled       = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
     document.getElementById('menuBtnHud').disabled    = ANIM.busy || G.won;
 }
@@ -1764,7 +1764,7 @@ canvas.addEventListener('touchstart', e => {
 
 document.getElementById('menuBtnHud' ).addEventListener('click', openLevelSelect);
 document.getElementById('undoBtn'    ).addEventListener('click', undo);
-document.getElementById('resetBtn'   ).addEventListener('click', () => generateLevel(LEVEL.current));
+document.getElementById('resetBtn'   ).addEventListener('click', () => G.tutorial ? startTutorial() : generateLevel(LEVEL.current));
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
     generateLevel(LEVEL.current + 1);
 });
