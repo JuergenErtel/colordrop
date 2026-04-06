@@ -80,6 +80,47 @@
         /* ── Canvas container ───────────────────────────────── */
         .canvas-wrap { width: 100%; display: flex; justify-content: center; }
 
+        /* Inner wrapper shrinks to canvas CSS width so the HUD aligns exactly */
+        .canvas-inner { position: relative; display: inline-block; }
+
+        /* HUD strip overlaid on top of the canvas */
+        .hud-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(8,12,20,.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            border-radius: 20px 20px 0 0;
+            z-index: 10;
+        }
+
+        .hud-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, transform .1s, opacity .2s;
+        }
+        .hud-btn:hover         { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.25); }
+        .hud-btn:active        { transform: scale(.92); }
+        .hud-btn:disabled      { opacity: .35; cursor: default; pointer-events: none; }
+
+        .hud-level {
+            font-family: var(--f-head);
+            font-size: 1.1rem;
+            letter-spacing: .08em;
+            color: var(--gold);
+        }
+
         #c {
             display: block;
             cursor: pointer;
@@ -218,16 +259,21 @@
         </header>
 
         <div class="canvas-wrap">
-            <canvas id="c"></canvas>
+            <div class="canvas-inner">
+                <canvas id="c"></canvas>
+                <div class="hud-overlay">
+                    <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
+                    <span class="hud-level" id="levelLabel">LEVEL 1</span>
+                    <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
+                </div>
+            </div>
         </div>
 
         <div class="controls">
-            <button class="btn" id="undoBtn">↩ Undo</button>
             <div class="moves-pill">
                 <span class="moves-n" id="moveCount">0</span>
                 <span class="moves-l">moves</span>
             </div>
-            <button class="btn" id="resetBtn">↺ Reset</button>
         </div>
     </div>
 
@@ -793,6 +839,7 @@ function updateArc(ts) {
 
     ANIM.arc  = null;
     ANIM.busy = false;
+    updateHUD();   // re-enable undo button now that arc is done
 
     // Win check (after arc clears so overlay appears after animation)
     if (checkWin()) {
@@ -1095,7 +1142,9 @@ function drawArcBall(ts, dt) {
 ═══════════════════════════════════════════════════════════ */
 
 function updateHUD() {
-    document.getElementById('moveCount').textContent = G.moves;
+    document.getElementById('moveCount').textContent  = G.moves;
+    document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current;
+    document.getElementById('undoBtn').disabled       = G.history.length === 0 || ANIM.busy;
 }
 
 function showWin() {
@@ -1139,9 +1188,8 @@ canvas.addEventListener('touchstart', e => {
     handleInput(p.x, p.y);
 }, { passive: false });
 
-document.getElementById('undoBtn'   ).addEventListener('click', undo);
-document.getElementById('resetBtn'  ).addEventListener('click', initLevel);
-document.getElementById('playAgain' ).addEventListener('click', initLevel);
+document.getElementById('undoBtn' ).addEventListener('click', undo);
+document.getElementById('resetBtn').addEventListener('click', () => generateLevel(LEVEL.current));
 
 window.addEventListener('resize', resizeCanvas);
 
