@@ -292,7 +292,7 @@ const G = {
     history:      [],    // undo stack of deep-copied tube arrays
     won:          false,
     flashTube:    -1,    // tube showing red flash
-    flashUntil:   0,     // performance.now() timestamp when flash ends
+    flashUntil:   0,     // rAF timestamp when flash ends
     frameTime:    0,     // current rAF timestamp
     lastTime:     -1,    // previous rAF timestamp (delta-time)
     solvedTubes:  new Set(), // tubes already exploded (no double-trigger)
@@ -568,7 +568,7 @@ function tubeAt(lx, ly) {
 /** Schedule a 320 ms red flash on tube `idx`. */
 function triggerFlash(idx) {
     G.flashTube  = idx;
-    G.flashUntil = performance.now() + 320;
+    G.flashUntil = G.frameTime + 320;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -773,7 +773,7 @@ function render(ts) {
 
     for (let i = 0; i < G.tubes.length; i++) drawTube(i, ts);
 
-    if (ANIM.arc)                        drawArcBall(ts);
+    if (ANIM.arc)                        drawArcBall(ts, dt);
     if (G.selected !== -1 && !ANIM.busy) drawFloatingBall(ts);
 
     drawParticles();
@@ -983,7 +983,7 @@ function drawFloatingBall(ts) {
    DRAW: ARC BALL  (ball flying along parabolic path)
 ═══════════════════════════════════════════════════════════ */
 
-function drawArcBall(ts) {
+function drawArcBall(ts, dt) {
     const a       = ANIM.arc;
     const elapsed = ts - a.startTime;
     const rawT    = Math.min(elapsed / a.duration, 1);
@@ -991,7 +991,6 @@ function drawArcBall(ts) {
     const pos     = bezier2(easedT, a.p0, a.p1, a.p2);
 
     // Trail particle (dt-normalised probability)
-    const dt = G.lastTime > 0 ? Math.min((ts - G.lastTime) / 1000, 0.05) : 0.016;
     if (rawT < 0.92 && Math.random() < 0.4 * dt * 60) {
         const col = PALETTE[a.color];
         spawnParticle(
