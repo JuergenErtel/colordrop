@@ -650,39 +650,32 @@ function checkWinState(tubes) {
 function generateLevel(n) {
     LEVEL.current  = n;
     const cfg      = levelConfig(n);
-    const shuffleCount = Math.min(20 + n * 3, 200);   // cap to avoid long loops at high levels
     let tubes;
     let retries = 0;
 
     do {
-        // Fresh PRNG each attempt: same level always produces the same final puzzle,
-        // but each retry uses an independent seed so bad shuffles don't repeat.
+        // Fresh PRNG each attempt: same level → same puzzle, each retry uses a different seed.
         const rng = mulberry32(n + retries * 997);
 
-        // 1. Start from solved state
-        tubes = cfg.colors.map(c => [c, c, c, c]);
+        // 1. Flat array of all balls, then Fisher-Yates shuffle.
+        //    This guarantees every colour gets mixed — the old game-valid-move approach
+        //    could get stuck (e.g. cyan fills both empty tubes in the first 2 moves,
+        //    leaving lime/mag unmovable for the rest of the shuffle).
+        const balls = cfg.colors.flatMap(c => [c, c, c, c]);
+        for (let i = balls.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [balls[i], balls[j]] = [balls[j], balls[i]];
+        }
+
+        // 2. Distribute into tubes (4 balls each) + empty tubes.
+        tubes = [];
+        for (let i = 0; i < cfg.colors.length; i++) {
+            tubes.push(balls.slice(i * 4, (i + 1) * 4));
+        }
         for (let i = 0; i < cfg.empty; i++) tubes.push([]);
 
-        // 2. Apply random valid moves to shuffle (more moves = harder)
-        for (let s = 0; s < shuffleCount; s++) {
-            const candidates = [];
-            for (let si = 0; si < tubes.length; si++) {
-                if (tubes[si].length === 0) continue;
-                for (let di = 0; di < tubes.length; di++) {
-                    if (di === si) continue;
-                    if (tubes[di].length >= 4) continue;
-                    if (tubes[di].length > 0 &&
-                        tubes[di][tubes[di].length - 1] !== tubes[si][tubes[si].length - 1]) continue;
-                    candidates.push({ si, di });
-                }
-            }
-            // No legal move available; puzzle remains solvable, shuffle depth may be reduced.
-            if (candidates.length === 0) continue;
-            const { si, di } = candidates[Math.floor(rng() * candidates.length)];
-            tubes[di].push(tubes[si].pop());
-        }
-    } while ((checkWinState(tubes) || tubes.some(t => t.length === 4 && t.every(c => c === t[0]))) && ++retries < 100);
-    // retry if fully solved OR if any single tube is already complete (pre-solved tube = spoiled puzzle)
+    } while (tubes.some(t => t.length === 4 && t.every(c => c === t[0])) && ++retries < 100);
+    // retry if any tube is accidentally pre-solved (all 4 balls same colour)
 
     // 3. Write into game state
     G.tubes        = tubes;
