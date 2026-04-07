@@ -111,6 +111,43 @@ export function saveEndlessBest(score) {
   if (score > current) localStorage.setItem(`${PREFIX}-endless`, JSON.stringify(score));
 }
 
+// ── Collection ────────────────────────────────────────────────────────────
+export function loadCollection() {
+  try { return JSON.parse(localStorage.getItem(`${PREFIX}-collection`) || '[]'); }
+  catch { return []; }
+}
+export function saveCollection(ids) {
+  localStorage.setItem(`${PREFIX}-collection`, JSON.stringify(ids));
+}
+
+// ── Economy (coin balance) ────────────────────────────────────────────────
+export function loadEconomy() {
+  try { return JSON.parse(localStorage.getItem(`${PREFIX}-economy`) || '0'); }
+  catch { return 0; }
+}
+export function saveEconomy(balance) {
+  localStorage.setItem(`${PREFIX}-economy`, JSON.stringify(balance));
+}
+
+// ── Premium status ────────────────────────────────────────────────────────
+export function loadPremium() {
+  try { return JSON.parse(localStorage.getItem(`${PREFIX}-premium`) || 'false'); }
+  catch { return false; }
+}
+export function savePremium(val) {
+  localStorage.setItem(`${PREFIX}-premium`, JSON.stringify(!!val));
+}
+
+// ── Streak ────────────────────────────────────────────────────────────────
+export function loadStreak() {
+  const def = { current: 0, best: 0, lastDate: '', calendar: {} };
+  try { return Object.assign(def, JSON.parse(localStorage.getItem(`${PREFIX}-streak`) || '{}')); }
+  catch { return def; }
+}
+export function saveStreak(obj) {
+  localStorage.setItem(`${PREFIX}-streak`, JSON.stringify(obj));
+}
+
 // ── Migration ─────────────────────────────────────────────────────────────
 export function migrateIfNeeded() {
   const versionKey = key('version');

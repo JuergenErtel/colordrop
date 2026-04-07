@@ -147,6 +147,12 @@ export const TUTORIAL_TUBES = [
   [],
 ];
 
+export const REWARDS = {
+  levelWin: 5, threeStarWin: 10, dailyWin: 15,
+  blitzWin: 3, endlessRound: 3, endlessBonus: 10, rewardedAd: 20,
+};
+export const COSTS = { hint: 15, extraUndo: 10 };
+
 export const TUTORIAL_SCRIPT = [
   {
     step:    0,
