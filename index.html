@@ -768,7 +768,7 @@ function parForLevel(n) {
 }
 
 /** True for every 5th level — these are Blitzrunden with a countdown timer. */
-function isTimedLevel(n) { return n % 5 === 0; }
+function isTimedLevel(n) { return n > 0 && n % 5 === 0; }
 
 /** Timer limit in milliseconds, scaled by tier. */
 function timerDuration(n) {
@@ -1401,6 +1401,45 @@ function resizeCanvas() {
 }
 
 
+/* ── Timer (Blitzrunde) ──────────────────────────────────── */
+
+function updateTimer() {
+    if (!G.timer || !G.timer.active) return;
+
+    // Tick sound in last 10 seconds
+    const secondsLeft = Math.ceil((G.timer.endTime - G.frameTime) / 1000);
+    if (secondsLeft <= 10 && secondsLeft > 0 && secondsLeft !== G.timer._lastTick) {
+        G.timer._lastTick = secondsLeft;
+        playSound('tick');
+    }
+
+    // Timeout
+    if (G.frameTime >= G.timer.endTime) {
+        G.timer.active = false;
+        ANIM.busy      = true;
+        playSound('invalid');
+        document.getElementById('timeoutOverlay').classList.add('show');
+    }
+}
+
+function drawTimerBar() {
+    const bar = document.getElementById('timerBar');
+    if (!G.timer) {
+        bar.classList.remove('visible', 'pulse');
+        return;
+    }
+    bar.classList.add('visible');
+
+    const remaining = G.timer.active
+        ? Math.max(0, G.timer.endTime - G.frameTime)
+        : (G.timer.active === false && G.timer.endTime > 0 ? 0 : G.timer.duration);
+    const pct = remaining / G.timer.duration;
+
+    bar.style.width      = (pct * 100) + '%';
+    bar.style.background = `hsl(${Math.round(pct * 120)}, 80%, 50%)`;
+    bar.classList.toggle('pulse', pct < 0.2);
+}
+
 /* ═══════════════════════════════════════════════════════════
    RENDER LOOP
 ═══════════════════════════════════════════════════════════ */
@@ -1433,6 +1472,8 @@ function render(ts) {
     drawParticles();
     drawConfetti();
     drawTutorialHighlight();
+    updateTimer();
+    drawTimerBar();
 
     requestAnimationFrame(render);
 }
@@ -1916,6 +1957,9 @@ function advanceTutStep() {
 function openLevelSelect() {
     buildLevelSelect();
     hideOverlay();   // close win overlay if it was open
+    if (G.timer && !G.timer.active) { G.timer = null; }
+    ANIM.busy = false;
+    document.getElementById('blitzOverlay').classList.remove('show');
     document.getElementById('levelSelect').classList.add('show');
     // scroll to the first playable-but-unsolved card
     requestAnimationFrame(() => {
@@ -2031,6 +2075,18 @@ document.getElementById('nextLevelBtn').addEventListener('click', () => {
 document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect);
 document.getElementById('tutSkip'   ).addEventListener('click', endTutorial);
 document.getElementById('tutBtn'    ).addEventListener('click', () => { closeLevelSelect(); startTutorial(); });
+
+document.getElementById('blitzStartBtn').addEventListener('click', () => {
+    document.getElementById('blitzOverlay').classList.remove('show');
+    G.timer.active  = true;
+    G.timer.endTime = performance.now() + G.timer.duration;
+    ANIM.busy       = false;
+});
+
+document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
+    document.getElementById('timeoutOverlay').classList.remove('show');
+    generateLevel(LEVEL.current);   // will show blitzOverlay again
+});
 
 window.addEventListener('resize', resizeCanvas);
 
