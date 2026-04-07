@@ -503,6 +503,85 @@
             transition: background .15s;
         }
         .ls-tut-btn:hover { background: rgba(255,255,255,.15); }
+        /* ── Level Select action buttons ───────────────────────── */
+        .ls-actions {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+            margin: .8rem 0 1rem;
+        }
+        .ls-action-btn {
+            font-family: var(--f-head);
+            font-size: .8rem;
+            letter-spacing: 2px;
+            padding: .55rem 1.4rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.22);
+            background: rgba(255,255,255,.08);
+            color: #fff;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .ls-action-btn:hover  { background: rgba(255,255,255,.16); }
+        .ls-action-btn:active { transform: scale(.97); }
+        .ls-action-btn:disabled { opacity: .38; cursor: default; }
+        .ls-action-btn--secondary { opacity: .7; }
+        .ls-action-btn--secondary:hover { opacity: 1; }
+        /* ── Stats Screen ──────────────────────────────────────── */
+        .screen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(5,5,15,.93);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .screen-overlay.hidden { display: none; }
+
+        .stats-card {
+            background: rgba(15,15,40,.90);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 24px;
+            padding: 2rem 2.5rem;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+        }
+        .stats-title {
+            font-family: var(--f-head);
+            font-size: 1.3rem;
+            color: #fff;
+            letter-spacing: 3px;
+            margin: 0 0 1.2rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: .35rem 1.5rem;
+            margin-bottom: 1.4rem;
+            text-align: left;
+        }
+        .stats-label { color: rgba(255,255,255,.55); font-size: .85rem; }
+        .stats-value { color: #fff; font-size: .85rem; font-weight: 600; text-align: right; }
+        .stats-sub {
+            font-family: var(--f-mono);
+            font-size: .75rem;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,.45);
+            margin: 0 0 .8rem;
+        }
+        .ach-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .55rem;
+            justify-content: center;
+            margin-bottom: 1.6rem;
+        }
+        .ach-icon         { font-size: 1.4rem; opacity: .2; cursor: default; }
+        .ach-icon.unlocked { opacity: 1; }
 
         .ls-grid {
             display: grid;
@@ -568,6 +647,10 @@
             <h1 class="ls-title">Color Drop</h1>
             <p class="ls-tagline">sort · stack · solve</p>
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
+            <div class="ls-actions">
+                <button id="dailyChallengeBtn" class="ls-action-btn" type="button">📅 Tages-Challenge</button>
+                <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
+            </div>
             <div class="ls-tiers" id="lsTiers"></div>
         </div>
     </div>
@@ -606,6 +689,17 @@
             <div class="win-actions">
                 <button class="win-btn" id="timeoutRetryBtn" type="button">Nochmal ↺</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Stats Screen -->
+    <div id="statsScreen" class="screen-overlay hidden">
+        <div class="stats-card">
+            <h2 class="stats-title">STATISTIKEN</h2>
+            <div class="stats-grid" id="statsGrid"></div>
+            <h3 class="stats-sub" id="achCount">ACHIEVEMENTS 0 / 14</h3>
+            <div class="ach-grid" id="achGrid"></div>
+            <button class="win-btn" id="statsBackBtn" type="button">← Zurück</button>
         </div>
     </div>
 
@@ -2184,6 +2278,54 @@ function checkAchievements(ctx) {
     return newIds;
 }
 
+/* ── Stats Screen ────────────────────────────────────────── */
+
+function buildStatsScreen() {
+    const s   = loadStats();
+    const ach = loadAchievements();
+
+    const grid = document.getElementById('statsGrid');
+    grid.innerHTML = '';
+    const rows = [
+        ['Gespielte Level',   s.played],
+        ['Gewonnen',          s.won],
+        ['Gesamtzüge',        s.totalMoves.toLocaleString('de-CH')],
+        ['Blitzrunden',       s.blitzPlayed + ' gespielt · ' + s.blitzWon + ' gewonnen'],
+        ['Längste ★★★-Serie', s.bestStreak],
+    ];
+    for (const [label, value] of rows) {
+        const l = document.createElement('span');
+        l.className   = 'stats-label';
+        l.textContent = label;
+        const v = document.createElement('span');
+        v.className   = 'stats-value';
+        v.textContent = value;
+        grid.append(l, v);
+    }
+
+    document.getElementById('achCount').textContent =
+        'ACHIEVEMENTS ' + ach.length + ' / ' + ACHIEVEMENTS.length;
+    const achGrid = document.getElementById('achGrid');
+    achGrid.innerHTML = '';
+    for (const a of ACHIEVEMENTS) {
+        const span       = document.createElement('span');
+        const isUnlocked = ach.includes(a.id);
+        span.className   = 'ach-icon' + (isUnlocked ? ' unlocked' : '');
+        span.textContent = isUnlocked ? a.icon : '?';
+        span.title       = isUnlocked ? a.name + ': ' + a.desc : '???';
+        achGrid.appendChild(span);
+    }
+}
+
+function showStatsScreen() {
+    buildStatsScreen();
+    document.getElementById('statsScreen').classList.remove('hidden');
+}
+
+function hideStatsScreen() {
+    document.getElementById('statsScreen').classList.add('hidden');
+}
+
 function showWin() {
     if (!G.won) return;   // player reset before the 600 ms timer fired
     G.won = false;        // prevent re-entry (stats/achievements must only fire once)
@@ -2261,6 +2403,8 @@ document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect
 document.getElementById('tutSkip'   ).addEventListener('click', endTutorial);
 document.getElementById('tutBtn'    ).addEventListener('click', () => { closeLevelSelect(); startTutorial(); });
 
+document.getElementById('statsBtn'    ).addEventListener('click', showStatsScreen);
+document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
 document.getElementById('blitzStartBtn').addEventListener('click', () => {
     document.getElementById('blitzOverlay').classList.remove('show');
     G.timer.active  = true;
