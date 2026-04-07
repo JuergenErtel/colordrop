@@ -1245,6 +1245,7 @@ function doMove(from, to) {
     G.tubes[to].push(color);
     G.moves++;
     G.hintFrom = G.hintTo = -1;
+    G.hintUntil = 0;
     updateHUD();
 
     // ── Start arc animation ──
@@ -1273,6 +1274,7 @@ function undo() {
     G.moves        = Math.max(0, G.moves - 1);
     G.won          = false;
     G.hintFrom     = G.hintTo = -1;
+    G.hintUntil    = 0;
     // Recalculate solved set after undo
     G.solvedTubes = new Set();
     for (let i = 0; i < G.tubes.length; i++) {
