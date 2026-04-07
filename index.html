@@ -2138,10 +2138,11 @@ function checkAchievements(ctx) {
 
 function showWin() {
     if (!G.won) return;   // player reset before the 600 ms timer fired
+    G.won = false;        // prevent re-entry (stats/achievements must only fire once)
     const par   = parForLevel(LEVEL.current);
     const stars = calcStars(G.moves, par);
     const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
-    const blitzWon = isBlitz && G.timer !== null;
+    const blitzWon = isBlitz && G.timer !== null;  // timer not cleared on win; non-null = level was timed
 
     saveStars(LEVEL.current, stars);
 
