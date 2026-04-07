@@ -88,6 +88,7 @@ function updatePremiumBanner() {
 }
 
 function showCatUnlockToast(cat) {
+  playSound('cat_unlock');
   const el = document.getElementById('achievementToast');
   el.textContent = cat.emoji + ' Neue Katze: ' + cat.name + '!';
   el.classList.add('show');
@@ -211,6 +212,7 @@ function doMove(from, to) {
 function undo() {
   if (!canUndo(G.history.length) || ANIM.busy) return;
   trackUndo();
+  playSound('undo');
   G.tubes        = G.history.pop();
   G.selected     = -1;
   G.selectedTime = -1;
@@ -231,6 +233,7 @@ function showHintAction() {
   const btn = document.getElementById('hintBtn');
 
   // Economy check — hints cost fish bones (free for premium)
+  playSound('hint');
   if (!spendHint()) {
     btn.textContent = '\uD83E\uDDB4?';
     btn.disabled    = true;

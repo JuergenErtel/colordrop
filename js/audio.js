@@ -104,30 +104,56 @@ export function playSound(name) {
   const v = _sfxVolume;
   try {
     switch (name) {
+
       case 'select':
-        // Soft click — short sine blip at 600 Hz
-        zzfx(0.3 * v, 0.02, 600, 0, 0.01, 0.06, 0, 1, 0);
+        // Soft "Miau" — sine sliding up from 500→900 Hz, short and cute
+        zzfx(0.28*v, 0.04, 500, 0.01, 0.06, 0.08, 0, 1, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0.8);
         break;
+
       case 'pop':
-        // Gentle plop — low sine drop at 180 Hz
-        zzfx(0.35 * v, 0.03, 180, 0, 0.02, 0.12, 0, 1, -30);
+        // Gentle plop + tiny bell (Katzenhalsband-Glöckchen)
+        zzfx(0.3*v, 0.02, 160, 0, 0.03, 0.10, 0, 1, -25);              // soft plop
+        setTimeout(() => zzfx(0.15*v, 0.01, 2200, 0, 0.01, 0.12, 0, 1, 0), 40);  // tiny bell
         break;
+
       case 'invalid':
-        // Short hiss — noisy burst at 100 Hz
-        zzfx(0.25 * v, 0.05, 100, 0, 0.01, 0.08, 0, 0.5, 0, 0, 0, 0, 0, 0.4);
+        // Cat hiss — noise burst with slight pitch, sharp attack
+        zzfx(0.3*v, 0.08, 80, 0, 0.03, 0.10, 3, 0.3, 0, 0, 0, 0, 0, 0.6, 0, 0, 0, 0.5);
         break;
+
       case 'solved':
-        // Warm chime at 440 Hz with slight sustain
-        zzfx(0.5 * v, 0.01, 440, 0.02, 0.1, 0.3, 0, 1, 0);
+        // Satisfied purr — low tremolo sine (purring vibration) + warm chime
+        zzfx(0.25*v, 0.02, 90, 0.05, 0.4, 0.5, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0.8);  // purr tremolo
+        setTimeout(() => zzfx(0.2*v, 0.01, 880, 0.01, 0.05, 0.15, 0, 1, 0), 100);  // bell chime
         break;
+
       case 'tick':
-        // Soft tick at 700 Hz — very short
-        zzfx(0.2 * v, 0.01, 700, 0, 0.005, 0.04, 0, 1, 0);
+        // Soft tick — unchanged but warmer
+        zzfx(0.15*v, 0.01, 650, 0, 0.005, 0.04, 0, 1.5, 0);
         break;
+
       case 'win':
-        // Warm arpeggio A4 → C#5 → E5 (440 → 554 → 659)
-        playArpeggio([[440, 0], [554, 140], [659, 280]], 140);
+        // Purr + bell melody (Schnurren + Glöckchen-Melodie)
+        zzfx(0.2*v, 0.02, 80, 0.05, 0.6, 0.8, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.6, 0, 0.7);  // long purr
+        playArpeggio([[880, 80], [1100, 220], [1320, 360]], 140);  // bell arpeggio
         break;
+
+      case 'undo':
+        // Soft "Mew" — short downward slide (like reverse meow)
+        zzfx(0.2*v, 0.03, 700, 0, 0.04, 0.06, 0, 1, -120);
+        break;
+
+      case 'hint':
+        // Curious "Prrt?" — short chirp with upward pitch jump
+        zzfx(0.25*v, 0.04, 400, 0.01, 0.04, 0.08, 0, 1, 60, 0, 200, 0.04);
+        break;
+
+      case 'cat_unlock':
+        // Excited "Mrrp!" + jingle — pitch jump + bell cascade
+        zzfx(0.3*v, 0.05, 450, 0.01, 0.06, 0.10, 0, 1, 40, 0, 300, 0.03);  // mrrp
+        playArpeggio([[1200, 120], [1500, 240], [1800, 340], [2100, 440]], 100);  // jingle
+        break;
+
       default:
         break;
     }
