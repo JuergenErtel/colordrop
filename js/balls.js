@@ -1,99 +1,7 @@
 'use strict';
 
 import { BALL_R, PALETTE } from './constants.js';
-
-// ── Private: cat face ─────────────────────────────────────────────────────
-/**
- * drawCatFace(ctx, cx, cy)
- *   Renders a subtle cat face centred at (cx, cy).
- *   Scale is derived from BALL_R * 0.35.
- */
-function drawCatFace(ctx, cx, cy) {
-  const sc = BALL_R * 0.35;   // ~9 px at default BALL_R = 26
-
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  // ── Ears (triangles) ────────────────────────────────────────────────────
-  const earW  = sc * 0.90;
-  const earH  = sc * 0.80;
-  const earOX = sc * 0.62;   // horizontal offset from centre
-  const earY  = -sc * 0.68;  // how high above centre
-
-  // Outer ear fill — warm dark, very subtle
-  ctx.fillStyle = 'rgba(80,50,40,0.14)';
-  // Left ear
-  ctx.beginPath();
-  ctx.moveTo(-earOX,          earY);
-  ctx.lineTo(-earOX - earW,   earY - earH);
-  ctx.lineTo(-earOX + earW,   earY - earH);
-  ctx.closePath();
-  ctx.fill();
-  // Right ear
-  ctx.beginPath();
-  ctx.moveTo( earOX,          earY);
-  ctx.lineTo( earOX - earW,   earY - earH);
-  ctx.lineTo( earOX + earW,   earY - earH);
-  ctx.closePath();
-  ctx.fill();
-
-  // Inner ears — tiny pink triangles
-  const isc = 0.52;
-  ctx.fillStyle = 'rgba(220,140,150,0.18)';
-  // Left inner
-  ctx.beginPath();
-  ctx.moveTo(-earOX,                    earY - earH * 0.10);
-  ctx.lineTo(-earOX - earW * isc,       earY - earH * 0.88);
-  ctx.lineTo(-earOX + earW * isc,       earY - earH * 0.88);
-  ctx.closePath();
-  ctx.fill();
-  // Right inner
-  ctx.beginPath();
-  ctx.moveTo( earOX,                    earY - earH * 0.10);
-  ctx.lineTo( earOX - earW * isc,       earY - earH * 0.88);
-  ctx.lineTo( earOX + earW * isc,       earY - earH * 0.88);
-  ctx.closePath();
-  ctx.fill();
-
-  // ── Dot eyes ────────────────────────────────────────────────────────────
-  const eyeR  = sc * 0.22;
-  const eyeOX = sc * 0.40;
-  const eyeY  = -sc * 0.05;
-
-  // Eye fill
-  ctx.fillStyle = 'rgba(55,35,25,0.55)';
-  ctx.beginPath();
-  ctx.arc(-eyeOX, eyeY, eyeR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc( eyeOX, eyeY, eyeR, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Eye shine — tiny offset white dot
-  ctx.fillStyle = 'rgba(255,255,255,0.60)';
-  const shineR = eyeR * 0.38;
-  ctx.beginPath();
-  ctx.arc(-eyeOX + eyeR * 0.35, eyeY - eyeR * 0.35, shineR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc( eyeOX + eyeR * 0.35, eyeY - eyeR * 0.35, shineR, 0, Math.PI * 2);
-  ctx.fill();
-
-  // ── Tiny nose (small rounded triangle) ──────────────────────────────────
-  const noseW = sc * 0.22;
-  const noseH = sc * 0.14;
-  const noseY = eyeY + sc * 0.30;
-
-  ctx.fillStyle = 'rgba(200,120,130,0.42)';
-  ctx.beginPath();
-  ctx.moveTo(0,       noseY - noseH);
-  ctx.lineTo(-noseW,  noseY + noseH);
-  ctx.lineTo( noseW,  noseY + noseH);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
-}
+import { drawMiniCatFace } from './cat-renderer.js';
 
 // ── Main export ───────────────────────────────────────────────────────────
 /**
@@ -176,7 +84,7 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
   ctx.restore();
 
   // ── Layer 3: Cat face ────────────────────────────────────────────────────
-  drawCatFace(ctx, cx, cy - R * 0.05);
+  drawMiniCatFace(ctx, cx, cy - R * 0.05, BALL_R);
 
   // ── Layer 4: Specular highlight ──────────────────────────────────────────
   ctx.beginPath();

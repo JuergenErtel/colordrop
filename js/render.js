@@ -12,6 +12,7 @@ import { spawnParticle, updateParticles, drawParticles, drawConfetti, triggerTub
 import { drawBackground } from './background.js';
 import { drawContainer } from './containers.js';
 import { drawBall } from './balls.js';
+import { drawMascotCat } from './cat-renderer.js';
 import { playSound } from './audio.js';
 import { checkWinState, isSolved } from './engine.js';
 import { updateTimer, drawTimerBar } from './timer.js';
@@ -282,6 +283,11 @@ export function renderFrame(ctx, ts, G) {
   const theme     = THEMES[G.theme] || THEMES.EASY;
   const prevTheme = G.themePrev ? (THEMES[G.themePrev] || theme) : theme;
   drawBackground(ctx, ts, theme, prevTheme, G.themeFade);
+
+  // Draw mascot cat when idle
+  if (G.selected === -1 && !ANIM.busy && !ANIM.arc && !G.won) {
+    drawMascotCat(ctx, CW - 45, CH - 35, 28, ts);
+  }
 
   drawTubes(ctx, ts, G);
 

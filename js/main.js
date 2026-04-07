@@ -8,6 +8,7 @@ import {
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
+import { drawCatPortrait, drawMascotCat, CAT_PARAMS } from './cat-renderer.js';
 import {
   getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
   shouldShowAd, markAdShown, tickAdLevel,
@@ -888,18 +889,50 @@ function buildAlbumScreen() {
   const grid = document.getElementById('albumGrid');
   grid.innerHTML = '';
   for (const cat of CATS) {
-    const cell = document.createElement('div');
     const isOwned = owned.has(cat.id);
+    const cell = document.createElement('div');
     cell.className = 'album-cell' + (!isOwned ? ' locked' : '') + (!isOwned && cat.premium ? ' premium-locked' : '');
-    cell.textContent = isOwned ? cat.emoji : '?';
-    cell.title = isOwned ? cat.name : '???';
-    if (isOwned) cell.addEventListener('click', () => showCatDetail(cat));
+
+    if (isOwned) {
+      // Draw cat portrait on a small canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.borderRadius = '8px';
+      const catCtx = canvas.getContext('2d');
+      const params = CAT_PARAMS.find(p => p.id === cat.id);
+      if (params) {
+        drawCatPortrait(catCtx, 32, 34, 24, params);
+      }
+      cell.appendChild(canvas);
+      cell.title = cat.name;
+      cell.addEventListener('click', () => showCatDetail(cat));
+    } else {
+      cell.textContent = '?';
+    }
+
     grid.appendChild(cell);
   }
 }
 
 function showCatDetail(cat) {
-  document.getElementById('catEmoji').textContent = cat.emoji;
+  // Draw large portrait
+  const container = document.getElementById('catEmoji');
+  container.innerHTML = '';
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  canvas.style.width = '120px';
+  canvas.style.height = '120px';
+  const catCtx = canvas.getContext('2d');
+  const params = CAT_PARAMS.find(p => p.id === cat.id);
+  if (params) {
+    drawCatPortrait(catCtx, 64, 68, 48, params);
+  }
+  container.appendChild(canvas);
+
   document.getElementById('catName').textContent = cat.name;
   document.getElementById('catBreed').textContent = cat.breed;
   document.getElementById('catFact').textContent = cat.fact;
