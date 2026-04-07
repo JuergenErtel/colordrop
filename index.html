@@ -215,6 +215,26 @@
         .blitz-btn:hover  { background: rgba(255,255,255,.22); }
         .blitz-btn:active { transform: scale(.95); }
 
+        /* ── Achievement Toast ─────────────────────────────────── */
+        .achievement-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,20,40,.92);
+            border: 1px solid rgba(255,255,255,.2);
+            border-radius: 12px;
+            padding: .6rem 1.4rem;
+            font-size: .9rem;
+            color: #fff;
+            z-index: 400;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .achievement-toast.show { opacity: 1; }
+
         /* ── Tutorial bubble ────────────────────────────────── */
         .tut-bubble {
             position: fixed;
@@ -588,6 +608,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Achievement Toast -->
+    <div id="achievementToast" class="achievement-toast"></div>
 
     <!-- Tutorial bubble -->
     <div id="tutBubble" class="tut-bubble hidden">
@@ -1421,6 +1444,31 @@ function resizeCanvas() {
     canvas.style.height = Math.round(CH * scale) + 'px';
 }
 
+
+/* ── Achievement Toast ───────────────────────────────────── */
+
+const _toastQueue = [];
+let   _toastActive = false;
+
+function showAchievementToast(ids) {
+    _toastQueue.push(...ids);
+    if (!_toastActive) _nextToast();
+}
+
+function _nextToast() {
+    const id = _toastQueue.shift();
+    if (!id) { _toastActive = false; return; }
+    _toastActive = true;
+    const def = ACHIEVEMENTS.find(a => a.id === id);
+    if (!def) { _nextToast(); return; }
+    const el = document.getElementById('achievementToast');
+    el.textContent = def.icon + '  ' + def.name + ' freigeschaltet!';
+    el.classList.add('show');
+    setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(_nextToast, 350);
+    }, 3000);
+}
 
 /* ── Timer (Blitzrunde) ──────────────────────────────────── */
 
