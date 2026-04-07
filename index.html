@@ -2589,6 +2589,16 @@ window.addEventListener('resize', resizeCanvas);
    BOOTSTRAP
 ═══════════════════════════════════════════════════════════ */
 
+// ── One-time migration: v2 level scaling resets all progress ──
+if (localStorage.getItem('colordrop_version') !== '2') {
+    localStorage.removeItem('colordrop_v1');
+    localStorage.removeItem('colordrop_stats');
+    localStorage.removeItem('colordrop_achievements');
+    localStorage.removeItem('colordrop_daily');
+    localStorage.removeItem('colordrop_tut_done');
+    localStorage.setItem('colordrop_version', '2');
+}
+
 resizeCanvas();                  // size canvas before first paint
 requestAnimationFrame(render);   // start render loop (shows animated background)
 if (!localStorage.getItem('colordrop_tut_done')) {
