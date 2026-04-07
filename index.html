@@ -975,7 +975,7 @@ function dailyLevelNum() {
         String(d.getDate()).padStart(2, '0');   // local date "2026-04-07"
     let hash = 0;
     for (const ch of dateStr) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff;
-    return (Math.abs(hash) % 25) + 1;   // Level 1–25 (EASY–EXPERT; MASTER excluded intentionally)
+    return (Math.abs(hash) % 75) + 1;   // Level 1–75 (EASY–EXPERT; MASTER excluded intentionally)
 }
 
 /** Populate and show the Daily Challenge announcement overlay. */
@@ -2180,11 +2180,11 @@ function maxUnlockedLevel() {
 /* ── Level Select ───────────────────────────────────────── */
 
 const TIER_DEFS = [
-    { name: 'EASY',   cls: 'easy',   first: 1,  last: 3  },
-    { name: 'MEDIUM', cls: 'medium', first: 4,  last: 8  },
-    { name: 'HARD',   cls: 'hard',   first: 9,  last: 15 },
-    { name: 'EXPERT', cls: 'expert', first: 16, last: 25 },
-    { name: 'MASTER', cls: 'master', first: 26, last: Infinity },
+    { name: 'EASY',   cls: 'easy',   first: 1,  last: 15 },
+    { name: 'MEDIUM', cls: 'medium', first: 16, last: 30 },
+    { name: 'HARD',   cls: 'hard',   first: 31, last: 50 },
+    { name: 'EXPERT', cls: 'expert', first: 51, last: 75 },
+    { name: 'MASTER', cls: 'master', first: 76, last: Infinity },
 ];
 
 /**
@@ -2422,10 +2422,10 @@ function checkAchievements(ctx) {
     const wonCount = Object.keys(ctx.progress).length;
 
     check('first_win',   true);
-    check('tier_medium', ctx.levelNum >= 4);
-    check('tier_hard',   ctx.levelNum >= 9);
-    check('tier_expert', ctx.levelNum >= 16);
-    check('tier_master', ctx.levelNum >= 26);
+    check('tier_medium', ctx.levelNum >= 16);
+    check('tier_hard',   ctx.levelNum >= 31);
+    check('tier_expert', ctx.levelNum >= 51);
+    check('tier_master', ctx.levelNum >= 76);
     check('levels_10',   wonCount >= 10);
     check('levels_25',   wonCount >= 25);
     check('daily_first', ctx.isDaily);
