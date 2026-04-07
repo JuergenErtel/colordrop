@@ -635,6 +635,71 @@
           background: none; border: none;
           font-size: 1.1rem; cursor: pointer; padding: 2px;
         }
+
+        /* ── Fish bone counter ─────────────────────────────────── */
+        .hud-bones { font-family: var(--f-head); font-size: .75rem; color: var(--gold); letter-spacing: .05em; }
+
+        /* ── Cat Album ─────────────────────────────────────────── */
+        .album-card {
+          background: rgba(75,50,30,.90);
+          border: 1px solid rgba(255,255,255,.15);
+          border-radius: 24px;
+          padding: 1.5rem 2rem;
+          max-width: 400px; width: 92%;
+          text-align: center;
+          max-height: 80vh; overflow-y: auto;
+        }
+        .album-count { font-size: .8rem; color: rgba(255,255,255,.5); margin: -.5rem 0 1rem; letter-spacing: 2px; }
+        .album-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; margin-bottom: 1.2rem; }
+        .album-cell {
+          aspect-ratio: 1; border-radius: 10px;
+          background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.6rem; cursor: pointer;
+          transition: transform .1s, background .15s;
+        }
+        .album-cell:hover { background: rgba(255,255,255,.12); transform: scale(1.05); }
+        .album-cell.locked { opacity: .3; cursor: default; font-size: 1rem; }
+        .album-cell.locked:hover { transform: none; background: rgba(255,255,255,.06); }
+        .album-cell.premium-locked { border-color: rgba(212,135,63,.3); opacity: .5; }
+
+        /* ── Cat Detail ────────────────────────────────────────── */
+        .cat-detail { max-width: 280px; }
+        .cat-detail-emoji { font-size: 3.5rem; margin-bottom: .5rem; }
+        .cat-breed { font-size: .75rem; color: rgba(255,255,255,.5); letter-spacing: 2px; text-transform: uppercase; margin: -.3rem 0 .8rem; }
+        .cat-fact { font-size: .85rem; color: rgba(255,255,255,.7); font-style: italic; margin-bottom: 1.2rem; }
+
+        /* ── Streak Calendar ───────────────────────────────────── */
+        .streak-info { font-size: 1rem; color: var(--gold); margin: -.3rem 0 1rem; }
+        .streak-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 1.2rem; }
+        .streak-day {
+          aspect-ratio: 1; border-radius: 6px;
+          background: rgba(255,255,255,.05);
+          display: flex; align-items: center; justify-content: center;
+          font-size: .6rem; color: rgba(255,255,255,.3);
+        }
+        .streak-day.played { background: rgba(212,135,63,.25); color: var(--gold); }
+        .streak-day.today { border: 1px solid var(--gold); color: var(--gold); }
+
+        /* ── Premium Banner ────────────────────────────────────── */
+        .premium-banner {
+          position: fixed; bottom: 0; left: 0; right: 0;
+          display: flex; align-items: center; justify-content: center; gap: .8rem;
+          padding: .5rem 1rem;
+          background: rgba(60,40,25,.92);
+          border-top: 1px solid rgba(212,135,63,.25);
+          font-size: .7rem; color: rgba(255,255,255,.6);
+          z-index: 100;
+        }
+        .premium-banner.hidden { display: none; }
+        .premium-btn {
+          font-family: var(--f-head); font-size: .7rem;
+          padding: .3rem .8rem;
+          background: rgba(212,135,63,.20);
+          border: 1px solid rgba(212,135,63,.50);
+          border-radius: 8px; color: var(--gold); cursor: pointer;
+        }
+        .premium-btn:hover { background: rgba(212,135,63,.35); }
     </style>
 </head>
 
@@ -650,6 +715,7 @@
                 <canvas id="c"></canvas>
                 <div class="hud-overlay">
                     <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
+                    <span class="hud-bones" id="bonesDisplay">🦴 0</span>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
                     <button class="hud-btn" id="hintBtn" aria-label="Hint">🐱</button>
                     <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
@@ -678,6 +744,8 @@
                 <button id="endlessBtn" class="ls-action-btn" type="button">♾️ Endlos-Modus</button>
                 <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
                 <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>
+                <button id="albumBtn" class="ls-action-btn" type="button">🐱 Katzen-Album</button>
+                <button id="streakBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📅 Streak-Kalender</button>
             </div>
             <div class="ls-tiers" id="lsTiers"></div>
         </div>
@@ -764,6 +832,35 @@
       </div>
     </div>
 
+    <!-- Cat Album -->
+    <div id="albumScreen" class="screen-overlay hidden">
+      <div class="album-card">
+        <h2 class="stats-title">KATZEN-ALBUM</h2>
+        <p class="album-count" id="albumCount">0 / 30</p>
+        <div class="album-grid" id="albumGrid"></div>
+        <button class="win-btn" id="albumBackBtn" type="button">← Zurück</button>
+      </div>
+    </div>
+    <div id="catDetailOverlay" class="screen-overlay hidden">
+      <div class="stats-card cat-detail">
+        <div class="cat-detail-emoji" id="catEmoji">🐱</div>
+        <h2 class="stats-title" id="catName">Mochi</h2>
+        <p class="cat-breed" id="catBreed">Britisch Kurzhaar</p>
+        <p class="cat-fact" id="catFact">Fun fact here.</p>
+        <button class="win-btn" id="catDetailBack" type="button">← Zurück</button>
+      </div>
+    </div>
+
+    <!-- Streak Calendar -->
+    <div id="streakScreen" class="screen-overlay hidden">
+      <div class="stats-card">
+        <h2 class="stats-title">TAGES-STREAK</h2>
+        <p class="streak-info" id="streakInfo">🐾 0 Tage in Folge</p>
+        <div class="streak-calendar" id="streakCalendar"></div>
+        <button class="win-btn" id="streakBackBtn" type="button">← Zurück</button>
+      </div>
+    </div>
+
     <!-- Endless Mode Overlay -->
     <div id="endlessOverlay" class="blitz-overlay">
       <div class="blitz-inner">
@@ -784,6 +881,25 @@
         <div class="win-actions">
           <button class="win-btn" id="endlessRetryBtn" type="button">Nochmal</button>
           <button class="win-btn win-btn--secondary" id="endlessMenuBtn" type="button">Menü</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Banner -->
+    <div class="premium-banner" id="premiumBanner">
+      <span>🐾 CatSort Premium — Keine Werbung, unbegrenzte Hints & Undos</span>
+      <button class="premium-btn" id="premiumBtn" type="button">4,99€</button>
+    </div>
+
+    <!-- Ad Interstitial -->
+    <div id="adOverlay" class="overlay">
+      <div class="win-card">
+        <div class="win-icon">📺</div>
+        <h2 class="win-title" style="font-size:1.2rem">WERBUNG</h2>
+        <p class="win-sub">Werbefrei spielen mit Premium!</p>
+        <div class="win-actions">
+          <button class="win-btn" id="adSkipBtn" type="button">Weiter →</button>
+          <button class="win-btn win-btn--secondary" id="adPremiumBtn" type="button">Premium 4,99€</button>
         </div>
       </div>
     </div>

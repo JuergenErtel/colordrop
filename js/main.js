@@ -4,7 +4,16 @@ import {
   CW, CH, DUR_ARC,
   THEMES, TIER_DEFS,
   ACHIEVEMENTS, TUTORIAL_SCRIPT,
+  REWARDS, COSTS,
 } from './constants.js';
+
+import { CATS, checkCatUnlocks } from './cats.js';
+import {
+  getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
+  shouldShowAd, markAdShown, tickAdLevel,
+  canUndo, trackUndo, resetUndos,
+  canUseHint, spendHint, canPlayEndless, trackEndlessPlay,
+} from './economy.js';
 
 import {
   loadProgress, saveStars, maxUnlockedLevel,
@@ -14,6 +23,8 @@ import {
   isTutorialDone, markTutorialDone,
   migrateIfNeeded,
   loadSettings, saveSettings, loadEndlessBest,
+  loadCollection, saveCollection,
+  loadStreak, saveStreak,
 } from './storage.js';
 
 import {
@@ -65,6 +76,38 @@ const G = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════
+//  ECONOMY / COLLECTION HELPERS
+// ══════════════════════════════════════════════════════════════════════════
+
+function updateBonesDisplay() {
+  document.getElementById('bonesDisplay').textContent = '\uD83E\uDDB4 ' + getBalance();
+}
+
+function updatePremiumBanner() {
+  document.getElementById('premiumBanner').classList.toggle('hidden', isPremium());
+}
+
+function showCatUnlockToast(cat) {
+  const el = document.getElementById('achievementToast');
+  el.textContent = cat.emoji + ' Neue Katze: ' + cat.name + '!';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function updateDailyStreak() {
+  const streak = loadStreak();
+  const today = new Date().toISOString().slice(0, 10);
+  if (streak.lastDate === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  streak.current = (streak.lastDate === yesterday) ? streak.current + 1 : 1;
+  streak.best = Math.max(streak.best, streak.current);
+  streak.lastDate = today;
+  if (!streak.calendar) streak.calendar = {};
+  streak.calendar[today] = true;
+  saveStreak(streak);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 //  CANVAS SETUP
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -85,6 +128,7 @@ function resizeCanvas() {
 // ══════════════════════════════════════════════════════════════════════════
 
 function generateLevel(n) {
+  resetUndos();
   LEVEL.current = n;
   const cfg     = levelConfig(n);
 
@@ -165,7 +209,8 @@ function doMove(from, to) {
 }
 
 function undo() {
-  if (!G.history.length || ANIM.busy) return;
+  if (!canUndo(G.history.length) || ANIM.busy) return;
+  trackUndo();
   G.tubes        = G.history.pop();
   G.selected     = -1;
   G.selectedTime = -1;
@@ -184,6 +229,16 @@ function undo() {
 function showHintAction() {
   if (ANIM.busy || G.won || G.tutorial) return;
   const btn = document.getElementById('hintBtn');
+
+  // Economy check — hints cost fish bones (free for premium)
+  if (!spendHint()) {
+    btn.textContent = '\uD83E\uDDB4?';
+    btn.disabled    = true;
+    setTimeout(() => { btn.textContent = '\uD83D\uDC31'; btn.disabled = false; }, 1500);
+    return;
+  }
+  updateBonesDisplay();
+
   let move;
   try {
     move = solveHint(G.tubes);
@@ -202,7 +257,6 @@ function showHintAction() {
     }, 1500);
     return;
   }
-  G.moves++;
   updateHUD();
   G.hintFrom  = move.from;
   G.hintTo    = move.to;
@@ -326,9 +380,48 @@ function showWin() {
     isDaily: G.isDailyChallenge, isBlitz,
   });
 
+  // ── Economy: award fish bones ──
+  const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz, ENDLESS.active, ENDLESS.active ? ENDLESS.round : 0);
+  earn(reward);
+  updateBonesDisplay();
+  tickAdLevel();
+
+  // ── Cat unlocks ──
+  const owned = new Set(loadCollection());
+  const maxLvl = Math.max(LEVEL.current, ...Object.keys(progress).map(Number));
+  const newCats = checkCatUnlocks(owned, {
+    maxLevel: maxLvl,
+    achievements: loadAchievements(),
+    streak: loadStreak().current,
+    endlessBest: loadEndlessBest(),
+    isPremium: isPremium(),
+  });
+  if (newCats.length) {
+    newCats.forEach(id => owned.add(id));
+    saveCollection([...owned]);
+    for (const id of newCats) {
+      const cat = CATS.find(c => c.id === id);
+      if (cat) showCatUnlockToast(cat);
+    }
+  }
+  updateDailyStreak();
+
   if (ENDLESS.active) {
     endlessNextRound();
     setTimeout(() => loadEndlessRound(), 800);
+    return;
+  }
+
+  // ── Ad interstitial check ──
+  if (shouldShowAd()) {
+    markAdShown();
+    document.getElementById('adOverlay').classList.add('show');
+    // Store win data for after ad dismissal
+    document.getElementById('finalLevel').textContent = LEVEL.current;
+    document.getElementById('finalMoves').textContent = G.moves;
+    document.getElementById('winStars').textContent   = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
+    document.getElementById('winPar').textContent     = 'Par: ' + par;
+    if (newAchs.length) showAchievementToast(newAchs);
     return;
   }
 
@@ -774,7 +867,95 @@ document.getElementById('endlessMenuBtn').addEventListener('click', () => {
   openLevelSelect();
 });
 
+// ── Cat Album ────────────────────────────────────────────────
+document.getElementById('albumBtn').addEventListener('click', () => {
+  buildAlbumScreen();
+  document.getElementById('albumScreen').classList.remove('hidden');
+});
+document.getElementById('albumBackBtn').addEventListener('click', () => {
+  document.getElementById('albumScreen').classList.add('hidden');
+});
+document.getElementById('catDetailBack').addEventListener('click', () => {
+  document.getElementById('catDetailOverlay').classList.add('hidden');
+});
+
+function buildAlbumScreen() {
+  const owned = new Set(loadCollection());
+  document.getElementById('albumCount').textContent = owned.size + ' / ' + CATS.length;
+  const grid = document.getElementById('albumGrid');
+  grid.innerHTML = '';
+  for (const cat of CATS) {
+    const cell = document.createElement('div');
+    const isOwned = owned.has(cat.id);
+    cell.className = 'album-cell' + (!isOwned ? ' locked' : '') + (!isOwned && cat.premium ? ' premium-locked' : '');
+    cell.textContent = isOwned ? cat.emoji : '?';
+    cell.title = isOwned ? cat.name : '???';
+    if (isOwned) cell.addEventListener('click', () => showCatDetail(cat));
+    grid.appendChild(cell);
+  }
+}
+
+function showCatDetail(cat) {
+  document.getElementById('catEmoji').textContent = cat.emoji;
+  document.getElementById('catName').textContent = cat.name;
+  document.getElementById('catBreed').textContent = cat.breed;
+  document.getElementById('catFact').textContent = cat.fact;
+  document.getElementById('catDetailOverlay').classList.remove('hidden');
+}
+
+// ── Streak Calendar ──────────────────────────────────────────
+document.getElementById('streakBtn').addEventListener('click', () => {
+  buildStreakScreen();
+  document.getElementById('streakScreen').classList.remove('hidden');
+});
+document.getElementById('streakBackBtn').addEventListener('click', () => {
+  document.getElementById('streakScreen').classList.add('hidden');
+});
+
+function buildStreakScreen() {
+  const streak = loadStreak();
+  document.getElementById('streakInfo').textContent = '\uD83D\uDC3E ' + streak.current + ' Tage in Folge (Rekord: ' + streak.best + ')';
+  const cal = document.getElementById('streakCalendar');
+  cal.innerHTML = '';
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = now.toISOString().slice(0, 10);
+  const startOffset = (firstDay + 6) % 7; // Monday-first
+  for (let i = 0; i < startOffset; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'streak-day';
+    cal.appendChild(empty);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const cell = document.createElement('div');
+    cell.className = 'streak-day' + (streak.calendar && streak.calendar[dateStr] ? ' played' : '') + (dateStr === today ? ' today' : '');
+    cell.textContent = d;
+    cal.appendChild(cell);
+  }
+}
+
+// ── Premium ──────────────────────────────────────────────────
+document.getElementById('premiumBtn').addEventListener('click', () => {
+  setPremium(true);
+  updatePremiumBanner();
+  alert('Premium aktiviert! Danke!');
+});
+document.getElementById('adPremiumBtn').addEventListener('click', () => {
+  document.getElementById('adOverlay').classList.remove('show');
+  setPremium(true);
+  updatePremiumBanner();
+  alert('Premium aktiviert!');
+});
+document.getElementById('adSkipBtn').addEventListener('click', () => {
+  document.getElementById('adOverlay').classList.remove('show');
+  document.getElementById('overlay').classList.add('show');
+});
+
 function loadEndlessRound() {
+  resetUndos();
   const cfg = endlessConfig(ENDLESS.round);
   const newTheme = THEMES[cfg.tier];
   if (G.theme !== newTheme) {
@@ -826,6 +1007,11 @@ setMusicVolume(savedSettings.musicVolume);
 setSfxVolume(savedSettings.sfxVolume);
 setMusicEnabled(savedSettings.musicEnabled);
 setSfxEnabled(savedSettings.sfxEnabled);
+
+// Economy & premium init
+updateBonesDisplay();
+updatePremiumBanner();
+
 resizeCanvas();
 requestAnimationFrame(loop);
 
