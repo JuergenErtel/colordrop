@@ -626,6 +626,7 @@
                 <div class="hud-overlay">
                     <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
+                    <button class="hud-btn" id="hintBtn" aria-label="Tipp">💡</button>
                     <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>
@@ -1282,6 +1283,25 @@ function undo() {
     }
     updateHUD();
     hideOverlay();
+}
+
+/** Show a hint: BFS-solve current state, highlight first move, cost 1 move. */
+function showHint() {
+    if (ANIM.busy || G.won || G.tutorial) return;
+    const move = solveHint();
+    const btn  = document.getElementById('hintBtn');
+    if (!move) {
+        const orig    = btn.textContent;
+        btn.textContent = '❌';
+        btn.disabled    = true;
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+        return;
+    }
+    G.moves++;
+    updateHUD();
+    G.hintFrom  = move.from;
+    G.hintTo    = move.to;
+    G.hintUntil = G.frameTime + 2500;
 }
 
 /**
@@ -2332,6 +2352,7 @@ function updateHUD() {
     const timedMark = isTimedLevel(LEVEL.current) ? ' ⚡' : '';
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier + timedMark;
     document.getElementById('undoBtn').disabled       = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
+    document.getElementById('hintBtn').disabled       = G.tutorial || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
     document.getElementById('menuBtnHud').disabled    = ANIM.busy || G.won;
 }
@@ -2520,6 +2541,7 @@ canvas.addEventListener('touchstart', e => {
 
 document.getElementById('menuBtnHud' ).addEventListener('click', openLevelSelect);
 document.getElementById('undoBtn'    ).addEventListener('click', undo);
+document.getElementById('hintBtn'    ).addEventListener('click', showHint);
 document.getElementById('resetBtn'   ).addEventListener('click', () => G.tutorial ? startTutorial() : generateLevel(LEVEL.current));
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
     generateLevel(LEVEL.current + 1);
