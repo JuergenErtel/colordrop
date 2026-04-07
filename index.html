@@ -1808,6 +1808,8 @@ function drawTube(i, ts = 0) {
     const sel       = G.selected === i && !ANIM.busy;
     const solved    = isSolved(tube);
     const flashing  = G.flashTube === i && G.frameTime < G.flashUntil;
+    const hintSrc   = G.hintFrom  === i && G.frameTime < G.hintUntil;
+    const hintDst   = G.hintTo    === i && G.frameTime < G.hintUntil;
     const arcDest   = ANIM.arc && ANIM.arc.toTube === i;
 
     ctx.save();
@@ -1816,6 +1818,12 @@ function drawTube(i, ts = 0) {
     if (flashing) {
         ctx.shadowColor = 'rgba(255,50,50,.62)';
         ctx.shadowBlur  = 34;
+    } else if (hintSrc) {
+        ctx.shadowColor = 'rgba(255,255,255,.70)';
+        ctx.shadowBlur  = 30;
+    } else if (hintDst) {
+        ctx.shadowColor = 'rgba(80,255,80,.70)';
+        ctx.shadowBlur  = 30;
     } else if (sel) {
         ctx.shadowColor = 'rgba(247,201,72,.44)';
         ctx.shadowBlur  = 30;
@@ -1843,10 +1851,14 @@ function drawTube(i, ts = 0) {
     roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
     const borderGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
     borderGrad.addColorStop(0,   flashing ? 'rgba(255,80,80,.72)'
+                                : hintSrc ? 'rgba(255,255,255,.85)'
+                                : hintDst ? 'rgba(80,255,80,.75)'
                                 : sel     ? 'rgba(247,201,72,.62)'
                                 : solved  ? 'rgba(80,255,150,.40)'
                                 :            'rgba(255,255,255,.30)');
     borderGrad.addColorStop(1,   flashing ? 'rgba(255,80,80,.25)'
+                                : hintSrc ? 'rgba(255,255,255,.30)'
+                                : hintDst ? 'rgba(80,255,80,.28)'
                                 : sel     ? 'rgba(247,201,72,.20)'
                                 : solved  ? 'rgba(80,255,150,.12)'
                                 :            'rgba(255,255,255,.05)');
