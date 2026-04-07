@@ -530,6 +530,33 @@ const PALETTE = {
 };
 
 /* ═══════════════════════════════════════════════════════════
+   VISUAL THEMES  (one per tier — background + ball style)
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Each theme drives drawBackground() and drawBall().
+ * hues[0..2]     — HSL hue for the 3 radial-gradient stops
+ * hueDelta[0..2] — sinusoidal variation amplitude per stop
+ * sat[0..2]      — HSL saturation % per stop
+ * bri[0..2]      — HSL brightness % per stop
+ * particleColor  — CSS colour for background dust particles (future use)
+ * ballStyle      — one of: 'neon' | 'satin' | 'crystal' | 'fire' | 'aurum'
+ * accentColor    — CSS hex used for Blitzrunde overlay glow
+ */
+const THEMES = {
+    EASY:   { hues:[265,230,210], hueDelta:[12, 8,10], sat:[60,55,50], bri:[9,6,4],
+               particleColor:'rgba(255,255,255,.6)', ballStyle:'neon',    accentColor:'#7c4dff' },
+    MEDIUM: { hues:[ 15, 20, 30], hueDelta:[10, 6, 8], sat:[65,60,55], bri:[8,5,3],
+               particleColor:'rgba(255,107,53,.6)',   ballStyle:'satin',   accentColor:'#ff7043' },
+    HARD:   { hues:[200,210,220], hueDelta:[ 8, 5, 7], sat:[70,65,60], bri:[8,5,3],
+               particleColor:'rgba(168,216,234,.6)',  ballStyle:'crystal', accentColor:'#00b4d8' },
+    EXPERT: { hues:[  0, 10, 15], hueDelta:[12, 8,10], sat:[70,65,60], bri:[8,5,3],
+               particleColor:'rgba(255,69,0,.6)',     ballStyle:'fire',    accentColor:'#ff3d00' },
+    MASTER: { hues:[ 45, 50, 40], hueDelta:[ 8, 5, 6], sat:[60,55,50], bri:[9,6,4],
+               particleColor:'rgba(255,215,0,.6)',    ballStyle:'aurum',   accentColor:'#ffc107' },
+};
+
+/* ═══════════════════════════════════════════════════════════
    TUTORIAL
 ═══════════════════════════════════════════════════════════ */
 
@@ -580,12 +607,18 @@ const G = {
     won:          false,
     tutorial:     false,   // true = tutorial mode active
     tutStep:      0,        // index into TUTORIAL_SCRIPT
+    theme:        null,     // current THEMES entry — set by generateLevel(), init below
+    themePrev:    null,     // previous THEMES entry during fade, null when no transition
+    themeFade:    1,        // 0→1 progress of theme-change fade (500 ms)
+    timer:        null,     // null | { active, endTime, duration, _lastTick }
     flashTube:    -1,    // tube showing red flash
     flashUntil:   0,     // rAF timestamp when flash ends
     frameTime:    0,     // current rAF timestamp
     lastTime:     -1,    // previous rAF timestamp (delta-time)
     solvedTubes:  new Set(), // tubes already exploded (no double-trigger)
 };
+
+G.theme = THEMES.EASY;   // default until generateLevel() is called
 
 /* ═══════════════════════════════════════════════════════════
    ANIMATION STATE
