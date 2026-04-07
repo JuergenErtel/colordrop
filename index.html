@@ -953,7 +953,10 @@ function checkWinState(tubes) {
 
 /** Returns today's daily challenge level number (1–25, same for all players on same date). */
 function dailyLevelNum() {
-    const dateStr = new Date().toISOString().slice(0, 10);  // "2026-04-07"
+    const d = new Date();
+    const dateStr = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');   // local date "2026-04-07"
     let hash = 0;
     for (const ch of dateStr) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff;
     return (Math.abs(hash) % 25) + 1;   // Level 1–25 (EASY–EXPERT; MASTER excluded intentionally)
@@ -975,7 +978,10 @@ function showDailyOverlay() {
 /** Update the daily challenge button text based on today's play status. */
 function updateDailyBtn() {
     const daily = loadDaily();
-    const today = new Date().toISOString().slice(0, 10);
+    const d2 = new Date();
+    const today = d2.getFullYear() + '-' +
+        String(d2.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d2.getDate()).padStart(2, '0');   // local date
     const btn   = document.getElementById('dailyChallengeBtn');
     if (daily.date === today && daily.completed) {
         btn.textContent = '📅 Heute: ' + '⭐'.repeat(daily.stars) + ' — morgen wieder';
@@ -2387,7 +2393,10 @@ function showWin() {
     saveStars(LEVEL.current, stars);
 
     if (G.isDailyChallenge) {
-        const today = new Date().toISOString().slice(0, 10);
+        const dt = new Date();
+        const today = dt.getFullYear() + '-' +
+            String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+            String(dt.getDate()).padStart(2, '0');
         saveDaily({ date: today, levelNum: LEVEL.current, completed: true, stars });
     }
 
