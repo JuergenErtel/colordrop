@@ -767,6 +767,15 @@ function parForLevel(n) {
     return levelConfig(n).colors.length * 5;
 }
 
+/** True for every 5th level — these are Blitzrunden with a countdown timer. */
+function isTimedLevel(n) { return n % 5 === 0; }
+
+/** Timer limit in milliseconds, scaled by tier. */
+function timerDuration(n) {
+    const map = { EASY:90, MEDIUM:120, HARD:150, EXPERT:180, MASTER:210 };
+    return (map[levelConfig(n).tier] || 120) * 1000;
+}
+
 /**
  * Three-star rating based on move efficiency.
  * @param {number} moves  Actual moves taken
@@ -792,6 +801,16 @@ function checkWinState(tubes) {
  *
  * @param {number} n  Level number (1-based)
  */
+/** Populate and show the Blitzrunde announcement overlay. */
+function showBlitzOverlay(n) {
+    const cfg = levelConfig(n);
+    const sec = timerDuration(n) / 1000;
+    document.getElementById('blitzLevel').textContent = 'LEVEL ' + n + ' · ' + cfg.tier;
+    document.getElementById('blitzTime').textContent  = 'Du hast ' + sec + ' Sekunden.';
+    document.getElementById('blitzOverlay').style.setProperty('--blitz-color', G.theme.accentColor);
+    document.getElementById('blitzOverlay').classList.add('show');
+}
+
 function generateLevel(n) {
     LEVEL.current  = n;
     const cfg      = levelConfig(n);
@@ -845,6 +864,19 @@ function generateLevel(n) {
     ANIM.bounceMap = new Map();
     ANIM.particles = [];
     ANIM.busy      = false;
+
+    // 4. Timer setup — timed levels show Blitz overlay first (timer starts on BEREIT!)
+    if (isTimedLevel(n)) {
+        G.timer    = { active: false, endTime: 0, duration: timerDuration(n), _lastTick: -1 };
+        ANIM.busy  = true;   // block input until BEREIT! is clicked
+        document.getElementById('timeoutOverlay').classList.remove('show');
+        showBlitzOverlay(n);
+    } else {
+        G.timer = null;
+        document.getElementById('timerBar').classList.remove('visible', 'pulse');
+        document.getElementById('timeoutOverlay').classList.remove('show');
+        document.getElementById('blitzOverlay').classList.remove('show');
+    }
 
     updateHUD();
     hideOverlay();
@@ -1915,6 +1947,8 @@ function playSound(name) {
             case 'invalid': zzfx(.4,  .1,  120, .01, .04, .06, 3,  .5);             break;
             // Bright chime when a tube is completed (pitch rises)
             case 'solved':  zzfx(.4,  .02, 660, .02, .08, .12, 0, 1.5, 5);          break;
+            // Short crisp tick for Blitzrunde countdown (last 10 seconds)
+            case 'tick':    zzfx(.18, .01, 880,    0, .004, .04, 0, 2.2);              break;
             // C-major arpeggio (C5 → E5 → G5)
             case 'win':
                 zzfx(.5, .02, 523, .02, .10, .12, 0, 1.5);
