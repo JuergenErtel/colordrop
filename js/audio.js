@@ -5,6 +5,14 @@
 // Trimmed to the minimum needed for playback only.
 /* global AudioContext */
 
+let _sfxVolume  = 0.7;
+let _sfxEnabled = true;
+
+export function setSfxVolume(vol)      { _sfxVolume = Math.max(0, Math.min(1, vol)); }
+export function getSfxVolume()         { return _sfxVolume; }
+export function setSfxEnabled(enabled) { _sfxEnabled = !!enabled; }
+export function isSfxEnabled()         { return _sfxEnabled; }
+
 let _ctx = null;
 function audioCtx() {
   if (!_ctx) {
@@ -84,34 +92,37 @@ function zzfx(...p) {
 
 // ── Warm arpeggio helper ──────────────────────────────────────────────────
 function playArpeggio(notes, interval) {
+  const v = _sfxVolume;
   notes.forEach(([freq, delay]) => {
-    setTimeout(() => zzfx(0.4, 0.01, freq, 0.01, 0.08, 0.25, 0, 1, 0), delay);
+    setTimeout(() => zzfx(0.4 * v, 0.01, freq, 0.01, 0.08, 0.25, 0, 1, 0), delay);
   });
 }
 
 // ── Public API ────────────────────────────────────────────────────────────
 export function playSound(name) {
+  if (!_sfxEnabled) return;
+  const v = _sfxVolume;
   try {
     switch (name) {
       case 'select':
         // Soft click — short sine blip at 600 Hz
-        zzfx(0.3, 0.02, 600, 0, 0.01, 0.06, 0, 1, 0);
+        zzfx(0.3 * v, 0.02, 600, 0, 0.01, 0.06, 0, 1, 0);
         break;
       case 'pop':
         // Gentle plop — low sine drop at 180 Hz
-        zzfx(0.35, 0.03, 180, 0, 0.02, 0.12, 0, 1, -30);
+        zzfx(0.35 * v, 0.03, 180, 0, 0.02, 0.12, 0, 1, -30);
         break;
       case 'invalid':
         // Short hiss — noisy burst at 100 Hz
-        zzfx(0.25, 0.05, 100, 0, 0.01, 0.08, 0, 0.5, 0, 0, 0, 0, 0, 0.4);
+        zzfx(0.25 * v, 0.05, 100, 0, 0.01, 0.08, 0, 0.5, 0, 0, 0, 0, 0, 0.4);
         break;
       case 'solved':
         // Warm chime at 440 Hz with slight sustain
-        zzfx(0.5, 0.01, 440, 0.02, 0.1, 0.3, 0, 1, 0);
+        zzfx(0.5 * v, 0.01, 440, 0.02, 0.1, 0.3, 0, 1, 0);
         break;
       case 'tick':
         // Soft tick at 700 Hz — very short
-        zzfx(0.2, 0.01, 700, 0, 0.005, 0.04, 0, 1, 0);
+        zzfx(0.2 * v, 0.01, 700, 0, 0.005, 0.04, 0, 1, 0);
         break;
       case 'win':
         // Warm arpeggio A4 → C#5 → E5 (440 → 554 → 659)

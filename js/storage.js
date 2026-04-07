@@ -88,6 +88,29 @@ export function markTutorialDone() {
   localStorage.setItem(key('tut_done'), '1');
 }
 
+// ── Settings ──────────────────────────────────────────────────────────────
+const DEFAULT_SETTINGS = { musicVolume: 0.3, sfxVolume: 0.7, musicEnabled: true, sfxEnabled: true };
+
+export function loadSettings() {
+  try { return Object.assign({ ...DEFAULT_SETTINGS }, JSON.parse(localStorage.getItem(`${PREFIX}-settings`) || '{}')); }
+  catch { return { ...DEFAULT_SETTINGS }; }
+}
+
+export function saveSettings(obj) {
+  localStorage.setItem(`${PREFIX}-settings`, JSON.stringify(obj));
+}
+
+// ── Endless best score ─────────────────────────────────────────────────────
+export function loadEndlessBest() {
+  try { return JSON.parse(localStorage.getItem(`${PREFIX}-endless`) || '0'); }
+  catch { return 0; }
+}
+
+export function saveEndlessBest(score) {
+  const current = loadEndlessBest();
+  if (score > current) localStorage.setItem(`${PREFIX}-endless`, JSON.stringify(score));
+}
+
 // ── Migration ─────────────────────────────────────────────────────────────
 export function migrateIfNeeded() {
   const versionKey = key('version');

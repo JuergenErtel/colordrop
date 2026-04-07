@@ -3,8 +3,9 @@
 import {
   COLOR_KEYS, TIER_DEFS, THEMES,
   TUTORIAL_TUBES,
-  BALL_D, BALL_GAP, BALL_PAD, TUBE_H,
 } from './constants.js';
+
+const CAPACITY = 4; // balls per tube (fixed)
 
 // ── PRNG ──────────────────────────────────────────────────────────────────
 export function mulberry32(seed) {
@@ -35,31 +36,27 @@ export function tierDifficulty(n) {
 export function levelConfig(n) {
   const tier    = tierForLevel(n);
   const diff    = tierDifficulty(n);
-  const colors  = COLOR_KEYS.slice(0, 2 + Math.min(diff + 1, COLOR_KEYS.length - 2));
-  // Number of non-empty tubes scales with level within tier
-  const tierDef = TIER_DEFS[diff];
-  const span    = tierDef.maxLevel - tierDef.minLevel || 1;
-  const pos     = Math.max(0, Math.min(n - tierDef.minLevel, span));
-  const tubes   = 2 + diff + Math.floor(pos / span * 2);
-  const empty   = 1 + (diff >= 2 ? 1 : 0);
-  return { tier, diff, colors, tubes, empty };
+  const numColors = Math.min(2 + diff, COLOR_KEYS.length);
+  const colors    = COLOR_KEYS.slice(0, numColors);
+  const empty = diff <= 1 ? 2 : 1;
+  return { tier, diff, colors, tubes: colors.length + empty, empty };
 }
 
 // ── Par and timer ─────────────────────────────────────────────────────────
 export function parForLevel(n) {
-  const { diff, tubes, colors } = levelConfig(n);
-  const base = tubes * 4 + diff * 3;
-  return Math.max(8, base + Math.floor(n * 0.4));
+  const { colors } = levelConfig(n);
+  const numColors  = colors.length;
+  const tierDef = TIER_DEFS[tierDifficulty(n)];
+  const span    = tierDef.maxLevel - tierDef.minLevel || 1;
+  const progress = (n - tierDef.minLevel) / span;
+  return Math.round(numColors * (6 - progress));
 }
 
-export function isTimedLevel(n) {
-  return n >= 20 && n % 5 === 0;
-}
+export function isTimedLevel(n) { return n >= 10 && n % 10 === 0; }
 
 export function timerDuration(n) {
-  const base = 120000; // 2 min
-  const reduction = Math.floor(n / 10) * 5000;
-  return Math.max(45000, base - reduction);
+  const tierMs = { EASY: 120, MEDIUM: 105, HARD: 90, EXPERT: 75, MASTER: 60 };
+  return (tierMs[tierForLevel(n)] || 90) * 1000;
 }
 
 export function calcStars(moves, par) {
@@ -71,11 +68,7 @@ export function calcStars(moves, par) {
 // ── Win detection ─────────────────────────────────────────────────────────
 export function isSolved(tube) {
   if (tube.length === 0) return true;
-  const capacity = Math.floor((TUBE_H - BALL_PAD * 2) / (BALL_D + BALL_GAP));
-  if (tube.length !== capacity && tube.length !== 0) {
-    // Partial tubes are not solved unless empty
-    if (tube.length > 0 && tube.length < capacity) return false;
-  }
+  if (tube.length < CAPACITY) return false;
   const first = tube[0];
   return tube.every(c => c === first);
 }
@@ -90,10 +83,7 @@ export function canMove(tubes, from, to) {
   const src  = tubes[from];
   const dst  = tubes[to];
   if (src.length === 0) return false;
-
-  const capacity = Math.floor((TUBE_H - BALL_PAD * 2) / (BALL_D + BALL_GAP));
-  if (dst.length >= capacity) return false;
-
+  if (dst.length >= CAPACITY) return false;
   const topSrc = src[src.length - 1];
   if (dst.length === 0) return true;
   const topDst = dst[dst.length - 1];
@@ -103,7 +93,7 @@ export function canMove(tubes, from, to) {
 // ── Tube generation ───────────────────────────────────────────────────────
 export function generateTubes(n) {
   const { colors, tubes: numTubes, empty } = levelConfig(n);
-  const capacity = Math.floor((TUBE_H - BALL_PAD * 2) / (BALL_D + BALL_GAP));
+  const capacity = CAPACITY;
   const rng      = mulberry32(n * 1234567 + 42);
 
   // Build a pool of balls
@@ -138,7 +128,7 @@ export function generateTutorialTubes() {
 
 // ── BFS hint solver ───────────────────────────────────────────────────────
 export function solveHint(tubes) {
-  const capacity = Math.floor((TUBE_H - BALL_PAD * 2) / (BALL_D + BALL_GAP));
+  const capacity = CAPACITY;
 
   function serialize(ts) { return ts.map(t => t.join(',')).join('|'); }
   function cloneTs(ts)    { return ts.map(t => [...t]); }
@@ -173,8 +163,6 @@ export function solveHint(tubes) {
 // ── Daily level number ────────────────────────────────────────────────────
 export function dailyLevelNum() {
   const epoch = new Date('2025-01-01').getTime();
-  const now   = Date.now();
-  const day   = Math.floor((now - epoch) / 86400000);
-  // Cycles through levels 1–70
-  return (day % 70) + 1;
+  const day   = Math.floor((Date.now() - epoch) / 86400000);
+  return (day % 200) + 1;
 }

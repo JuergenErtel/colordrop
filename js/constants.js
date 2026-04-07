@@ -115,11 +115,11 @@ export const THEMES = {
 
 // ── Tier definitions ──────────────────────────────────────────────────────
 export const TIER_DEFS = [
-  { name: 'EASY',   minLevel:  1, maxLevel: 10 },
-  { name: 'MEDIUM', minLevel: 11, maxLevel: 25 },
-  { name: 'HARD',   minLevel: 26, maxLevel: 45 },
-  { name: 'EXPERT', minLevel: 46, maxLevel: 70 },
-  { name: 'MASTER', minLevel: 71, maxLevel: 999 },
+  { name: 'EASY',   minLevel:  1, maxLevel:  50 },
+  { name: 'MEDIUM', minLevel: 51, maxLevel: 120 },
+  { name: 'HARD',   minLevel: 121, maxLevel: 200 },
+  { name: 'EXPERT', minLevel: 201, maxLevel: 260 },
+  { name: 'MASTER', minLevel: 261, maxLevel: 300 },
 ];
 
 // ── Achievements ──────────────────────────────────────────────────────────
