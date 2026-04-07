@@ -1388,13 +1388,11 @@ function handleInput(lx, ly) {
         G.selectedTime = -1;
         doMove(from, idx);
     } else {
+        triggerFlash(idx);
         const dst = G.tubes[idx];
         if (dst.length > 0 && dst.length < 4) {
             G.selected     = idx;
             G.selectedTime = G.frameTime;
-            playSound('select');
-        } else {
-            triggerFlash(idx);
         }
     }
 }
