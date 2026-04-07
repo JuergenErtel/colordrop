@@ -877,6 +877,7 @@ const G = {
     hintFrom:     -1,    // hint source tube index (-1 = inactive)
     hintTo:       -1,    // hint destination tube index (-1 = inactive)
     hintUntil:    0,     // frameTime timestamp when hint highlight expires
+    hintCooldown: false, // true during the 1500ms no-solution ❌ feedback window
     frameTime:    0,     // current rAF timestamp
     lastTime:     -1,    // previous rAF timestamp (delta-time)
     solvedTubes:  new Set(), // tubes already exploded (no double-trigger)
@@ -1057,6 +1058,7 @@ function generateLevel(n) {
     G.hintFrom     = -1;
     G.hintTo       = -1;
     G.hintUntil    = 0;
+    G.hintCooldown = false;
     G.solvedTubes  = new Set();
     ANIM.arc       = null;
     ANIM.bounceMap = new Map();
@@ -1297,9 +1299,10 @@ function showHint() {
         return;
     }
     if (!move) {
+        G.hintCooldown  = true;
         btn.textContent = '❌';
         btn.disabled    = true;
-        setTimeout(() => { btn.textContent = '💡'; btn.disabled = false; }, 1500);
+        setTimeout(() => { G.hintCooldown = false; btn.textContent = '💡'; btn.disabled = false; }, 1500);
         return;
     }
     G.moves++;
@@ -2248,6 +2251,7 @@ function startTutorial() {
     G.hintFrom     = -1;
     G.hintTo       = -1;
     G.hintUntil    = 0;
+    G.hintCooldown = false;
     G.solvedTubes  = new Set();
     ANIM.arc       = null;
     ANIM.bounceMap = new Map();
@@ -2357,7 +2361,7 @@ function updateHUD() {
     const timedMark = isTimedLevel(LEVEL.current) ? ' ⚡' : '';
     document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier + timedMark;
     document.getElementById('undoBtn').disabled       = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
-    document.getElementById('hintBtn').disabled       = G.tutorial || ANIM.busy || G.won;
+    document.getElementById('hintBtn').disabled       = G.tutorial || ANIM.busy || G.won || G.hintCooldown;
     document.getElementById('resetBtn').disabled      = G.won;
     document.getElementById('menuBtnHud').disabled    = ANIM.busy || G.won;
 }
