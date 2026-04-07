@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Color Drop</title>
+    <title>CatSort</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         /* ── Reset & Design Tokens ──────────────────────────── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:       #080c14;
-            --surface:  rgba(255,255,255,.04);
-            --border:   rgba(255,255,255,.10);
-            --gold:     #f7c948;
-            --text:     #dde5f4;
-            --muted:    rgba(221,229,244,.42);
-            --f-head:   'Fredoka One', cursive;
-            --f-mono:   'DM Mono', monospace;
+            --bg:       #fdf6ec;
+            --surface:  rgba(160,120,80,.08);
+            --border:   rgba(160,120,80,.15);
+            --gold:     #d4873f;
+            --text:     #4a3728;
+            --muted:    rgba(74,55,40,.45);
+            --f-head:   'Nunito', sans-serif;
+            --f-mono:   'Nunito', sans-serif;
         }
 
         /* ── Base ───────────────────────────────────────────── */
@@ -30,8 +30,8 @@
             background-color: var(--bg);
             /* Ambient colour blobs – give depth to the void */
             background-image:
-                radial-gradient(ellipse 70% 45% at  10%  5%, rgba(90, 40,175,.22) 0%, transparent 60%),
-                radial-gradient(ellipse 55% 40% at  90% 95%, rgba(28, 85,210,.16) 0%, transparent 60%);
+                radial-gradient(ellipse 70% 45% at 10% 5%, rgba(210,170,120,.18) 0%, transparent 60%),
+                radial-gradient(ellipse 55% 40% at 90% 95%, rgba(180,140,100,.12) 0%, transparent 60%);
             color: var(--text);
             font-family: var(--f-mono);
             display: flex;
@@ -62,8 +62,8 @@
             font-size: clamp(2rem, 9vw, 3.6rem);
             letter-spacing: .08em;
             line-height: 1;
-            /* Three-stop gradient: gold → coral → violet */
-            background: linear-gradient(130deg, #f7c948 0%, #ff7b54 45%, #c47af9 100%);
+            /* Warm gradient */
+            background: linear-gradient(130deg, #d4873f 0%, #c96b4f 45%, #a67c52 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -91,10 +91,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 10px 14px;
-            background: rgba(8,12,20,.55);
+            background: rgba(60,40,25,.55);
             backdrop-filter: blur(8px);           /* progressive enhancement — graceful in unsupported browsers */
             -webkit-backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(255,255,255,.08);
+            border-bottom: 1px solid rgba(160,120,80,.15);
             border-radius: 20px 20px 0 0;
             z-index: 10;
         }
@@ -102,15 +102,15 @@
         .hud-btn {
             width: 38px; height: 38px;
             border-radius: 50%;
-            background: rgba(255,255,255,.07);
-            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(160,120,80,.12);
+            border: 1px solid rgba(160,120,80,.20);
             color: var(--text);
             font-size: 1rem;
             line-height: 1;
             cursor: pointer;
             transition: background .15s, border-color .15s, transform .1s, opacity .2s;
         }
-        .hud-btn:hover         { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.25); }
+        .hud-btn:hover         { background: rgba(160,120,80,.22); border-color: rgba(160,120,80,.35); }
         .hud-btn:active        { transform: scale(.92); }
         .hud-btn:disabled      { opacity: .35; cursor: default; pointer-events: none; }
 
@@ -122,9 +122,9 @@
         }
 
         /* Move counter colour coding relative to par */
-        .move-good { color: #b2ff59; }   /* ≤ par           — lime green  */
-        .move-ok   { color: #ff7043; }   /* ≤ par × 1.5     — orange      */
-        .move-over { color: #f50057; }   /* > par × 1.5     — pink/red    */
+        .move-good { color: #7cb342; }
+        .move-ok   { color: #ef6c00; }
+        .move-over { color: #c62828; }
 
         /* ── Timer bar ─────────────────────────────────────────── */
         .timer-bar {
@@ -149,7 +149,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(5,5,15,.92);
+            background: rgba(50,30,18,.90);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
             z-index: 200;
@@ -164,7 +164,7 @@
             padding: 2.5rem 3rem;
             border-radius: 24px;
             border: 1px solid rgba(255,255,255,.15);
-            background: rgba(15,15,40,.85);
+            background: rgba(70,45,28,.88);
             animation: blitz-glow-pulse 1.5s ease-in-out infinite alternate;
         }
         @keyframes blitz-glow-pulse {
@@ -221,7 +221,7 @@
             bottom: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(20,20,40,.92);
+            background: rgba(60,40,25,.92);
             border: 1px solid rgba(255,255,255,.2);
             border-radius: 12px;
             padding: .6rem 1.4rem;
@@ -242,7 +242,7 @@
             left: 50%;
             transform: translateX(-50%);
             width: min(420px, 90vw);
-            background: rgba(15,20,32,.92);
+            background: rgba(60,40,25,.92);
             border: 1px solid rgba(255,255,255,.18);
             border-radius: 14px;
             padding: .9rem 1.1rem;
@@ -276,8 +276,8 @@
             border-radius: 20px;
             /* Floating-card illusion */
             box-shadow:
-                0  0 60px rgba(80,40,160,.24),
-                0 24px 48px rgba(0,0,0,.58);
+                0 0 40px rgba(160,120,70,.18),
+                0 24px 48px rgba(40,20,0,.45);
         }
 
         /* ── Controls strip ─────────────────────────────────── */
@@ -334,7 +334,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(8,12,20,.84);
+            background: rgba(60,40,25,.80);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
             z-index: 300;
@@ -350,7 +350,7 @@
             align-items: center;
             gap: .7rem;
             padding: 2.2rem 3rem;
-            background: rgba(18,22,40,.94);
+            background: rgba(80,55,35,.92);
             border: 1px solid rgba(255,255,255,.11);
             border-radius: 24px;
             text-align: center;
@@ -362,7 +362,7 @@
         .win-title {
             font-family: var(--f-head);
             font-size: 3rem;
-            background: linear-gradient(130deg, #f7c948, #ff9f43);
+            background: linear-gradient(130deg, #d4873f, #c96b4f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -407,14 +407,14 @@
             letter-spacing: .15em;
             text-transform: uppercase;
             padding: .65rem 1.8rem;
-            background: rgba(247,201,72,.10);
-            border: 1px solid rgba(247,201,72,.38);
+            background: rgba(212,135,63,.12);
+            border: 1px solid rgba(212,135,63,.38);
             border-radius: 100px;
             color: var(--gold);
             cursor: pointer;
             transition: background .15s, border-color .15s;
         }
-        .win-btn:hover { background: rgba(247,201,72,.20); border-color: rgba(247,201,72,.65); }
+        .win-btn:hover { background: rgba(212,135,63,.22); border-color: rgba(212,135,63,.55); }
         .win-btn--secondary {
             background: rgba(255,255,255,.06);
             border-color: rgba(255,255,255,.15);
@@ -431,7 +431,7 @@
             position: fixed; inset: 0; z-index: 200;
             display: flex; align-items: flex-start; justify-content: center;
             overflow-y: auto;
-            background: rgba(8,12,20,.96);
+            background: rgba(60,40,25,.94);
             backdrop-filter: blur(20px);          /* progressive enhancement */
             -webkit-backdrop-filter: blur(20px);
             padding: 2rem 1rem 4rem;
@@ -455,7 +455,7 @@
             font-size: clamp(2rem, 9vw, 3.2rem);
             letter-spacing: .08em;
             line-height: 1;
-            background: linear-gradient(130deg, #f7c948 0%, #ff7b54 45%, #c47af9 100%);
+            background: linear-gradient(130deg, #d4873f 0%, #c96b4f 45%, #a67c52 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -478,11 +478,11 @@
             font-size: .95rem;
             letter-spacing: .18em;
         }
-        .ls-tier-label.easy   { color: #80ffff; }
-        .ls-tier-label.medium { color: #b2ff59; }
-        .ls-tier-label.hard   { color: #ffe57f; }
-        .ls-tier-label.expert { color: #ff7043; }
-        .ls-tier-label.master { color: #f50057; }
+        .ls-tier-label.easy   { color: #d4873f; }
+        .ls-tier-label.medium { color: #b07baa; }
+        .ls-tier-label.hard   { color: #6ba3a0; }
+        .ls-tier-label.expert { color: #c96b4f; }
+        .ls-tier-label.master { color: #c9a84c; }
 
         .ls-tut-btn {
             position: absolute;
@@ -535,14 +535,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(5,5,15,.93);
+            background: rgba(45,28,15,.92);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
         }
         .screen-overlay.hidden { display: none; }
 
         .stats-card {
-            background: rgba(15,15,40,.90);
+            background: rgba(75,50,30,.90);
             border: 1px solid rgba(255,255,255,.15);
             border-radius: 24px;
             padding: 2rem 2.5rem;
@@ -616,8 +616,8 @@
 <body>
     <div class="wrap">
         <header class="header">
-            <h1 class="title">Color Drop</h1>
-            <p class="tagline">sort · stack · solve</p>
+            <h1 class="title">CatSort</h1>
+            <p class="tagline">sort · schnurr · solve</p>
         </header>
 
         <div class="canvas-wrap">
@@ -626,7 +626,7 @@
                 <div class="hud-overlay">
                     <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
-                    <button class="hud-btn" id="hintBtn" aria-label="Hint">💡</button>
+                    <button class="hud-btn" id="hintBtn" aria-label="Hint">🐱</button>
                     <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>
@@ -645,8 +645,8 @@
     <!-- Level Select -->
     <div class="level-select" id="levelSelect">
         <div class="ls-inner">
-            <h1 class="ls-title">Color Drop</h1>
-            <p class="ls-tagline">sort · stack · solve</p>
+            <h1 class="ls-title">CatSort</h1>
+            <p class="ls-tagline">sort · schnurr · solve</p>
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
             <div class="ls-actions">
                 <button id="dailyChallengeBtn" class="ls-action-btn" type="button">📅 Tages-Challenge</button>
@@ -659,7 +659,7 @@
     <!-- Win screen -->
     <div class="overlay" id="overlay">
         <div class="win-card">
-            <div class="win-icon">🏆</div>
+            <div class="win-icon">🐾</div>
             <h2 class="win-title">Solved!</h2>
             <p class="win-sub">Level <b id="finalLevel">1</b> — <b id="finalMoves">0</b> Züge</p>
             <div class="win-stars" id="winStars">⭐⭐⭐</div>
@@ -723,1902 +723,7 @@
         <button id="tutSkip" class="tut-skip" type="button">Überspringen</button>
     </div>
 
-    <script>
-    'use strict';
-
-/* ═══════════════════════════════════════════════════════════
-   ZZFX — Zuper Zmall Audio Library v2.0.1 (Frank Force, MIT)
-   Source embedded to keep single-file architecture intact.
-   AudioContext is created lazily in playSound() for iOS compat.
-═══════════════════════════════════════════════════════════ */
-let zzfx,zzfxX,zzfxG,zzfxP;zzfx=(...t)=>zzfxP(zzfxG(...t));zzfxG=(e=1,f=.05,a=220,b=0,l=0,M=.1,m=0,F=1,N=0,z=0,Y=0,X=0,P=0,I=0,Q=0,R=0,d=0,S=1,c=0,T=0)=>{let q=44100,w=2*Math.PI,L=q*b+9,r=q*l,v=q/a,h=0,n=0,D=0,k=1,A=[],C=zzfxX.createBuffer(1,L+r,q),G=C.getChannelData(0);for(T=c*[0,1,1.07,1.26,1.5,1.77][T|0]*w/q,a=w*a/q;h<L+r;h++){let p=h<L?h/L:1-(h-L)/r;let s=a*(1+(N*Math.sin(2*Math.PI*h/q)+z*Math.sin(h/v*w))+f);s+=T*Math.sin(h/q*2*Math.PI);D+=s;n+=([Math.sin(D),Math.sign(Math.sin(D)),1-2*(Math.floor(2*D/w)%2),((2*D/w%2)-1+2)%2-1][m|0]||Math.sin(D));let u=p*S*(k=Y?k+X/q:1)*e;G[h]=(Math.abs(n/++Q)>1?n/Math.abs(n):n)*u*Math.min(1,1+R*(h/q));Q=m||Q>99?1:Q}return G};zzfxP=(...t)=>{let e=zzfxX.createBuffer(t.length,t[0].length,44100),f=zzfxX.createBufferSource();for(let a in t)e.getChannelData(a).set(t[a]);f.buffer=e;f.connect(zzfxX.destination);f.start();return f};
-
-/* ═══════════════════════════════════════════════════════════
-   CONSTANTS
-═══════════════════════════════════════════════════════════ */
-
-const CW = 420, CH = 520;            // canvas logical size
-
-const TUBE_W   = 68;                 // tube outer width
-const TUBE_H   = 240;                // tube outer height
-const TUBE_BOT = 440;                // y of tube bottom edge
-const TUBE_TOP = TUBE_BOT - TUBE_H; // = 200
-
-const BALL_R   = 26;                 // ball radius
-const BALL_D   = BALL_R * 2;         // diameter = 52
-const BALL_GAP = 3;                  // gap between stacked balls
-const BALL_PAD = 10;                 // gap from tube bottom to lowest ball centre
-
-const FLOAT_Y_BASE = 118;            // hovering ball baseline y
-
-const DUR_LIFT   = 220;              // ms – selection lift animation
-const DUR_ARC    = 380;              // ms – parabolic arc
-const DUR_BOUNCE = 480;              // ms – landing bounce
-const MAX_PARTS  = 500;              // particle cap (increased for confetti)
-
-/* ═══════════════════════════════════════════════════════════
-   COLOUR PALETTE  (neon, 3 shades each)
-═══════════════════════════════════════════════════════════ */
-
-const PALETTE = {
-    cyan:    { base:'#00e5ff', bright:'#80ffff', dark:'#003844', glow:'rgba(0,229,255,.7)'   },
-    magenta: { base:'#e040fb', bright:'#ff9fff', dark:'#450053', glow:'rgba(224,64,251,.7)'  },
-    lime:    { base:'#b2ff59', bright:'#dfffaa', dark:'#2a5c00', glow:'rgba(178,255,89,.7)'  },
-    yellow:  { base:'#ffe57f', bright:'#fffacc', dark:'#5c4400', glow:'rgba(255,229,127,.7)' },
-    orange:  { base:'#ff7043', bright:'#ffb5a0', dark:'#5c1800', glow:'rgba(255,112,67,.7)'  },
-    pink:    { base:'#f50057', bright:'#ff80a3', dark:'#5c0020', glow:'rgba(245,0,87,.7)'    },
-};
-
-/* ═══════════════════════════════════════════════════════════
-   ACHIEVEMENTS
-═══════════════════════════════════════════════════════════ */
-const ACHIEVEMENTS = [
-    { id:'first_win',   icon:'🏆', name:'Erster Sieg',         desc:'Erstes Level gewonnen' },
-    { id:'tier_medium', icon:'🔥', name:'Aufsteiger',           desc:'MEDIUM-Tier erreicht' },
-    { id:'tier_hard',   icon:'❄️', name:'Eisbrecher',           desc:'HARD-Tier erreicht' },
-    { id:'tier_expert', icon:'🌋', name:'Vulkanläufer',         desc:'EXPERT-Tier erreicht' },
-    { id:'tier_master', icon:'👑', name:'Meister',              desc:'MASTER-Tier erreicht' },
-    { id:'levels_10',   icon:'⭐', name:'Zehner',               desc:'10 Level gelöst' },
-    { id:'levels_25',   icon:'🌟', name:'Vierteljahrhundert',   desc:'25 Level gelöst' },
-    { id:'daily_first', icon:'📅', name:'Tagesmensch',          desc:'Erste Daily Challenge' },
-    { id:'par_first',   icon:'🎯', name:'Scharf',               desc:'Level in Par gelöst' },
-    { id:'three_star',  icon:'✨', name:'Perfektion',           desc:'3 Sterne erreicht' },
-    { id:'streak_3',    icon:'🔥', name:'Dreier-Serie',         desc:'3× 3 Sterne in Folge' },
-    { id:'streak_5',    icon:'💥', name:'Fünfer-Serie',         desc:'5× 3 Sterne in Folge' },
-    { id:'blitz_first', icon:'⚡', name:'Blitzsieger',          desc:'Blitzrunde gewonnen' },
-    { id:'blitz_5',     icon:'⚡⚡',name:'Blitzmeister',         desc:'5 Blitzrunden gewonnen' },
-];
-
-/* ═══════════════════════════════════════════════════════════
-   VISUAL THEMES  (one per tier — background + ball style)
-═══════════════════════════════════════════════════════════ */
-
-/**
- * Each theme drives drawBackground() and drawBall().
- * hues[0..2]     — HSL hue for the 3 radial-gradient stops
- * hueDelta[0..2] — sinusoidal variation amplitude per stop
- * sat[0..2]      — HSL saturation % per stop
- * bri[0..2]      — HSL brightness % per stop
- * particleColor  — CSS colour for background dust particles (future use)
- * ballStyle      — one of: 'neon' | 'satin' | 'crystal' | 'fire' | 'aurum'
- * accentColor    — CSS hex used for Blitzrunde overlay glow
- */
-const THEMES = {
-    EASY:   { hues:[265,230,210], hueDelta:[12, 8,10], sat:[60,55,50], bri:[9,6,4],
-               particleColor:'rgba(255,255,255,.6)', ballStyle:'neon',    accentColor:'#7c4dff' },
-    MEDIUM: { hues:[ 15, 20, 30], hueDelta:[10, 6, 8], sat:[65,60,55], bri:[8,5,3],
-               particleColor:'rgba(255,107,53,.6)',   ballStyle:'satin',   accentColor:'#ff7043' },
-    HARD:   { hues:[200,210,220], hueDelta:[ 8, 5, 7], sat:[70,65,60], bri:[8,5,3],
-               particleColor:'rgba(168,216,234,.6)',  ballStyle:'crystal', accentColor:'#00b4d8' },
-    EXPERT: { hues:[  0, 10, 15], hueDelta:[12, 8,10], sat:[70,65,60], bri:[8,5,3],
-               particleColor:'rgba(255,69,0,.6)',     ballStyle:'fire',    accentColor:'#ff3d00' },
-    MASTER: { hues:[ 45, 50, 40], hueDelta:[ 8, 5, 6], sat:[60,55,50], bri:[9,6,4],
-               particleColor:'rgba(255,215,0,.6)',    ballStyle:'aurum',   accentColor:'#ffc107' },
-};
-
-/* ═══════════════════════════════════════════════════════════
-   TUTORIAL
-═══════════════════════════════════════════════════════════ */
-
-// Fixed 3-move mini-puzzle: 2 colours, 2 balls each, 1 empty tube.
-// Optimal solution: tube1→tube2, tube0→tube1, tube0→tube2 (3 moves).
-const TUTORIAL_TUBES = [
-    ['cyan', 'magenta'],   // index 0: bottom → top
-    ['magenta', 'cyan'],   // index 1
-    [],                     // index 2: empty
-];
-
-const TUTORIAL_SCRIPT = [
-    { text: 'Tippe auf eine Röhre um die oberste Kugel aufzunehmen.', highlight: 'all',       waitFor: 'select' },
-    { text: 'Tippe auf eine andere Röhre um sie abzulegen.',          highlight: 'targets',   waitFor: 'move'   },
-    { text: 'Gut! Stapele gleiche Farben — eine Röhre, eine Farbe.',  highlight: 'top-match', waitFor: 'move'   },
-    { text: 'Noch ein Zug — du schaffst das!',                        highlight: 'all',       waitFor: 'win'    },
-];
-
-/* ═══════════════════════════════════════════════════════════
-   SEEDED PRNG
-═══════════════════════════════════════════════════════════ */
-
-/**
- * Mulberry32 — deterministic 32-bit PRNG seeded by level number.
- * Ensures every player gets identical puzzles for the same level.
- * @param {number} seed
- * @returns {function(): number}  Values in [0, 1)
- */
-function mulberry32(seed) {
-    return function() {
-        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-}
-
-/* ═══════════════════════════════════════════════════════════
-   GAME STATE
-═══════════════════════════════════════════════════════════ */
-
-const G = {
-    tubes:        [],    // Array<Array<string>> index 0=bottom, last=top
-    selected:     -1,    // selected tube index (-1=none)
-    selectedTime: -1,    // rAF timestamp when selection was made (lift anim)
-    moves:        0,
-    history:      [],    // undo stack of deep-copied tube arrays
-    won:          false,
-    tutorial:     false,   // true = tutorial mode active
-    tutStep:      0,        // index into TUTORIAL_SCRIPT
-    theme:        null,     // current THEMES entry — set by generateLevel(), init below
-    themePrev:    null,     // previous THEMES entry during fade, null when no transition
-    themeFade:    1,        // 0→1 progress of theme-change fade (500 ms)
-    timer:        null,     // null | { active, endTime, duration, _lastTick }
-    isDailyChallenge: false, // true when the current level was started via Daily Challenge
-    flashTube:    -1,    // tube showing red flash
-    flashUntil:   0,     // rAF timestamp when flash ends
-    hintFrom:     -1,    // hint source tube index (-1 = inactive)
-    hintTo:       -1,    // hint destination tube index (-1 = inactive)
-    hintUntil:    0,     // frameTime timestamp when hint highlight expires
-    hintCooldown: false, // true during the 1500ms no-solution ❌ feedback window
-    frameTime:    0,     // current rAF timestamp
-    lastTime:     -1,    // previous rAF timestamp (delta-time)
-    solvedTubes:  new Set(), // tubes already exploded (no double-trigger)
-};
-
-G.theme = THEMES.EASY;   // default until generateLevel() is called
-
-/* ═══════════════════════════════════════════════════════════
-   ANIMATION STATE
-═══════════════════════════════════════════════════════════ */
-
-const ANIM = {
-    arc:       null,         // ArcAnim | null
-    bounceMap: new Map(),    // "tubeIdx-ballIdx" → BounceAnim
-    particles: [],           // Particle[]
-    busy:      false,        // blocks input during arc
-};
-
-/* ═══════════════════════════════════════════════════════════
-   LEVEL STATE
-═══════════════════════════════════════════════════════════ */
-
-const LEVEL = { current: 1 };
-
-/**
- * Returns configuration for a given level number.
- * Five tiers with smooth colour progression; 2 empty tubes up to HARD, 1 at EXPERT+.
- * @returns {{ colors: string[], empty: number, tier: string }}
- */
-function levelConfig(n) {
-    if (n <= 15) return { colors: ['cyan','magenta'],                                    empty: 2, tier: 'EASY'   };
-    if (n <= 30) return { colors: ['cyan','magenta','lime'],                             empty: 2, tier: 'MEDIUM' };
-    if (n <= 50) return { colors: ['cyan','magenta','lime','yellow'],                    empty: 2, tier: 'HARD'   };
-    if (n <= 75) return { colors: ['cyan','magenta','lime','yellow','orange'],           empty: 1, tier: 'EXPERT' };
-    return           { colors: ['cyan','magenta','lime','yellow','orange','pink'], empty: 1, tier: 'MASTER' };
-}
-
-/** Intra-tier difficulty factor: 0.0 at tier start, 1.0 at tier end. */
-function tierDifficulty(n) {
-    const ranges = [
-        [1, 15], [16, 30], [31, 50], [51, 75], [76, 100],
-    ];
-    const r = ranges.find(([lo, hi]) => n >= lo && n <= hi) || ranges[ranges.length - 1];
-    return Math.min(1, (n - r[0]) / Math.max(1, r[1] - r[0]));
-}
-
-/** Par interpolates from generous (colors×6) to strict (colors×5) within each tier. */
-function parForLevel(n) {
-    const colors = levelConfig(n).colors.length;
-    const d      = tierDifficulty(n);
-    return Math.round(colors * (6 - d));
-}
-
-/** True for every 5th level — these are Blitzrunden with a countdown timer. */
-function isTimedLevel(n) { return n > 0 && n % 5 === 0; }
-
-/** Timer limit in milliseconds, scaled by tier. */
-function timerDuration(n) {
-    const map = { EASY:90, MEDIUM:120, HARD:150, EXPERT:180, MASTER:210 };
-    return (map[levelConfig(n).tier] || 120) * 1000;
-}
-
-/**
- * Three-star rating based on move efficiency.
- * @param {number} moves  Actual moves taken
- * @param {number} par    Target move count for 3 stars
- */
-function calcStars(moves, par) {
-    if (moves <= par)        return 3;
-    if (moves <= par * 1.5) return 2;
-    return 1;
-}
-
-/**
- * Pure win-check on an arbitrary tubes array — no G side-effects.
- * Used by generateLevel to detect accidental re-solved states.
- */
-function checkWinState(tubes) {
-    return tubes.every(t => t.length === 0 || (t.length === 4 && t.every(c => c === t[0])));
-}
-
-/**
- * Build a level by backwards-shuffling from a solved state.
- * Guaranteed solvable because every move is a legal game move.
- *
- * @param {number} n  Level number (1-based)
- */
-/* ── Daily Challenge ─────────────────────────────────────── */
-
-/** Returns today's daily challenge level number (1–25, same for all players on same date). */
-function dailyLevelNum() {
-    const d = new Date();
-    const dateStr = d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');   // local date "2026-04-07"
-    let hash = 0;
-    for (const ch of dateStr) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff;
-    return (Math.abs(hash) % 75) + 1;   // Level 1–75 (EASY–EXPERT; MASTER excluded intentionally)
-}
-
-/** Populate and show the Daily Challenge announcement overlay. */
-function showDailyOverlay() {
-    const n         = dailyLevelNum();
-    const cfg       = levelConfig(n);
-    const dateLabel = new Date().toLocaleDateString('de-DE', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
-    document.getElementById('dailyDate').textContent       = dateLabel;
-    document.getElementById('dailyLevelLabel').textContent = 'Level ' + n + ' · ' + cfg.tier;
-    document.getElementById('dailyOverlay').style.setProperty('--blitz-color', THEMES[cfg.tier].accentColor);
-    document.getElementById('dailyOverlay').classList.add('show');
-}
-
-/** Update the daily challenge button text based on today's play status. */
-function updateDailyBtn() {
-    const daily = loadDaily();
-    const d2 = new Date();
-    const today = d2.getFullYear() + '-' +
-        String(d2.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d2.getDate()).padStart(2, '0');   // local date
-    const btn   = document.getElementById('dailyChallengeBtn');
-    if (daily.date === today && daily.completed) {
-        btn.textContent = '📅 Heute: ' + '⭐'.repeat(daily.stars) + ' — morgen wieder';
-        btn.disabled    = true;
-    } else {
-        btn.textContent = '📅 Tages-Challenge';
-        btn.disabled    = false;
-    }
-}
-
-/** Populate and show the Blitzrunde announcement overlay. */
-function showBlitzOverlay(n) {
-    const cfg = levelConfig(n);
-    const sec = timerDuration(n) / 1000;
-    document.getElementById('blitzLevel').textContent = 'LEVEL ' + n + ' · ' + cfg.tier;
-    document.getElementById('blitzTime').textContent  = 'Du hast ' + sec + ' Sekunden.';
-    document.getElementById('blitzOverlay').style.setProperty('--blitz-color', G.theme.accentColor);
-    document.getElementById('blitzOverlay').classList.add('show');
-}
-
-function generateLevel(n) {
-    LEVEL.current  = n;
-    const cfg      = levelConfig(n);
-
-    // ── Theme: detect tier change, start fade ─────────────────
-    const newTheme = THEMES[cfg.tier];
-    if (G.theme !== newTheme) {
-        G.themePrev = G.theme;
-        G.theme     = newTheme;
-        G.themeFade = G.themePrev ? 0 : 1;   // skip fade on very first call
-    }
-
-    let tubes;
-    let retries = 0;
-
-    do {
-        // Fresh PRNG each attempt: same level → same puzzle, each retry uses a different seed.
-        const rng = mulberry32(n + retries * 997);
-
-        // 1. Flat array of all balls, then Fisher-Yates shuffle.
-        //    More rounds at higher intra-tier difficulty = deeper scramble.
-        const balls  = cfg.colors.flatMap(c => [c, c, c, c]);
-        const rounds = 1 + Math.floor(tierDifficulty(n) * 2);   // 1–3
-        for (let r = 0; r < rounds; r++) {
-            for (let i = balls.length - 1; i > 0; i--) {
-                const j = Math.floor(rng() * (i + 1));
-                [balls[i], balls[j]] = [balls[j], balls[i]];
-            }
-        }
-
-        // 2. Distribute into tubes (4 balls each) + empty tubes.
-        tubes = [];
-        for (let i = 0; i < cfg.colors.length; i++) {
-            tubes.push(balls.slice(i * 4, (i + 1) * 4));
-        }
-        for (let i = 0; i < cfg.empty; i++) tubes.push([]);
-
-    } while (tubes.some(t => t.length === 4 && t.every(c => c === t[0])) && ++retries < 100);
-    // retry if any tube is accidentally pre-solved (all 4 balls same colour)
-
-    // 3. Write into game state
-    G.tubes        = tubes;
-    G.selected     = -1;
-    G.selectedTime = -1;
-    G.moves        = 0;
-    G.history      = [];
-    G.won          = false;
-    G.flashTube    = -1;
-    G.flashUntil   = 0;
-    G.hintFrom     = -1;
-    G.hintTo       = -1;
-    G.hintUntil    = 0;
-    G.hintCooldown = false;
-    G.solvedTubes  = new Set();
-    ANIM.arc       = null;
-    ANIM.bounceMap = new Map();
-    ANIM.particles = [];
-    ANIM.busy      = false;
-
-    // 4. Timer setup — timed levels show Blitz overlay first (timer starts on BEREIT!)
-    if (isTimedLevel(n) && !G.isDailyChallenge) {
-        G.timer    = { active: false, endTime: 0, duration: timerDuration(n), _lastTick: -1 };
-        ANIM.busy  = true;   // block input until BEREIT! is clicked
-        document.getElementById('timeoutOverlay').classList.remove('show');
-        showBlitzOverlay(n);
-    } else {
-        G.timer = null;
-        document.getElementById('timerBar').classList.remove('visible', 'pulse');
-        document.getElementById('timeoutOverlay').classList.remove('show');
-        document.getElementById('blitzOverlay').classList.remove('show');
-    }
-
-    updateHUD();
-    hideOverlay();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   EASE FUNCTIONS
-═══════════════════════════════════════════════════════════ */
-
-function easeInOut(t)    { return t < .5 ? 2*t*t : -1+(4-2*t)*t; }
-function easeOutBack(t)  {
-    const c1 = 1.70158, c3 = c1 + 1;
-    return 1 + c3*Math.pow(t-1,3) + c1*Math.pow(t-1,2);
-}
-function easeOutBounce(t) {
-    const n = 7.5625, d = 2.75;
-    if (t < 1/d)     return n*t*t;
-    if (t < 2/d)     return n*(t-=1.5/d)*t + 0.75;
-    if (t < 2.5/d)   return n*(t-=2.25/d)*t + 0.9375;
-    return n*(t-=2.625/d)*t + 0.984375;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   MATH / LAYOUT HELPERS
-═══════════════════════════════════════════════════════════ */
-
-/** Quadratic Bézier point at t along p0→p1→p2 */
-function bezier2(t, p0, p1, p2) {
-    const u = 1 - t;
-    return {
-        x: u*u*p0.x + 2*u*t*p1.x + t*t*p2.x,
-        y: u*u*p0.y + 2*u*t*p1.y + t*t*p2.y,
-    };
-}
-
-/** Centre-X of tube i — evenly distributed across CW */
-function tubeCX(i) {
-    const n   = G.tubes.length;
-    const gap = (CW - n * TUBE_W) / (n + 1);
-    return gap + i * (TUBE_W + gap) + TUBE_W / 2;
-}
-
-/** Centre-Y of ball at stack index bi (0=bottom) */
-function ballCY(bi) {
-    return TUBE_BOT - BALL_PAD - BALL_R - bi * (BALL_D + BALL_GAP);
-}
-
-/** Current y of the floating hover position (oscillates gently) */
-function floatY(ts) {
-    return FLOAT_Y_BASE + Math.sin(ts * 0.0028) * 5;
-}
-
-/** Rounded-rect path — [TL,TR,BR,BL] corner radii */
-function roundRect(ctx, x, y, w, h, r) {
-    const [tl, tr, br, bl] = r;
-    ctx.beginPath();
-    ctx.moveTo(x+tl, y);
-    ctx.lineTo(x+w-tr, y);
-    ctx.arcTo(x+w, y,   x+w, y+tr,   tr);
-    ctx.lineTo(x+w, y+h-br);
-    ctx.arcTo(x+w, y+h, x+w-br, y+h, br);
-    ctx.lineTo(x+bl, y+h);
-    ctx.arcTo(x,   y+h, x,   y+h-bl, bl);
-    ctx.lineTo(x, y+tl);
-    ctx.arcTo(x,   y,   x+tl, y,     tl);
-    ctx.closePath();
-}
-
-
-
-/* ═══════════════════════════════════════════════════════════
-   GAME LOGIC
-═══════════════════════════════════════════════════════════ */
-
-/**
- * Returns true if moving the top ball of tubes[from] onto tubes[to] is legal.
- *
- * Rules:
- *  - Source must be non-empty
- *  - Destination must have space (< 4 balls)
- *  - Destination must be empty  OR  its top ball matches the moving ball
- */
-
-/** Tutorial helper: true if tube `i` is a valid drop target for the currently selected ball. */
-function isValidTarget(i) {
-    if (G.selected === -1) return false;
-    return canMove(G.selected, i);
-}
-
-/** Tutorial helper: true if tube `i` has ≥ 2 balls with the same colour on top. */
-function tubeHasTopMatch(i) {
-    const t = G.tubes[i];
-    return t.length >= 2 && t[t.length - 1] === t[t.length - 2];
-}
-
-function canMove(from, to) {
-    if (from === to) return false;
-
-    const src = G.tubes[from];
-    const dst = G.tubes[to];
-
-    if (src.length === 0) return false;   // nothing to move
-    if (dst.length >= 4)  return false;   // destination full
-
-    // Empty destination: always legal
-    if (dst.length === 0) return true;
-
-    // Non-empty: colours must match
-    return dst[dst.length - 1] === src[src.length - 1];
-}
-
-/** Pure canMove on an arbitrary tubes snapshot — no G access. */
-function canMoveState(tubes, from, to) {
-    if (from === to) return false;
-    const src = tubes[from];
-    const dst = tubes[to];
-    if (src.length === 0) return false;
-    if (dst.length >= 4)  return false;
-    if (dst.length === 0) return true;
-    return dst[dst.length - 1] === src[src.length - 1];
-}
-
-/**
- * BFS solver. Returns the first move of the shortest solution path,
- * or null if no solution found within 50 000 nodes.
- * @returns {{ from: number, to: number } | null}
- */
-function solveHint() {
-    const start   = G.tubes.map(t => [...t]);
-    const queue   = [{ tubes: start, firstMove: null }];
-    const visited = new Set([JSON.stringify(start)]);
-    let head = 0;
-    let nodes = 0;
-    while (head < queue.length && nodes++ < 50000) {
-        const { tubes, firstMove } = queue[head++];
-        for (let from = 0; from < tubes.length; from++) {
-            for (let to = 0; to < tubes.length; to++) {
-                if (!canMoveState(tubes, from, to)) continue;
-                const next = tubes.map(t => [...t]);
-                next[to].push(next[from].pop());
-                const key = JSON.stringify(next);
-                if (visited.has(key)) continue;
-                visited.add(key);
-                const move = firstMove ?? { from, to };
-                if (checkWinState(next)) return move;
-                queue.push({ tubes: next, firstMove: move });
-            }
-        }
-    }
-    return null;
-}
-
-/**
- * Execute a valid move from `from` to `to`.
- * Pushes a snapshot onto the undo stack before mutating state.
- */
-function doMove(from, to) {
-    // ── Undo snapshot — capped at 5 entries ──
-    G.history.push(G.tubes.map(t => [...t]));
-    if (G.history.length > 5) G.history.shift();
-
-    // Capture start position BEFORE mutating (floating ball's current y)
-    const startX = tubeCX(from);
-    const startY = floatY(G.frameTime);
-
-    // Mutate logical state
-    const color = G.tubes[from][G.tubes[from].length - 1];
-    G.tubes[from].pop();
-    G.tubes[to].push(color);
-    G.moves++;
-    G.hintFrom = G.hintTo = -1;
-    G.hintUntil = 0;
-    updateHUD();
-
-    // ── Start arc animation ──
-    const endX  = tubeCX(to);
-    const endY  = ballCY(G.tubes[to].length - 1);
-    const peakY = Math.min(startY, endY) - 90;
-
-    ANIM.arc = {
-        color,
-        toTube:    to,
-        p0: { x: startX, y: startY },
-        p1: { x: (startX + endX) / 2, y: peakY },
-        p2: { x: endX,   y: endY   },
-        startTime: G.frameTime,
-        duration:  DUR_ARC,
-    };
-    ANIM.busy = true;
-}
-
-/** Revert the last move. */
-function undo() {
-    if (!G.history.length || ANIM.busy) return;
-    G.tubes        = G.history.pop();
-    G.selected     = -1;
-    G.selectedTime = -1;
-    G.moves        = Math.max(0, G.moves - 1);
-    G.won          = false;
-    G.hintFrom     = G.hintTo = -1;
-    G.hintUntil    = 0;
-    // Recalculate solved set after undo
-    G.solvedTubes = new Set();
-    for (let i = 0; i < G.tubes.length; i++) {
-        if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
-    }
-    updateHUD();
-    hideOverlay();
-}
-
-/** Show a hint: BFS-solve current state, highlight first move, cost 1 move. */
-function showHint() {
-    if (ANIM.busy || G.won || G.tutorial) return;
-    const btn = document.getElementById('hintBtn');
-    let move;
-    try {
-        move = solveHint();
-    } catch (e) {
-        console.error('solveHint failed:', e);
-        return;
-    }
-    if (!move) {
-        G.hintCooldown  = true;
-        btn.textContent = '❌';
-        btn.disabled    = true;
-        setTimeout(() => { G.hintCooldown = false; btn.textContent = '💡'; btn.disabled = false; }, 1500);
-        return;
-    }
-    G.moves++;
-    updateHUD();
-    G.hintFrom  = move.from;
-    G.hintTo    = move.to;
-    G.hintUntil = G.frameTime + 2500;
-}
-
-/**
- * Win condition: every tube is either
- *   (a) empty, or
- *   (b) contains exactly 4 balls of the same colour.
- */
-function checkWin() {
-    return G.tubes.every(t =>
-        t.length === 0 ||
-        (t.length === 4 && t.every(c => c === t[0]))
-    );
-}
-
-/** Win check for tutorial: each non-empty tube is uniform AND no colour appears in two tubes. */
-function checkWinTutorial() {
-    const seen = new Set();
-    for (const t of G.tubes) {
-        if (t.length === 0) continue;
-        if (!t.every(c => c === t[0])) return false;  // not uniform
-        if (seen.has(t[0]))            return false;  // colour split across tubes
-        seen.add(t[0]);
-    }
-    return true;
-}
-
-/** True if a tube already holds 4 matching balls (drives "solved" glow). */
-function isSolved(tube) {
-    return tube.length === 4 && tube.every(c => c === tube[0]);
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   INPUT HANDLING
-═══════════════════════════════════════════════════════════ */
-
-/**
- * State machine for click/tap:
- *
- *  (none selected)  →  select tube  (if non-empty)
- *  (tube selected)  →  deselect     (same tube tapped again)
- *                   →  do move      (valid target)
- *                   →  switch sel   (colour mismatch, target non-empty)
- *                   →  flash red    (target is full)
- */
-function handleInput(lx, ly) {
-    if (G.won)      return;
-    if (ANIM.busy)  return;   // block during arc animation
-
-    const idx = tubeAt(lx, ly);
-
-    if (idx === -1) {
-        G.selected     = -1;
-        G.selectedTime = -1;
-        return;
-    }
-
-    if (G.selected === -1) {
-        if (G.tubes[idx].length > 0) {
-            G.selected     = idx;
-            G.selectedTime = G.frameTime;
-            playSound('select');
-            // Tutorial: advance from step 0 ('select') to step 1
-            if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
-                TUTORIAL_SCRIPT[G.tutStep].waitFor === 'select') {
-                G.tutStep++;
-                advanceTutStep();
-            }
-        }
-    } else if (idx === G.selected) {
-        G.selected     = -1;
-        G.selectedTime = -1;
-    } else if (canMove(G.selected, idx)) {
-        const from     = G.selected;
-        G.selected     = -1;
-        G.selectedTime = -1;
-        doMove(from, idx);
-    } else {
-        triggerFlash(idx);
-        const dst = G.tubes[idx];
-        if (dst.length > 0 && dst.length < 4) {
-            G.selected     = idx;
-            G.selectedTime = G.frameTime;
-        }
-    }
-}
-
-/** Returns the index of the tube whose hit-box contains (lx, ly), else -1. */
-function tubeAt(lx, ly) {
-    for (let i = 0; i < G.tubes.length; i++) {
-        const tx = tubeCX(i) - TUBE_W / 2;
-        if (lx >= tx && lx <= tx + TUBE_W &&
-            ly >= TUBE_TOP && ly <= TUBE_TOP + TUBE_H) return i;
-    }
-    return -1;
-}
-
-/** Schedule a 320 ms red flash on tube `idx`. */
-function triggerFlash(idx) {
-    G.flashTube  = idx;
-    G.flashUntil = G.frameTime + 320;
-    playSound('invalid');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   PARTICLE SYSTEM
-═══════════════════════════════════════════════════════════ */
-
-function spawnParticle(x, y, vx, vy, color, size, life, gravity) {
-    if (ANIM.particles.length >= MAX_PARTS) return;
-    ANIM.particles.push({ x, y, vx, vy, color, size,
-                          life, maxLife: life, gravity });
-}
-
-/** Advance all particles by dt seconds; remove dead ones. */
-function updateParticles(dt) {
-    for (let i = ANIM.particles.length - 1; i >= 0; i--) {
-        const p = ANIM.particles[i];
-        p.x    += p.vx * dt;
-        p.y    += p.vy * dt;
-        p.vy   += p.gravity * dt;
-        p.life -= dt;
-        if (p.confetti) {
-            p.vx   *= 0.995;           // gentle air resistance
-            p.angle += p.spin * dt;    // spin in radians/s
-        }
-        if (p.life <= 0) ANIM.particles.splice(i, 1);
-    }
-}
-
-/** Draw all particles using additive blending for neon glow. */
-function drawParticles() {
-    if (!ANIM.particles.length) return;
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for (const p of ANIM.particles) {
-        if (p.confetti) continue;      // confetti rendered separately in drawConfetti()
-        ctx.globalAlpha = (p.life / p.maxLife) * 0.85;
-        ctx.fillStyle   = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, Math.max(p.size * (p.life / p.maxLife), 0.5), 0, Math.PI * 2);
-        ctx.fill();
-    }
-    ctx.restore();
-}
-
-/** Draw confetti particles as opaque rotating rectangles (normal compositing). */
-function drawConfetti() {
-    const confettiList = ANIM.particles.filter(p => p.confetti);
-    if (!confettiList.length) return;
-    ctx.save();
-    ctx.globalCompositeOperation = 'source-over';
-    for (const p of confettiList) {
-        ctx.globalAlpha = Math.min(1, p.life / p.maxLife * 1.4);
-        ctx.fillStyle   = p.color;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        ctx.restore();
-    }
-    ctx.restore();
-}
-
-/**
- * Burst of 35 particles from the centre of a completed tube.
- * Called once per tube — G.solvedTubes prevents re-triggering.
- */
-function triggerTubeExplosion(tubeIdx) {
-    const cx  = tubeCX(tubeIdx);
-    const cy  = TUBE_TOP + TUBE_H * 0.4;
-    const col = PALETTE[G.tubes[tubeIdx][0]];
-    const colors = [col.base, col.bright, '#ffffff'];
-    for (let i = 0; i < 35; i++) {
-        const angle = Math.PI * 2 * Math.random();
-        const speed = 50 + Math.random() * 100;   // px/s
-        spawnParticle(
-            cx + (Math.random()-.5) * 8,
-            cy + (Math.random()-.5) * 8,
-            Math.cos(angle) * speed,
-            Math.sin(angle) * speed - 30,          // upward bias
-            colors[Math.floor(Math.random() * colors.length)],
-            2 + Math.random() * 3,                 // size
-            0.6 + Math.random() * 0.6,             // life (s)
-            220                                    // gravity px/s²
-        );
-    }
-}
-
-/**
- * Spawn 80 rectangular confetti pieces in all 6 game colours.
- * Particles rise from the lower-centre then fall with gravity.
- * Called once when the player wins a level.
- */
-function spawnConfetti() {
-    const colors  = Object.values(PALETTE).map(p => p.base);
-    const cx      = CW / 2;
-    const startY  = CH * 0.65;
-    for (let i = 0; i < 80; i++) {
-        const speed  = 280 + Math.random() * 280;
-        const spread = (Math.random() - .5) * CW * 0.9;
-        ANIM.particles.push({
-            x:        cx + spread,
-            y:        startY,
-            vx:       (Math.random() - .5) * 120,
-            vy:       -speed,
-            gravity:  380,
-            life:     2.2 + Math.random() * 1.4,
-            maxLife:  3.6,
-            color:    colors[Math.floor(Math.random() * colors.length)],
-            confetti: true,
-            w:        5 + Math.random() * 4,
-            h:        9 + Math.random() * 5,
-            angle:    Math.random() * Math.PI * 2,
-            spin:     (Math.random() - .5) * 6,
-        });
-    }
-}
-
-/**
- * Two waves of firework bursts across the canvas.
- * Wave 1: 7 bursts staggered by 200 ms.
- * Wave 2: starts 1000 ms later, 7 bursts staggered by 150 ms.
- */
-function scheduleWinFireworks() {
-    const colorKeys = Object.keys(PALETTE);
-    const positions = [
-        {x:CW*.15,y:CH*.25},{x:CW*.85,y:CH*.20},{x:CW*.50,y:CH*.15},
-        {x:CW*.25,y:CH*.45},{x:CW*.75,y:CH*.42},{x:CW*.10,y:CH*.52},{x:CW*.90,y:CH*.55},
-    ];
-
-    function burst(cx, cy, count, minSpeed, maxSpeed) {
-        for (let i = 0; i < count; i++) {
-            const col   = PALETTE[colorKeys[Math.floor(Math.random()*colorKeys.length)]];
-            const angle = Math.PI * 2 * Math.random();
-            const speed = minSpeed + Math.random() * (maxSpeed - minSpeed);
-            spawnParticle(
-                cx + (Math.random()-.5)*10,
-                cy + (Math.random()-.5)*10,
-                Math.cos(angle) * speed,
-                Math.sin(angle) * speed - 60,
-                [col.base, col.bright, '#ffffff'][Math.floor(Math.random()*3)],
-                2 + Math.random() * 4,
-                0.8 + Math.random() * 1.0,
-                180
-            );
-        }
-    }
-
-    // Wave 1
-    positions.forEach((p, i) =>
-        setTimeout(() => burst(p.x, p.y, 45, 80, 280), i * 200)
-    );
-    // Wave 2 (offset positions slightly for variety)
-    setTimeout(() => {
-        positions.forEach((p, i) =>
-            setTimeout(() =>
-                burst(p.x + (Math.random()-.5)*80, p.y + (Math.random()-.5)*60, 30, 60, 200),
-                i * 150
-            )
-        );
-    }, 1000);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ANIMATION UPDATES
-═══════════════════════════════════════════════════════════ */
-
-/**
- * Called every frame. If arc is complete:
- *   1. Add bounce entry for the landed ball.
- *   2. Trigger tube explosion if tube is now solved.
- *   3. Clear arc + unblock input.
- *   4. Check win condition.
- */
-function updateArc(ts) {
-    if (!ANIM.arc) return;
-    const elapsed = ts - ANIM.arc.startTime;
-    if (elapsed < ANIM.arc.duration) return;
-
-    const { toTube } = ANIM.arc;
-    const ballIdx    = G.tubes[toTube].length - 1;
-
-    // Start bounce on the landed ball
-    ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
-        startTime: ts,
-        duration:  DUR_BOUNCE,
-        amplitude: 14,
-    });
-
-    playSound('pop');     // ball has landed — fires before chime so order is: thud → reward
-
-    // Tube explosion (once per solved tube)
-    if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube])) {
-        G.solvedTubes.add(toTube);
-        triggerTubeExplosion(toTube);
-        playSound('solved');
-    }
-
-    ANIM.arc  = null;
-    ANIM.busy = false;
-    updateHUD();   // re-enable undo button now that arc is done
-
-    // Tutorial: advance 'move' step after each landing
-    if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
-        TUTORIAL_SCRIPT[G.tutStep].waitFor === 'move') {
-        G.tutStep++;
-        advanceTutStep();
-    }
-
-    // Win check (after arc clears so overlay appears after animation)
-    if (G.tutorial ? checkWinTutorial() : checkWin()) {
-        G.won = true;
-        spawnConfetti();
-        scheduleWinFireworks();
-        playSound('win');
-        if (G.tutorial) {
-            // Tutorial win: advance 'win' step, show completion message (no win overlay)
-            if (G.tutStep < TUTORIAL_SCRIPT.length &&
-                TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
-                G.tutStep++;
-                advanceTutStep();
-            }
-        } else {
-            setTimeout(showWin, 600);
-        }
-    }
-}
-
-/** Remove completed bounce entries from the map. */
-function updateBounces(ts) {
-    for (const [key, b] of ANIM.bounceMap) {
-        if (ts - b.startTime >= b.duration) ANIM.bounceMap.delete(key);
-    }
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   CANVAS SETUP & RESIZE
-═══════════════════════════════════════════════════════════ */
-
-const canvas = document.getElementById('c');
-const ctx    = canvas.getContext('2d');
-
-/**
- * Set the canvas's internal (logical) resolution and let CSS scale it
- * to fit the viewport. This way all drawing code uses fixed coordinates.
- */
-function resizeCanvas() {
-    canvas.width  = CW;
-    canvas.height = CH;
-
-    const maxPx   = Math.min(window.innerWidth - 32, 480);
-    const scale   = maxPx / CW;
-    canvas.style.width  = maxPx + 'px';
-    canvas.style.height = Math.round(CH * scale) + 'px';
-}
-
-
-/* ── Achievement Toast ───────────────────────────────────── */
-
-const _toastQueue = [];
-let   _toastActive = false;
-
-function showAchievementToast(ids) {
-    _toastQueue.push(...ids);
-    if (!_toastActive) _nextToast();
-}
-
-function _nextToast() {
-    const id = _toastQueue.shift();
-    if (!id) { _toastActive = false; return; }
-    _toastActive = true;
-    const def = ACHIEVEMENTS.find(a => a.id === id);
-    if (!def) { _nextToast(); return; }
-    const el = document.getElementById('achievementToast');
-    el.textContent = def.icon + '  ' + def.name + ' freigeschaltet!';
-    el.classList.add('show');
-    setTimeout(() => {
-        el.classList.remove('show');
-        setTimeout(_nextToast, 350);
-    }, 3000);
-}
-
-/* ── Timer (Blitzrunde) ──────────────────────────────────── */
-
-function updateTimer() {
-    if (!G.timer || !G.timer.active || G.won) return;
-
-    // Tick sound in last 10 seconds
-    const secondsLeft = Math.ceil((G.timer.endTime - G.frameTime) / 1000);
-    if (secondsLeft <= 10 && secondsLeft > 0 && secondsLeft !== G.timer._lastTick) {
-        G.timer._lastTick = secondsLeft;
-        playSound('tick');
-    }
-
-    // Timeout
-    if (G.frameTime >= G.timer.endTime) {
-        G.timer.active = false;
-        ANIM.busy      = true;
-        playSound('invalid');
-        document.getElementById('timeoutOverlay').classList.add('show');
-    }
-}
-
-function drawTimerBar() {
-    const bar = document.getElementById('timerBar');
-    if (!G.timer) {
-        bar.classList.remove('visible', 'pulse');
-        return;
-    }
-    bar.classList.add('visible');
-
-    const remaining = G.timer.active
-        ? Math.max(0, G.timer.endTime - G.frameTime)
-        : (G.timer.active === false && G.timer.endTime > 0 ? 0 : G.timer.duration);
-    const pct = remaining / G.timer.duration;
-
-    bar.style.width      = (pct * 100) + '%';
-    bar.style.background = `hsl(${Math.round(pct * 120)}, 80%, 50%)`;
-    bar.classList.toggle('pulse', pct < 0.2);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   RENDER LOOP
-═══════════════════════════════════════════════════════════ */
-
-function render(ts) {
-    // Delta-time (seconds), capped to 50 ms to survive tab switches
-    const dt = G.lastTime < 0
-        ? 0.016
-        : Math.min((ts - G.lastTime) / 1000, 0.05);
-    G.lastTime  = ts;
-    G.frameTime = ts;
-
-    // ── Update animation state ────────────────────────────────
-    updateArc(ts);
-    updateBounces(ts);
-    updateParticles(dt);
-    if (G.themeFade < 1) {
-        G.themeFade = Math.min(G.themeFade + dt / 0.5, 1);  // 500 ms fade
-        if (G.themeFade >= 1) G.themePrev = null;
-    }
-
-    // ── Draw ──────────────────────────────────────────────────
-    drawBackground(ts);
-
-    for (let i = 0; i < G.tubes.length; i++) drawTube(i, ts);
-
-    if (ANIM.arc)                        drawArcBall(ts, dt);
-    if (G.selected !== -1 && !ANIM.busy) drawFloatingBall(ts);
-
-    drawParticles();
-    drawConfetti();
-    drawTutorialHighlight();
-    updateTimer();
-    drawTimerBar();
-
-    requestAnimationFrame(render);
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   DRAW: BACKGROUND
-═══════════════════════════════════════════════════════════ */
-
-/** Draws a pulsing highlight ring around tutorial-relevant tubes. */
-function drawTutorialHighlight() {
-    if (!G.tutorial || G.tutStep >= TUTORIAL_SCRIPT.length) return;
-    const step  = TUTORIAL_SCRIPT[G.tutStep];
-    const alpha = 0.45 + 0.35 * Math.sin(Date.now() / 280);
-
-    ctx.save();
-    ctx.strokeStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
-    ctx.lineWidth   = 3;
-
-    for (let i = 0; i < G.tubes.length; i++) {
-        const highlight =
-            step.highlight === 'all'       ? true :
-            step.highlight === 'targets'   ? isValidTarget(i) :
-            step.highlight === 'top-match' ? tubeHasTopMatch(i) : false;
-        if (!highlight) continue;
-
-        const cx  = tubeCX(i);
-        const pad = 6;
-        roundRect(ctx, cx - TUBE_W / 2 - pad, TUBE_TOP - pad, TUBE_W + pad * 2, TUBE_H + pad * 2, [14, 14, 14, 14]);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-}
-
-function drawBackground(ts) {
-    const t  = ts * 0.0002;
-    const cx = CW * (0.5 + 0.15 * Math.sin(t));
-    const cy = CH * (0.3  + 0.10 * Math.cos(t * 0.7));
-    const r  = Math.hypot(CW, CH) * 0.65;
-
-    // Interpolate between previous and current theme during fade
-    const f    = G.themeFade;
-    const prev = G.themePrev || G.theme;
-    function lerp(a, b) { return a + (b - a) * f; }
-    const hues = G.theme.hues.map((h, i) => lerp(prev.hues[i], h));
-    const delt = G.theme.hueDelta.map((d, i) => lerp(prev.hueDelta[i], d));
-    const sat  = G.theme.sat.map((s, i) => lerp(prev.sat[i], s));
-    const bri  = G.theme.bri.map((b, i) => lerp(prev.bri[i], b));
-
-    const grad = ctx.createRadialGradient(cx, cy, 0, CW/2, CH/2, r);
-    grad.addColorStop(0,   `hsl(${hues[0]+delt[0]*Math.sin(t*1.2)},${sat[0]}%,${bri[0]}%)`);
-    grad.addColorStop(0.5, `hsl(${hues[1]+delt[1]*Math.cos(t)     },${sat[1]}%,${bri[1]}%)`);
-    grad.addColorStop(1,   `hsl(${hues[2]+delt[2]*Math.sin(t*0.8) },${sat[2]}%,${bri[2]}%)`);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, CW, CH);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   DRAW: TUBE  (glassmorphism)
-═══════════════════════════════════════════════════════════ */
-
-function drawTube(i, ts = 0) {
-    const tube      = G.tubes[i];
-    const cx        = tubeCX(i);
-    const tx        = cx - TUBE_W / 2;
-    const sel       = G.selected === i && !ANIM.busy;
-    const solved    = isSolved(tube);
-    const flashing  = G.flashTube === i && G.frameTime < G.flashUntil;
-    const hintSrc   = G.hintFrom  === i && G.frameTime < G.hintUntil;
-    const hintDst   = G.hintTo    === i && G.frameTime < G.hintUntil;
-    const arcDest   = ANIM.arc && ANIM.arc.toTube === i;
-
-    ctx.save();
-
-    // ── Outer glow ───────────────────────────────────────────
-    if (flashing) {
-        ctx.shadowColor = 'rgba(255,50,50,.62)';
-        ctx.shadowBlur  = 34;
-    } else if (hintSrc) {
-        ctx.shadowColor = 'rgba(255,255,255,.70)';
-        ctx.shadowBlur  = 30;
-    } else if (hintDst) {
-        ctx.shadowColor = 'rgba(80,255,80,.70)';
-        ctx.shadowBlur  = 30;
-    } else if (sel) {
-        ctx.shadowColor = 'rgba(247,201,72,.44)';
-        ctx.shadowBlur  = 30;
-    } else if (solved) {
-        const pulse     = 0.5 + 0.5 * Math.sin(ts * 0.003);
-        ctx.shadowColor = 'rgba(80,255,150,.32)';
-        ctx.shadowBlur  = 15 + pulse * 15;
-    }
-
-    // ── Layer 1: dark base fill ───────────────────────────────
-    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-    ctx.fillStyle = 'rgba(15,20,40,0.65)';
-    ctx.fill();
-
-    // ── Layer 2: horizontal glass gradient ────────────────────
-    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-    const glassGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
-    glassGrad.addColorStop(0,    'rgba(255,255,255,.09)');
-    glassGrad.addColorStop(0.45, 'rgba(255,255,255,.03)');
-    glassGrad.addColorStop(1,    'rgba(255,255,255,.00)');
-    ctx.fillStyle = glassGrad;
-    ctx.fill();
-
-    // ── Layer 3: border gradient (bright left, dim right) ─────
-    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-    const borderGrad = ctx.createLinearGradient(tx, 0, tx + TUBE_W, 0);
-    borderGrad.addColorStop(0,   flashing ? 'rgba(255,80,80,.72)'
-                                : hintSrc ? 'rgba(255,255,255,.85)'
-                                : hintDst ? 'rgba(80,255,80,.75)'
-                                : sel     ? 'rgba(247,201,72,.62)'
-                                : solved  ? 'rgba(80,255,150,.40)'
-                                :            'rgba(255,255,255,.30)');
-    borderGrad.addColorStop(1,   flashing ? 'rgba(255,80,80,.25)'
-                                : hintSrc ? 'rgba(255,255,255,.30)'
-                                : hintDst ? 'rgba(80,255,80,.28)'
-                                : sel     ? 'rgba(247,201,72,.20)'
-                                : solved  ? 'rgba(80,255,150,.12)'
-                                :            'rgba(255,255,255,.05)');
-    ctx.strokeStyle = borderGrad;
-    ctx.lineWidth   = 1.5;
-    ctx.stroke();
-
-    ctx.restore();
-
-    // ── Layer 4: left-edge reflection strip ───────────────────
-    ctx.save();
-    roundRect(ctx, tx, TUBE_TOP, TUBE_W, TUBE_H, [5, 5, 26, 26]);
-    ctx.clip();
-    ctx.beginPath();
-    ctx.rect(tx + 5, TUBE_TOP + 14, 3.5, TUBE_H - 36);
-    const hiGrad = ctx.createLinearGradient(0, TUBE_TOP + 14, 0, TUBE_TOP + TUBE_H - 36);
-    hiGrad.addColorStop(0,   'rgba(255,255,255,.24)');
-    hiGrad.addColorStop(0.5, 'rgba(255,255,255,.07)');
-    hiGrad.addColorStop(1,   'rgba(255,255,255,.00)');
-    ctx.fillStyle = hiGrad;
-    ctx.fill();
-    ctx.restore();
-
-    // ── Balls inside tube ──────────────────────────────────────
-    // If arc is flying INTO this tube, skip its top ball (it's in flight)
-    const renderCount = arcDest ? tube.length - 1 : tube.length;
-    for (let bi = 0; bi < renderCount; bi++) {
-        // Bounce offset: ball starts above and springs to rest
-        const bounceKey = `${i}-${bi}`;
-        const bounce    = ANIM.bounceMap.get(bounceKey);
-        let yOff = 0;
-        if (bounce) {
-            const bt = Math.min((ts - bounce.startTime) / bounce.duration, 1);
-            yOff = -bounce.amplitude * (1 - easeOutBounce(bt));
-        }
-        drawBall(cx, ballCY(bi) + yOff, tube[bi], false);
-    }
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   DRAW: BALL  (3-D sphere — neon / satin / crystal / fire / aurum)
-═══════════════════════════════════════════════════════════ */
-
-/**
- * @param {boolean} floating  true → coloured glow halo instead of drop shadow
- */
-function drawBall(cx, cy, colorId, floating) {
-    const col   = PALETTE[colorId];
-    if (!col) return;
-    const style = G.theme ? G.theme.ballStyle : 'neon';
-
-    ctx.save();
-
-    // ── Shadow / glow ────────────────────────────────────────
-    if (floating) {
-        ctx.shadowColor = col.glow;
-        ctx.shadowBlur  = 32;
-    } else {
-        ctx.shadowColor   = style === 'fire'    ? 'rgba(180,20,0,.65)'   :
-                            style === 'aurum'   ? 'rgba(100,70,0,.65)'   :
-                            style === 'crystal' ? 'rgba(0,60,140,.50)'   :
-                            'rgba(0,0,0,.55)';
-        ctx.shadowBlur    = (style === 'fire' || style === 'aurum') ? 14 : 10;
-        ctx.shadowOffsetY = 4;
-    }
-
-    // ── Layer 1: sphere base (3-D radial gradient) ────────────
-    ctx.beginPath();
-    ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
-    const offX = style === 'crystal' ? -.20 : -.25;
-    const offY = style === 'crystal' ? -.22 : -.28;
-    const sphere = ctx.createRadialGradient(
-        cx + BALL_R * offX, cy + BALL_R * offY, BALL_R * .05,
-        cx, cy, BALL_R
-    );
-    sphere.addColorStop(0,   col.bright);
-    sphere.addColorStop(0.5, col.base);
-    sphere.addColorStop(1,   col.dark);
-    ctx.fillStyle = sphere;
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-
-    // ── Layer 2: specular overlay (style-specific) ────────────
-    ctx.beginPath();
-    ctx.arc(cx, cy, BALL_R, 0, Math.PI * 2);
-    const spec = ctx.createRadialGradient(
-        cx - BALL_R * .30, cy - BALL_R * .38, 1,
-        cx, cy, BALL_R
-    );
-    if (style === 'satin') {
-        spec.addColorStop(0,    'rgba(255,220,180,.55)');
-        spec.addColorStop(0.40, 'rgba(255,180,120,.08)');
-        spec.addColorStop(1,    'rgba(0,0,0,.18)');
-    } else if (style === 'crystal') {
-        spec.addColorStop(0,    'rgba(200,235,255,.70)');
-        spec.addColorStop(0.40, 'rgba(150,210,255,.12)');
-        spec.addColorStop(1,    'rgba(0,20,60,.25)');
-    } else if (style === 'fire') {
-        spec.addColorStop(0,    'rgba(255,200,80,.65)');
-        spec.addColorStop(0.40, 'rgba(255,100,20,.10)');
-        spec.addColorStop(1,    'rgba(60,0,0,.30)');
-    } else if (style === 'aurum') {
-        spec.addColorStop(0,    'rgba(255,240,140,.72)');
-        spec.addColorStop(0.40, 'rgba(220,180,50,.12)');
-        spec.addColorStop(1,    'rgba(40,20,0,.30)');
-    } else {  // neon (default)
-        spec.addColorStop(0,    'rgba(255,255,255,.62)');
-        spec.addColorStop(0.40, 'rgba(255,255,255,.10)');
-        spec.addColorStop(1,    'rgba(0,0,0,.22)');
-    }
-    ctx.fillStyle = spec;
-    ctx.fill();
-
-    // ── Layer 3: glint(s) ─────────────────────────────────────
-    if (style === 'aurum') {
-        // Two glints: primary + secondary sparkle
-        ctx.beginPath();
-        ctx.arc(cx - BALL_R*.28, cy - BALL_R*.30, BALL_R*.17, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255,255,180,.85)';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(cx + BALL_R*.18, cy - BALL_R*.40, BALL_R*.09, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255,255,200,.60)';
-        ctx.fill();
-    } else {
-        ctx.beginPath();
-        ctx.arc(cx - BALL_R*.28, cy - BALL_R*.30, BALL_R*.17, 0, Math.PI*2);
-        ctx.fillStyle = style === 'fire'    ? 'rgba(255,230,120,.80)' :
-                        style === 'crystal' ? 'rgba(220,240,255,.88)' :
-                        'rgba(255,255,255,.78)';
-        ctx.fill();
-    }
-
-    // ── Layer 4: rim light (all styles except neon) ───────────
-    if (style !== 'neon') {
-        ctx.beginPath();
-        ctx.arc(cx, cy, BALL_R, 0, Math.PI*2);
-        const rimColor = style === 'satin'   ? 'rgba(255,120,40,.25)'  :
-                         style === 'crystal' ? 'rgba(100,200,255,.28)' :
-                         style === 'fire'    ? 'rgba(255,80,0,.35)'    :
-                         /* aurum */           'rgba(255,200,0,.30)';
-        const rim = ctx.createRadialGradient(cx, cy, BALL_R*.6, cx, cy, BALL_R);
-        rim.addColorStop(0, 'rgba(0,0,0,0)');
-        rim.addColorStop(1, rimColor);
-        ctx.fillStyle = rim;
-        ctx.fill();
-    }
-
-    ctx.restore();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   DRAW: FLOATING BALL  (selected, hovering above tube)
-═══════════════════════════════════════════════════════════ */
-
-function drawFloatingBall(ts) {
-    if (G.selected === -1) return;
-    const tube = G.tubes[G.selected];
-    if (!tube.length) return;
-
-    const cx    = tubeCX(G.selected);
-    const color = tube[tube.length - 1];
-
-    // Lift animation: ease from resting position to float position
-    const restY    = ballCY(tube.length - 1);
-    const targetY  = floatY(ts);
-    const elapsed  = G.selectedTime >= 0 ? ts - G.selectedTime : DUR_LIFT;
-    const liftT    = Math.min(elapsed / DUR_LIFT, 1);
-    const ballY    = restY + (targetY - restY) * easeOutBack(liftT);
-
-    // Scale pulse once fully lifted
-    const pulse    = liftT >= 1 ? 1 + Math.sin(ts * 0.005) * 0.04 : 1;
-
-    ctx.save();
-    ctx.translate(cx, ballY);
-    ctx.scale(pulse, pulse);
-    drawBall(0, 0, color, /*floating=*/ true);
-    ctx.restore();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   DRAW: ARC BALL  (ball flying along parabolic path)
-═══════════════════════════════════════════════════════════ */
-
-function drawArcBall(ts, dt) {
-    const a       = ANIM.arc;
-    const elapsed = ts - a.startTime;
-    const rawT    = Math.min(elapsed / a.duration, 1);
-    const easedT  = easeInOut(rawT);
-    const pos     = bezier2(easedT, a.p0, a.p1, a.p2);
-
-    // Trail particle (dt-normalised probability)
-    if (rawT < 0.92 && Math.random() < 0.4 * dt * 60) {
-        const col = PALETTE[a.color];
-        spawnParticle(
-            pos.x + (Math.random()-.5)*4,
-            pos.y + (Math.random()-.5)*4,
-            (Math.random()-.5)*20,
-            -25 - Math.random()*20,
-            col.glow,
-            2 + Math.random()*2,
-            0.18 + Math.random()*0.08,
-            60
-        );
-    }
-
-    drawBall(pos.x, pos.y, a.color, /*floating=*/ true);
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   UI HELPERS
-═══════════════════════════════════════════════════════════ */
-
-/* ── Progress persistence ───────────────────────────────── */
-
-/** @returns {Object.<string, number>}  level → best stars (1–3) */
-function loadProgress() {
-    try { return JSON.parse(localStorage.getItem('colordrop_v1') || '{}'); }
-    catch { return {}; }
-}
-
-/**
- * Save stars for a level — only if the new result is better.
- * @param {number} levelNum
- * @param {number} stars   1–3
- */
-function saveStars(levelNum, stars) {
-    const data = loadProgress();
-    if ((data[levelNum] || 0) < stars) {
-        data[levelNum] = stars;
-        localStorage.setItem('colordrop_v1', JSON.stringify(data));
-    }
-}
-
-/* ── Daily Challenge persistence ───────────────────────── */
-
-function loadDaily() {
-    try { return JSON.parse(localStorage.getItem('colordrop_daily') || 'null') || {}; }
-    catch { return {}; }
-}
-function saveDaily(obj) {
-    localStorage.setItem('colordrop_daily', JSON.stringify(obj));
-}
-
-/* ── Stats persistence ──────────────────────────────────── */
-
-function loadStats() {
-    const def = { played:0, won:0, totalMoves:0, blitzPlayed:0, blitzWon:0, bestStreak:0, currentStreak:0 };
-    try { return Object.assign(def, JSON.parse(localStorage.getItem('colordrop_stats') || '{}')); }
-    catch { return def; }
-}
-function saveStats(obj) {
-    localStorage.setItem('colordrop_stats', JSON.stringify(obj));
-}
-
-/* ── Achievements persistence ───────────────────────────── */
-
-function loadAchievements() {
-    try { return JSON.parse(localStorage.getItem('colordrop_achievements') || '[]'); }
-    catch { return []; }
-}
-function saveAchievements(ids) {
-    localStorage.setItem('colordrop_achievements', JSON.stringify(ids));
-}
-
-/**
- * The highest level the player is allowed to start.
- * Always at least 1.
- */
-function maxUnlockedLevel() {
-    const keys = Object.keys(loadProgress()).map(Number);
-    return keys.length === 0 ? 1 : Math.max(...keys) + 1;
-}
-
-/* ── Level Select ───────────────────────────────────────── */
-
-const TIER_DEFS = [
-    { name: 'EASY',   cls: 'easy',   first: 1,  last: 15 },
-    { name: 'MEDIUM', cls: 'medium', first: 16, last: 30 },
-    { name: 'HARD',   cls: 'hard',   first: 31, last: 50 },
-    { name: 'EXPERT', cls: 'expert', first: 51, last: 75 },
-    { name: 'MASTER', cls: 'master', first: 76, last: Infinity },
-];
-
-/**
- * Rebuilds the level grid from current localStorage state.
- * Shows all levels from 1 to maxUnlockedLevel() + 3.
- */
-function buildLevelSelect() {
-    const progress    = loadProgress();
-    const maxUnlocked = maxUnlockedLevel();
-    const showUpTo    = maxUnlocked + 3;
-    const container   = document.getElementById('lsTiers');
-    container.innerHTML = '';
-
-    TIER_DEFS.forEach(tier => {
-        const tierEnd = Math.min(tier.last === Infinity ? showUpTo : tier.last, showUpTo);
-        if (tier.first > showUpTo) return;           // tier not yet reached
-
-        const section = document.createElement('div');
-        section.className = 'ls-tier';
-
-        const label = document.createElement('h3');
-        label.className = 'ls-tier-label ' + tier.cls;
-        label.textContent = tier.name;
-        section.appendChild(label);
-
-        const grid = document.createElement('div');
-        grid.className = 'ls-grid';
-
-        for (let n = tier.first; n <= tierEnd; n++) {
-            const stars    = progress[n] || 0;
-            const unlocked = n <= maxUnlocked;
-            const btn      = document.createElement('button');
-
-            btn.className = 'ls-card' +
-                (stars > 0  ? ' solved'  : '') +
-                (!unlocked  ? ' locked'  : '') +
-                (n === LEVEL.current ? ' current' : '');
-            btn.disabled       = !unlocked;
-            btn.dataset.level  = n;
-
-            if (unlocked) {
-                btn.innerHTML =
-                    '<span class="ls-num">' + (isTimedLevel(n) ? '⚡' : '') + n + (n === dailyLevelNum() ? ' 📅' : '') + '</span>' +
-                    (stars > 0 ? '<span class="ls-stars">' + '⭐'.repeat(stars) + '</span>' : '');
-                btn.addEventListener('click', () => {
-                    closeLevelSelect();
-                    generateLevel(n);
-                });
-            } else {
-                btn.innerHTML = '<span class="ls-num">🔒</span>';
-            }
-
-            grid.appendChild(btn);
-        }
-
-        section.appendChild(grid);
-        container.appendChild(section);
-    });
-}
-
-/* ── Tutorial ─────────────────────────────────────────── */
-
-function startTutorial() {
-    // Reset game state with the fixed tutorial puzzle
-    G.tutorial     = true;
-    G.tutStep      = 0;
-    G.won          = false;
-    G.moves        = 0;
-    G.selected     = -1;
-    G.selectedTime = -1;
-    G.history      = [];
-    G.flashTube    = -1;
-    G.flashUntil   = 0;
-    G.hintFrom     = -1;
-    G.hintTo       = -1;
-    G.hintUntil    = 0;
-    G.hintCooldown = false;
-    G.solvedTubes  = new Set();
-    ANIM.arc       = null;
-    ANIM.bounceMap = new Map();
-    ANIM.particles = [];
-    ANIM.busy      = false;
-
-    // Load fixed tutorial tubes (deep copy so mutations don't affect constant)
-    G.tubes = TUTORIAL_TUBES.map(t => [...t]);
-
-    // Close any open overlays
-    closeLevelSelect();
-    document.getElementById('overlay').classList.remove('show');
-
-    updateHUD();
-    advanceTutStep();
-}
-
-function endTutorial() {
-    localStorage.setItem('colordrop_tut_done', '1');
-    G.tutorial = false;
-    G.tutStep  = 0;
-    document.getElementById('tutBubble').classList.add('hidden');
-    generateLevel(1);
-}
-
-function advanceTutStep() {
-    const bubble  = document.getElementById('tutBubble');
-    const textEl  = document.getElementById('tutText');
-    const skipBtn = document.getElementById('tutSkip');
-
-    if (G.tutStep >= TUTORIAL_SCRIPT.length) {
-        // All steps done — show win message
-        textEl.textContent  = 'Gelöst! Du kennst jetzt alle Regeln.';
-        skipBtn.textContent = 'Los geht\'s →';
-        bubble.classList.remove('hidden');
-        return;
-    }
-
-    textEl.textContent  = TUTORIAL_SCRIPT[G.tutStep].text;
-    skipBtn.textContent = 'Überspringen';
-    bubble.classList.remove('hidden');
-}
-
-/** Show the level select overlay and scroll to the first unsolved playable level. */
-function openLevelSelect() {
-    G.isDailyChallenge = false;
-    buildLevelSelect();
-    updateDailyBtn();
-    hideOverlay();   // close win overlay if it was open
-    if (G.timer) { G.timer = null; }
-    ANIM.busy = false;
-    document.getElementById('blitzOverlay').classList.remove('show');
-    document.getElementById('dailyOverlay').classList.remove('show');
-    document.getElementById('timeoutOverlay').classList.remove('show');
-    document.getElementById('levelSelect').classList.add('show');
-    // scroll to the first playable-but-unsolved card
-    requestAnimationFrame(() => {
-        const first = document.querySelector('#lsTiers .ls-card:not(.solved):not(.locked)');
-        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-}
-
-/** Hide the level select overlay. */
-function closeLevelSelect() {
-    document.getElementById('levelSelect').classList.remove('show');
-}
-
-/**
- * Play a synthesized sound effect via ZzFX.
- * AudioContext is created lazily so iOS doesn't block before first gesture.
- * @param {'select'|'pop'|'invalid'|'solved'|'win'} name
- */
-function playSound(name) {
-    try {
-        if (!zzfxX) zzfxX = new AudioContext();
-        if (zzfxX.state === 'suspended') zzfxX.resume();
-        switch (name) {
-            // Light click when selecting a ball
-            case 'select':  zzfx(.35, .05, 900,    0, .01, .03, 0, 2);               break;
-            // Satisfying thud when ball lands (pitch drops)
-            case 'pop':     zzfx(.5,  .03, 220,    0, .04, .1,  0, 1.2, -10);        break;
-            // Harsh buzz for invalid move
-            case 'invalid': zzfx(.4,  .1,  120, .01, .04, .06, 3,  .5);             break;
-            // Bright chime when a tube is completed (pitch rises)
-            case 'solved':  zzfx(.4,  .02, 660, .02, .08, .12, 0, 1.5, 5);          break;
-            // Short crisp tick for Blitzrunde countdown (last 10 seconds)
-            case 'tick':    zzfx(.18, .01, 880,    0, .004, .04, 0, 2.2);              break;
-            // C-major arpeggio (C5 → E5 → G5)
-            case 'win':
-                zzfx(.5, .02, 523, .02, .10, .12, 0, 1.5);
-                setTimeout(() => zzfx(.5, .02, 659, .02, .10, .12, 0, 1.5), 130);
-                setTimeout(() => zzfx(.6, .02, 784, .03, .15, .18, 0, 1.5), 260);
-                break;
-        }
-    } catch(e) {}   // silently ignore if AudioContext is unavailable
-}
-
-function updateHUD() {
-    const mc  = document.getElementById('moveCount');
-    mc.textContent = G.moves;
-    mc.classList.remove('move-good', 'move-ok', 'move-over');
-    if (G.moves > 0) {
-        const par = parForLevel(LEVEL.current);
-        mc.classList.add(G.moves <= par       ? 'move-good' :
-                         G.moves <= par * 1.5 ? 'move-ok'   : 'move-over');
-    }
-    const timedMark = isTimedLevel(LEVEL.current) ? ' ⚡' : '';
-    document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier + timedMark;
-    document.getElementById('undoBtn').disabled       = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
-    document.getElementById('hintBtn').disabled       = G.tutorial || ANIM.busy || G.won || G.hintCooldown;
-    document.getElementById('resetBtn').disabled      = G.won;
-    document.getElementById('menuBtnHud').disabled    = ANIM.busy || G.won;
-}
-
-/* ── Stats + Achievements ───────────────────────────────── */
-
-/**
- * Increment play stats after a win. Returns the updated stats object.
- * @param {number}  levelNum
- * @param {number}  stars      1–3
- * @param {number}  moves
- * @param {boolean} isBlitz
- * @param {boolean} blitzWon
- */
-function updateStats(levelNum, stars, moves, isBlitz, blitzWon) {
-    const s = loadStats();
-    s.played++;
-    s.won++;
-    s.totalMoves += moves;
-    if (isBlitz) {
-        s.blitzPlayed++;
-        if (blitzWon) s.blitzWon++;
-    }
-    if (stars === 3) {
-        s.currentStreak++;
-        s.bestStreak = Math.max(s.bestStreak, s.currentStreak);
-    } else {
-        s.currentStreak = 0;
-    }
-    saveStats(s);
-    return s;
-}
-
-/**
- * Check all achievements and unlock any newly earned ones.
- * @param {{ levelNum:number, stars:number, stats:object, progress:object,
- *            isDaily:boolean, isBlitz:boolean }} ctx
- * @returns {string[]} IDs of newly unlocked achievements
- */
-function checkAchievements(ctx) {
-    const unlocked = new Set(loadAchievements());
-    const newIds   = [];
-
-    function check(id, condition) {
-        if (!unlocked.has(id) && condition) { unlocked.add(id); newIds.push(id); }
-    }
-
-    const wonCount = Object.keys(ctx.progress).length;
-
-    check('first_win',   true);
-    check('tier_medium', ctx.levelNum >= 16);
-    check('tier_hard',   ctx.levelNum >= 31);
-    check('tier_expert', ctx.levelNum >= 51);
-    check('tier_master', ctx.levelNum >= 76);
-    check('levels_10',   wonCount >= 10);
-    check('levels_25',   wonCount >= 25);
-    check('daily_first', ctx.isDaily);
-    check('par_first',   ctx.stars === 3);
-    check('three_star',  ctx.stars === 3);
-    check('streak_3',    ctx.stats.currentStreak >= 3);
-    check('streak_5',    ctx.stats.currentStreak >= 5);
-    check('blitz_first', ctx.isBlitz);
-    check('blitz_5',     ctx.stats.blitzWon >= 5);
-
-    if (newIds.length) saveAchievements([...unlocked]);
-    return newIds;
-}
-
-/* ── Stats Screen ────────────────────────────────────────── */
-
-function buildStatsScreen() {
-    const s   = loadStats();
-    const ach = loadAchievements();
-
-    const grid = document.getElementById('statsGrid');
-    grid.innerHTML = '';
-    const rows = [
-        ['Gespielte Level',   s.played],
-        ['Gewonnen',          s.won],
-        ['Gesamtzüge',        s.totalMoves.toLocaleString('de-CH')],
-        ['Blitzrunden',       s.blitzPlayed + ' gespielt · ' + s.blitzWon + ' gewonnen'],
-        ['Längste ★★★-Serie', s.bestStreak],
-    ];
-    for (const [label, value] of rows) {
-        const l = document.createElement('span');
-        l.className   = 'stats-label';
-        l.textContent = label;
-        const v = document.createElement('span');
-        v.className   = 'stats-value';
-        v.textContent = value;
-        grid.append(l, v);
-    }
-
-    document.getElementById('achCount').textContent =
-        'ACHIEVEMENTS ' + ach.length + ' / ' + ACHIEVEMENTS.length;
-    const achGrid = document.getElementById('achGrid');
-    achGrid.innerHTML = '';
-    for (const a of ACHIEVEMENTS) {
-        const span       = document.createElement('span');
-        const isUnlocked = ach.includes(a.id);
-        span.className   = 'ach-icon' + (isUnlocked ? ' unlocked' : '');
-        span.textContent = isUnlocked ? a.icon : '?';
-        span.title       = isUnlocked ? a.name + ': ' + a.desc : '???';
-        achGrid.appendChild(span);
-    }
-}
-
-function showStatsScreen() {
-    buildStatsScreen();
-    document.getElementById('statsScreen').classList.remove('hidden');
-}
-
-function hideStatsScreen() {
-    document.getElementById('statsScreen').classList.add('hidden');
-}
-
-function showWin() {
-    if (!G.won) return;   // player reset before the 600 ms timer fired
-    G.won = false;        // prevent re-entry (stats/achievements must only fire once)
-    const par   = parForLevel(LEVEL.current);
-    const stars = calcStars(G.moves, par);
-    const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
-    const blitzWon = isBlitz && G.timer !== null;  // timer not cleared on win; non-null = level was timed
-
-    saveStars(LEVEL.current, stars);
-
-    if (G.isDailyChallenge) {
-        const dt = new Date();
-        const today = dt.getFullYear() + '-' +
-            String(dt.getMonth() + 1).padStart(2, '0') + '-' +
-            String(dt.getDate()).padStart(2, '0');
-        saveDaily({ date: today, levelNum: LEVEL.current, completed: true, stars });
-    }
-
-    const stats    = updateStats(LEVEL.current, stars, G.moves, isBlitz, blitzWon);
-    const progress = loadProgress();
-    const newAchs  = checkAchievements({
-        levelNum: LEVEL.current, stars, stats, progress,
-        isDaily: G.isDailyChallenge, isBlitz,
-    });
-
-    document.getElementById('finalLevel').textContent = LEVEL.current;
-    document.getElementById('finalMoves').textContent = G.moves;
-    document.getElementById('winStars').textContent   = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
-    document.getElementById('winPar').textContent     = 'Par: ' + par;
-    document.getElementById('overlay').classList.add('show');
-
-    if (newAchs.length) showAchievementToast(newAchs);
-}
-
-function hideOverlay() {
-    document.getElementById('overlay').classList.remove('show');
-}
-
-
-/* ═══════════════════════════════════════════════════════════
-   POINTER / TOUCH EVENTS
-═══════════════════════════════════════════════════════════ */
-
-/**
- * Convert a MouseEvent or TouchEvent to logical canvas coordinates,
- * accounting for any CSS scaling applied to the canvas element.
- */
-function toCanvas(e) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = CW / rect.width;
-    const scaleY = CH / rect.height;
-    const src    = e.touches ? e.touches[0] : e;
-    return {
-        x: (src.clientX - rect.left) * scaleX,
-        y: (src.clientY - rect.top)  * scaleY,
-    };
-}
-
-canvas.addEventListener('click', e => {
-    const p = toCanvas(e);
-    handleInput(p.x, p.y);
-});
-
-// touchstart + preventDefault stops the 300 ms mobile tap delay
-canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-    const p = toCanvas(e);
-    handleInput(p.x, p.y);
-}, { passive: false });
-
-document.getElementById('menuBtnHud' ).addEventListener('click', openLevelSelect);
-document.getElementById('undoBtn'    ).addEventListener('click', undo);
-document.getElementById('hintBtn'    ).addEventListener('click', showHint);
-document.getElementById('resetBtn'   ).addEventListener('click', () => G.tutorial ? startTutorial() : generateLevel(LEVEL.current));
-document.getElementById('nextLevelBtn').addEventListener('click', () => {
-    generateLevel(LEVEL.current + 1);
-});
-document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect);
-document.getElementById('tutSkip'   ).addEventListener('click', endTutorial);
-document.getElementById('tutBtn'    ).addEventListener('click', () => { closeLevelSelect(); startTutorial(); });
-
-document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
-    document.getElementById('levelSelect').classList.remove('show');
-    showDailyOverlay();
-});
-
-document.getElementById('dailyStartBtn').addEventListener('click', () => {
-    document.getElementById('dailyOverlay').classList.remove('show');
-    G.isDailyChallenge = true;
-    generateLevel(dailyLevelNum());
-});
-
-document.getElementById('statsBtn'    ).addEventListener('click', showStatsScreen);
-document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
-document.getElementById('blitzStartBtn').addEventListener('click', () => {
-    document.getElementById('blitzOverlay').classList.remove('show');
-    G.timer.active  = true;
-    G.timer.endTime = performance.now() + G.timer.duration;
-    ANIM.busy       = false;
-});
-
-document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
-    document.getElementById('timeoutOverlay').classList.remove('show');
-    generateLevel(LEVEL.current);   // will show blitzOverlay again
-});
-
-window.addEventListener('resize', resizeCanvas);
-
-
-/* ═══════════════════════════════════════════════════════════
-   BOOTSTRAP
-═══════════════════════════════════════════════════════════ */
-
-// ── One-time migration: v2 level scaling resets all progress ──
-if (localStorage.getItem('colordrop_version') !== '2') {
-    localStorage.removeItem('colordrop_v1');
-    localStorage.removeItem('colordrop_stats');
-    localStorage.removeItem('colordrop_achievements');
-    localStorage.removeItem('colordrop_daily');
-    localStorage.removeItem('colordrop_tut_done');
-    localStorage.setItem('colordrop_version', '2');
-}
-
-resizeCanvas();                  // size canvas before first paint
-requestAnimationFrame(render);   // start render loop (shows animated background)
-if (!localStorage.getItem('colordrop_tut_done')) {
-    startTutorial();             // first ever launch → guided tutorial
-} else {
-    openLevelSelect();           // returning player → level select
-}
-</script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
+

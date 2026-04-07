@@ -152,20 +152,24 @@ export const TUTORIAL_SCRIPT = [
     step:    0,
     heading: 'Willkommen!',
     body:    'Tippe auf einen Behälter, um das oberste Knäuel auszuwählen.',
+    waitFor: 'select',
   },
   {
     step:    1,
     heading: 'Gut gemacht!',
     body:    'Jetzt tippe auf einen anderen Behälter, um das Knäuel hineinzulegen.',
+    waitFor: 'move',
   },
   {
     step:    2,
     heading: 'Super!',
     body:    'Sortiere alle Knäuel nach Farbe – jeder Behälter darf nur eine Farbe enthalten.',
+    waitFor: 'move',
   },
   {
     step:    3,
     heading: 'Fertig!',
     body:    'Du hast es geschafft! Viel Spaß beim Spielen.',
+    waitFor: 'win',
   },
 ];
