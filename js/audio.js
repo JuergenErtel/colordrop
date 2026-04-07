@@ -19,7 +19,7 @@ function zzfxG(e=1,f=.05,a=220,b=0,l=0,M=.1,m=0,F=1,N=0,z=0,Y=0,X=0,P=0,I=0,Q=0,
   let q=44100,w=2*Math.PI,L=q*b+9,r=q*l,v=q/a,h=0,n=0,D=0,k=1,A=[],
       C,G;
   try {
-    if(!zzfxX) zzfxX=new(window.AudioContext||window.webkitAudioContext);
+    if(!zzfxX) zzfxX=new(window.AudioContext||window.webkitAudioContext)();
     C=zzfxX.createBuffer(1,L+r,q);
     G=C.getChannelData(0);
   } catch { return null; }
