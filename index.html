@@ -626,7 +626,7 @@
                 <div class="hud-overlay">
                     <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
-                    <button class="hud-btn" id="hintBtn" aria-label="Tipp">💡</button>
+                    <button class="hud-btn" id="hintBtn" aria-label="Hint">💡</button>
                     <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>
@@ -1288,13 +1288,18 @@ function undo() {
 /** Show a hint: BFS-solve current state, highlight first move, cost 1 move. */
 function showHint() {
     if (ANIM.busy || G.won || G.tutorial) return;
-    const move = solveHint();
-    const btn  = document.getElementById('hintBtn');
+    const btn = document.getElementById('hintBtn');
+    let move;
+    try {
+        move = solveHint();
+    } catch (e) {
+        console.error('solveHint failed:', e);
+        return;
+    }
     if (!move) {
-        const orig    = btn.textContent;
         btn.textContent = '❌';
         btn.disabled    = true;
-        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+        setTimeout(() => { btn.textContent = '💡'; btn.disabled = false; }, 1500);
         return;
     }
     G.moves++;
