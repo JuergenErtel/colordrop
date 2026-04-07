@@ -683,6 +683,15 @@ function checkWinState(tubes) {
 function generateLevel(n) {
     LEVEL.current  = n;
     const cfg      = levelConfig(n);
+
+    // ── Theme: detect tier change, start fade ─────────────────
+    const newTheme = THEMES[cfg.tier];
+    if (G.theme !== newTheme) {
+        G.themePrev = G.theme;
+        G.theme     = newTheme;
+        G.themeFade = G.themePrev ? 0 : 1;   // skip fade on very first call
+    }
+
     let tubes;
     let retries = 0;
 
