@@ -1264,6 +1264,10 @@ function render(ts) {
     updateArc(ts);
     updateBounces(ts);
     updateParticles(dt);
+    if (G.themeFade < 1) {
+        G.themeFade = Math.min(G.themeFade + dt / 0.5, 1);  // 500 ms fade
+        if (G.themeFade >= 1) G.themePrev = null;
+    }
 
     // ── Draw ──────────────────────────────────────────────────
     drawBackground(ts);
@@ -1317,11 +1321,19 @@ function drawBackground(ts) {
     const cy = CH * (0.3  + 0.10 * Math.cos(t * 0.7));
     const r  = Math.hypot(CW, CH) * 0.65;
 
-    const grad = ctx.createRadialGradient(cx, cy, 0, CW/2, CH/2, r);
-    grad.addColorStop(0,   `hsl(${265+12*Math.sin(t*1.2)},60%,9%)`);
-    grad.addColorStop(0.5, `hsl(${230+ 8*Math.cos(t)     },55%,6%)`);
-    grad.addColorStop(1,   `hsl(${210+10*Math.sin(t*0.8) },50%,4%)`);
+    // Interpolate between previous and current theme during fade
+    const f    = G.themeFade;
+    const prev = G.themePrev || G.theme;
+    function lerp(a, b) { return a + (b - a) * f; }
+    const hues = G.theme.hues.map((h, i) => lerp(prev.hues[i], h));
+    const delt = G.theme.hueDelta.map((d, i) => lerp(prev.hueDelta[i], d));
+    const sat  = G.theme.sat.map((s, i) => lerp(prev.sat[i], s));
+    const bri  = G.theme.bri.map((b, i) => lerp(prev.bri[i], b));
 
+    const grad = ctx.createRadialGradient(cx, cy, 0, CW/2, CH/2, r);
+    grad.addColorStop(0,   `hsl(${hues[0]+delt[0]*Math.sin(t*1.2)},${sat[0]}%,${bri[0]}%)`);
+    grad.addColorStop(0.5, `hsl(${hues[1]+delt[1]*Math.cos(t)     },${sat[1]}%,${bri[1]}%)`);
+    grad.addColorStop(1,   `hsl(${hues[2]+delt[2]*Math.sin(t*0.8) },${sat[2]}%,${bri[2]}%)`);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, CW, CH);
 }
