@@ -1957,9 +1957,10 @@ function advanceTutStep() {
 function openLevelSelect() {
     buildLevelSelect();
     hideOverlay();   // close win overlay if it was open
-    if (G.timer && !G.timer.active) { G.timer = null; }
+    if (G.timer) { G.timer = null; }
     ANIM.busy = false;
     document.getElementById('blitzOverlay').classList.remove('show');
+    document.getElementById('timeoutOverlay').classList.remove('show');
     document.getElementById('levelSelect').classList.add('show');
     // scroll to the first playable-but-unsolved card
     requestAnimationFrame(() => {
