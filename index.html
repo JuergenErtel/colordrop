@@ -1879,7 +1879,7 @@ function buildLevelSelect() {
 
             if (unlocked) {
                 btn.innerHTML =
-                    '<span class="ls-num">' + n + '</span>' +
+                    '<span class="ls-num">' + (isTimedLevel(n) ? '⚡' + n : n) + '</span>' +
                     (stars > 0 ? '<span class="ls-stars">' + '⭐'.repeat(stars) + '</span>' : '');
                 btn.addEventListener('click', () => {
                     closeLevelSelect();
@@ -2013,7 +2013,8 @@ function updateHUD() {
         mc.classList.add(G.moves <= par       ? 'move-good' :
                          G.moves <= par * 1.5 ? 'move-ok'   : 'move-over');
     }
-    document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier;
+    const timedMark = isTimedLevel(LEVEL.current) ? ' ⚡' : '';
+    document.getElementById('levelLabel').textContent = 'LEVEL ' + LEVEL.current + ' · ' + levelConfig(LEVEL.current).tier + timedMark;
     document.getElementById('undoBtn').disabled       = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
     document.getElementById('resetBtn').disabled      = G.won;
     document.getElementById('menuBtnHud').disabled    = ANIM.busy || G.won;
