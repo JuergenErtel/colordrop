@@ -610,6 +610,31 @@
 
         .ls-num   { font-size: .95rem; font-weight: 500; line-height: 1; }
         .ls-stars { font-size: .65rem; letter-spacing: 1px; line-height: 1; }
+
+        .settings-grid {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: .6rem 1rem;
+          align-items: center;
+          margin-bottom: 1.4rem;
+          text-align: left;
+        }
+        .settings-label { color: rgba(255,255,255,.7); font-size: .85rem; }
+        .settings-control { display: flex; align-items: center; gap: .5rem; }
+        .settings-slider {
+          flex: 1; height: 4px;
+          -webkit-appearance: none; appearance: none;
+          background: rgba(255,255,255,.2); border-radius: 2px; outline: none;
+        }
+        .settings-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: var(--gold); cursor: pointer;
+        }
+        .settings-toggle {
+          background: none; border: none;
+          font-size: 1.1rem; cursor: pointer; padding: 2px;
+        }
     </style>
 </head>
 
@@ -650,7 +675,9 @@
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
             <div class="ls-actions">
                 <button id="dailyChallengeBtn" class="ls-action-btn" type="button">📅 Tages-Challenge</button>
+                <button id="endlessBtn" class="ls-action-btn" type="button">♾️ Endlos-Modus</button>
                 <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
+                <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>
             </div>
             <div class="ls-tiers" id="lsTiers"></div>
         </div>
@@ -716,6 +743,50 @@
 
     <!-- Achievement Toast -->
     <div id="achievementToast" class="achievement-toast"></div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen" class="screen-overlay hidden">
+      <div class="stats-card">
+        <h2 class="stats-title">EINSTELLUNGEN</h2>
+        <div class="settings-grid">
+          <label class="settings-label">Musik</label>
+          <div class="settings-control">
+            <input type="range" id="musicVolume" min="0" max="100" value="30" class="settings-slider">
+            <button id="musicToggle" class="settings-toggle" type="button">🔊</button>
+          </div>
+          <label class="settings-label">Effekte</label>
+          <div class="settings-control">
+            <input type="range" id="sfxVolume" min="0" max="100" value="70" class="settings-slider">
+            <button id="sfxToggle" class="settings-toggle" type="button">🔊</button>
+          </div>
+        </div>
+        <button class="win-btn" id="settingsBackBtn" type="button">← Zurück</button>
+      </div>
+    </div>
+
+    <!-- Endless Mode Overlay -->
+    <div id="endlessOverlay" class="blitz-overlay">
+      <div class="blitz-inner">
+        <h2 class="blitz-title">♾️ ENDLOS-MODUS</h2>
+        <p class="blitz-level" id="endlessRound">RUNDE 1</p>
+        <p class="blitz-time" id="endlessBest">Rekord: 0</p>
+        <button id="endlessStartBtn" class="blitz-btn" type="button">LOS!</button>
+      </div>
+    </div>
+
+    <!-- Endless Game Over Overlay -->
+    <div id="endlessGameOverOverlay" class="overlay">
+      <div class="win-card">
+        <div class="win-icon">😿</div>
+        <h2 class="win-title">GAME OVER</h2>
+        <p class="win-sub">Runde <b id="endlessFinalRound">0</b></p>
+        <p class="win-par" id="endlessBestDisplay">Rekord: 0</p>
+        <div class="win-actions">
+          <button class="win-btn" id="endlessRetryBtn" type="button">Nochmal</button>
+          <button class="win-btn win-btn--secondary" id="endlessMenuBtn" type="button">Menü</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Tutorial bubble -->
     <div id="tutBubble" class="tut-bubble hidden">

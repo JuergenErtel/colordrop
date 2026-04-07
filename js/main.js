@@ -13,6 +13,7 @@ import {
   loadAchievements, saveAchievements,
   isTutorialDone, markTutorialDone,
   migrateIfNeeded,
+  loadSettings, saveSettings, loadEndlessBest,
 } from './storage.js';
 
 import {
@@ -24,7 +25,10 @@ import {
 
 import { ANIM, resetAnim } from './animations.js';
 import { playSound } from './audio.js';
+import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
+import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
+import { ENDLESS, endlessConfig, generateEndlessTubes, endlessParForRound, startEndless, endlessNextRound, endEndless } from './endless.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -122,6 +126,7 @@ function generateLevel(n) {
 
   updateHUD();
   hideOverlay();
+  startMusic(levelConfig(n).tier);
 }
 
 function doMove(from, to) {
@@ -283,9 +288,13 @@ function updateHUD() {
       G.moves <= par * 1.5 ? 'move-ok'   : 'move-over'
     );
   }
-  const timedMark = isTimedLevel(LEVEL.current) ? ' \u26A1' : '';
-  document.getElementById('levelLabel').textContent =
-    'LEVEL ' + LEVEL.current + ' \u00B7 ' + levelConfig(LEVEL.current).tier + timedMark;
+  if (ENDLESS.active) {
+    document.getElementById('levelLabel').textContent = 'ENDLOS \u00B7 RUNDE ' + ENDLESS.round;
+  } else {
+    const timedMark = isTimedLevel(LEVEL.current) ? ' \u26A1' : '';
+    document.getElementById('levelLabel').textContent =
+      'LEVEL ' + LEVEL.current + ' \u00B7 ' + levelConfig(LEVEL.current).tier + timedMark;
+  }
   document.getElementById('undoBtn').disabled    = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
   document.getElementById('hintBtn').disabled    = G.tutorial || ANIM.busy || G.won || G.hintCooldown;
   document.getElementById('resetBtn').disabled   = G.won;
@@ -316,6 +325,12 @@ function showWin() {
     levelNum: LEVEL.current, stars, stats, progress,
     isDaily: G.isDailyChallenge, isBlitz,
   });
+
+  if (ENDLESS.active) {
+    endlessNextRound();
+    setTimeout(() => loadEndlessRound(), 800);
+    return;
+  }
 
   document.getElementById('finalLevel').textContent = LEVEL.current;
   document.getElementById('finalMoves').textContent = G.moves;
@@ -507,6 +522,7 @@ function buildLevelSelect() {
 }
 
 function openLevelSelect() {
+  if (ENDLESS.active) { endEndless(); stopMusic(); }
   G.isDailyChallenge = false;
   buildLevelSelect();
   updateDailyBtn();
@@ -700,6 +716,97 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
 
 window.addEventListener('resize', resizeCanvas);
 
+// ── Settings ───────────────────────────────────────────────
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  const s = loadSettings();
+  document.getElementById('musicVolume').value = Math.round(s.musicVolume * 100);
+  document.getElementById('sfxVolume').value = Math.round(s.sfxVolume * 100);
+  document.getElementById('musicToggle').textContent = s.musicEnabled ? '🔊' : '🔇';
+  document.getElementById('sfxToggle').textContent = s.sfxEnabled ? '🔊' : '🔇';
+  document.getElementById('settingsScreen').classList.remove('hidden');
+});
+document.getElementById('settingsBackBtn').addEventListener('click', () => {
+  document.getElementById('settingsScreen').classList.add('hidden');
+});
+document.getElementById('musicVolume').addEventListener('input', (e) => {
+  const vol = parseInt(e.target.value) / 100;
+  setMusicVolume(vol);
+  const s = loadSettings(); s.musicVolume = vol; saveSettings(s);
+});
+document.getElementById('sfxVolume').addEventListener('input', (e) => {
+  const vol = parseInt(e.target.value) / 100;
+  setSfxVolume(vol);
+  const s = loadSettings(); s.sfxVolume = vol; saveSettings(s);
+});
+document.getElementById('musicToggle').addEventListener('click', () => {
+  const on = !isMusicEnabled();
+  setMusicEnabled(on);
+  document.getElementById('musicToggle').textContent = on ? '🔊' : '🔇';
+  if (on && !ENDLESS.active) startMusic(levelConfig(LEVEL.current).tier);
+  const s = loadSettings(); s.musicEnabled = on; saveSettings(s);
+});
+document.getElementById('sfxToggle').addEventListener('click', () => {
+  const on = !isSfxEnabled();
+  setSfxEnabled(on);
+  document.getElementById('sfxToggle').textContent = on ? '🔊' : '🔇';
+  const s = loadSettings(); s.sfxEnabled = on; saveSettings(s);
+});
+
+// ── Endless Mode ──────────────────────────────────────────
+document.getElementById('endlessBtn').addEventListener('click', () => {
+  closeLevelSelect();
+  document.getElementById('endlessRound').textContent = 'RUNDE 1';
+  document.getElementById('endlessBest').textContent = 'Rekord: ' + loadEndlessBest();
+  document.getElementById('endlessOverlay').classList.add('show');
+});
+document.getElementById('endlessStartBtn').addEventListener('click', () => {
+  document.getElementById('endlessOverlay').classList.remove('show');
+  startEndless();
+  loadEndlessRound();
+});
+document.getElementById('endlessRetryBtn').addEventListener('click', () => {
+  document.getElementById('endlessGameOverOverlay').classList.remove('show');
+  startEndless();
+  loadEndlessRound();
+});
+document.getElementById('endlessMenuBtn').addEventListener('click', () => {
+  document.getElementById('endlessGameOverOverlay').classList.remove('show');
+  openLevelSelect();
+});
+
+function loadEndlessRound() {
+  const cfg = endlessConfig(ENDLESS.round);
+  const newTheme = THEMES[cfg.tier];
+  if (G.theme !== newTheme) {
+    G.themePrev = G.theme;
+    G.theme     = newTheme;
+    G.themeFade = G.themePrev ? 0 : 1;
+  }
+  G.tubes        = generateEndlessTubes(ENDLESS.round);
+  G.selected     = -1;
+  G.selectedTime = -1;
+  G.moves        = 0;
+  G.history      = [];
+  G.won          = false;
+  G.flashTube    = -1;
+  G.flashUntil   = 0;
+  G.hintFrom     = -1;
+  G.hintTo       = -1;
+  G.hintUntil    = 0;
+  G.hintCooldown = false;
+  G.solvedTubes  = new Set();
+  G.timer        = null;
+  G.isDailyChallenge = false;
+  resetAnim();
+  LEVEL.current = ENDLESS.round;
+  document.getElementById('timerBar').classList.remove('visible', 'pulse');
+  document.getElementById('blitzOverlay').classList.remove('show');
+  document.getElementById('timeoutOverlay').classList.remove('show');
+  startMusic(cfg.tier);
+  updateHUD();
+  hideOverlay();
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 //  RENDER LOOP
 // ══════════════════════════════════════════════════════════════════════════
@@ -714,6 +821,11 @@ function loop(ts) {
 // ══════════════════════════════════════════════════════════════════════════
 
 migrateIfNeeded();
+const savedSettings = loadSettings();
+setMusicVolume(savedSettings.musicVolume);
+setSfxVolume(savedSettings.sfxVolume);
+setMusicEnabled(savedSettings.musicEnabled);
+setSfxEnabled(savedSettings.sfxEnabled);
 resizeCanvas();
 requestAnimationFrame(loop);
 
