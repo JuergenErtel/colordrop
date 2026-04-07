@@ -873,6 +873,9 @@ const G = {
     isDailyChallenge: false, // true when the current level was started via Daily Challenge
     flashTube:    -1,    // tube showing red flash
     flashUntil:   0,     // rAF timestamp when flash ends
+    hintFrom:     -1,    // hint source tube index (-1 = inactive)
+    hintTo:       -1,    // hint destination tube index (-1 = inactive)
+    hintUntil:    0,     // frameTime timestamp when hint highlight expires
     frameTime:    0,     // current rAF timestamp
     lastTime:     -1,    // previous rAF timestamp (delta-time)
     solvedTubes:  new Set(), // tubes already exploded (no double-trigger)
@@ -1050,6 +1053,9 @@ function generateLevel(n) {
     G.won          = false;
     G.flashTube    = -1;
     G.flashUntil   = 0;
+    G.hintFrom     = -1;
+    G.hintTo       = -1;
+    G.hintUntil    = 0;
     G.solvedTubes  = new Set();
     ANIM.arc       = null;
     ANIM.bounceMap = new Map();
@@ -1238,6 +1244,7 @@ function doMove(from, to) {
     G.tubes[from].pop();
     G.tubes[to].push(color);
     G.moves++;
+    G.hintFrom = G.hintTo = -1;
     updateHUD();
 
     // ── Start arc animation ──
@@ -1265,6 +1272,7 @@ function undo() {
     G.selectedTime = -1;
     G.moves        = Math.max(0, G.moves - 1);
     G.won          = false;
+    G.hintFrom     = G.hintTo = -1;
     // Recalculate solved set after undo
     G.solvedTubes = new Set();
     for (let i = 0; i < G.tubes.length; i++) {
