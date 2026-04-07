@@ -908,16 +908,27 @@ const LEVEL = { current: 1 };
  * @returns {{ colors: string[], empty: number, tier: string }}
  */
 function levelConfig(n) {
-    if (n <=  3) return { colors: ['cyan','magenta'],                                    empty: 2, tier: 'EASY'   };
-    if (n <=  8) return { colors: ['cyan','magenta','lime'],                             empty: 2, tier: 'MEDIUM' };
-    if (n <= 15) return { colors: ['cyan','magenta','lime','yellow'],                    empty: 2, tier: 'HARD'   };
-    if (n <= 25) return { colors: ['cyan','magenta','lime','yellow','orange'],           empty: 1, tier: 'EXPERT' };
+    if (n <= 15) return { colors: ['cyan','magenta'],                                    empty: 2, tier: 'EASY'   };
+    if (n <= 30) return { colors: ['cyan','magenta','lime'],                             empty: 2, tier: 'MEDIUM' };
+    if (n <= 50) return { colors: ['cyan','magenta','lime','yellow'],                    empty: 2, tier: 'HARD'   };
+    if (n <= 75) return { colors: ['cyan','magenta','lime','yellow','orange'],           empty: 1, tier: 'EXPERT' };
     return           { colors: ['cyan','magenta','lime','yellow','orange','pink'], empty: 1, tier: 'MASTER' };
 }
 
-/** Par = colours × 5. Scales fairly across all tiers. */
+/** Intra-tier difficulty factor: 0.0 at tier start, 1.0 at tier end. */
+function tierDifficulty(n) {
+    const ranges = [
+        [1, 15], [16, 30], [31, 50], [51, 75], [76, 100],
+    ];
+    const r = ranges.find(([lo, hi]) => n >= lo && n <= hi) || ranges[ranges.length - 1];
+    return Math.min(1, (n - r[0]) / Math.max(1, r[1] - r[0]));
+}
+
+/** Par interpolates from generous (colors×6) to strict (colors×5) within each tier. */
 function parForLevel(n) {
-    return levelConfig(n).colors.length * 5;
+    const colors = levelConfig(n).colors.length;
+    const d      = tierDifficulty(n);
+    return Math.round(colors * (6 - d));
 }
 
 /** True for every 5th level — these are Blitzrunden with a countdown timer. */
