@@ -642,6 +642,26 @@ const PALETTE = {
 };
 
 /* ═══════════════════════════════════════════════════════════
+   ACHIEVEMENTS
+═══════════════════════════════════════════════════════════ */
+const ACHIEVEMENTS = [
+    { id:'first_win',   icon:'🏆', name:'Erster Sieg',         desc:'Erstes Level gewonnen' },
+    { id:'tier_medium', icon:'🔥', name:'Aufsteiger',           desc:'MEDIUM-Tier erreicht' },
+    { id:'tier_hard',   icon:'❄️', name:'Eisbrecher',           desc:'HARD-Tier erreicht' },
+    { id:'tier_expert', icon:'🌋', name:'Vulkanläufer',         desc:'EXPERT-Tier erreicht' },
+    { id:'tier_master', icon:'👑', name:'Meister',              desc:'MASTER-Tier erreicht' },
+    { id:'levels_10',   icon:'⭐', name:'Zehner',               desc:'10 Level gelöst' },
+    { id:'levels_25',   icon:'🌟', name:'Vierteljahrhundert',   desc:'25 Level gelöst' },
+    { id:'daily_first', icon:'📅', name:'Tagesmensch',          desc:'Erste Daily Challenge' },
+    { id:'par_first',   icon:'🎯', name:'Scharf',               desc:'Level in Par gelöst' },
+    { id:'three_star',  icon:'✨', name:'Perfektion',           desc:'3 Sterne erreicht' },
+    { id:'streak_3',    icon:'🔥', name:'Dreier-Serie',         desc:'3× 3 Sterne in Folge' },
+    { id:'streak_5',    icon:'💥', name:'Fünfer-Serie',         desc:'5× 3 Sterne in Folge' },
+    { id:'blitz_first', icon:'⚡', name:'Blitzsieger',          desc:'Blitzrunde gewonnen' },
+    { id:'blitz_5',     icon:'⚡⚡',name:'Blitzmeister',         desc:'5 Blitzrunden gewonnen' },
+];
+
+/* ═══════════════════════════════════════════════════════════
    VISUAL THEMES  (one per tier — background + ball style)
 ═══════════════════════════════════════════════════════════ */
 
@@ -723,6 +743,7 @@ const G = {
     themePrev:    null,     // previous THEMES entry during fade, null when no transition
     themeFade:    1,        // 0→1 progress of theme-change fade (500 ms)
     timer:        null,     // null | { active, endTime, duration, _lastTick }
+    isDailyChallenge: false, // true when the current level was started via Daily Challenge
     flashTube:    -1,    // tube showing red flash
     flashUntil:   0,     // rAF timestamp when flash ends
     frameTime:    0,     // current rAF timestamp
@@ -1818,6 +1839,37 @@ function saveStars(levelNum, stars) {
         data[levelNum] = stars;
         localStorage.setItem('colordrop_v1', JSON.stringify(data));
     }
+}
+
+/* ── Daily Challenge persistence ───────────────────────── */
+
+function loadDaily() {
+    try { return JSON.parse(localStorage.getItem('colordrop_daily') || 'null') || {}; }
+    catch { return {}; }
+}
+function saveDaily(obj) {
+    localStorage.setItem('colordrop_daily', JSON.stringify(obj));
+}
+
+/* ── Stats persistence ──────────────────────────────────── */
+
+function loadStats() {
+    const def = { played:0, won:0, totalMoves:0, blitzPlayed:0, blitzWon:0, bestStreak:0, currentStreak:0 };
+    try { return Object.assign(def, JSON.parse(localStorage.getItem('colordrop_stats') || '{}')); }
+    catch { return def; }
+}
+function saveStats(obj) {
+    localStorage.setItem('colordrop_stats', JSON.stringify(obj));
+}
+
+/* ── Achievements persistence ───────────────────────────── */
+
+function loadAchievements() {
+    try { return JSON.parse(localStorage.getItem('colordrop_achievements') || '[]'); }
+    catch { return []; }
+}
+function saveAchievements(ids) {
+    localStorage.setItem('colordrop_achievements', JSON.stringify(ids));
 }
 
 /**
