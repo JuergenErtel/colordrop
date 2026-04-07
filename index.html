@@ -692,6 +692,16 @@
         </div>
     </div>
 
+    <!-- Daily Challenge Interstitial -->
+    <div id="dailyOverlay" class="blitz-overlay">
+        <div class="blitz-inner">
+            <h2 class="blitz-title">📅 TAGES-CHALLENGE</h2>
+            <p class="blitz-level" id="dailyDate"></p>
+            <p class="blitz-time" id="dailyLevelLabel"></p>
+            <button id="dailyStartBtn" class="blitz-btn" type="button">SPIELEN</button>
+        </div>
+    </div>
+
     <!-- Stats Screen -->
     <div id="statsScreen" class="screen-overlay hidden">
         <div class="stats-card">
@@ -939,6 +949,43 @@ function checkWinState(tubes) {
  *
  * @param {number} n  Level number (1-based)
  */
+/* ── Daily Challenge ─────────────────────────────────────── */
+
+/** Returns today's daily challenge level number (1–25, same for all players on same date). */
+function dailyLevelNum() {
+    const dateStr = new Date().toISOString().slice(0, 10);  // "2026-04-07"
+    let hash = 0;
+    for (const ch of dateStr) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff;
+    return (Math.abs(hash) % 25) + 1;   // Level 1–25 (EASY–EXPERT; MASTER excluded intentionally)
+}
+
+/** Populate and show the Daily Challenge announcement overlay. */
+function showDailyOverlay() {
+    const n         = dailyLevelNum();
+    const cfg       = levelConfig(n);
+    const dateLabel = new Date().toLocaleDateString('de-DE', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+    document.getElementById('dailyDate').textContent       = dateLabel;
+    document.getElementById('dailyLevelLabel').textContent = 'Level ' + n + ' · ' + cfg.tier;
+    document.getElementById('dailyOverlay').style.setProperty('--blitz-color', THEMES[cfg.tier].accentColor);
+    document.getElementById('dailyOverlay').classList.add('show');
+}
+
+/** Update the daily challenge button text based on today's play status. */
+function updateDailyBtn() {
+    const daily = loadDaily();
+    const today = new Date().toISOString().slice(0, 10);
+    const btn   = document.getElementById('dailyChallengeBtn');
+    if (daily.date === today && daily.completed) {
+        btn.textContent = '📅 Heute: ' + '⭐'.repeat(daily.stars) + ' — morgen wieder';
+        btn.disabled    = true;
+    } else {
+        btn.textContent = '📅 Tages-Challenge';
+        btn.disabled    = false;
+    }
+}
+
 /** Populate and show the Blitzrunde announcement overlay. */
 function showBlitzOverlay(n) {
     const cfg = levelConfig(n);
@@ -1004,7 +1051,7 @@ function generateLevel(n) {
     ANIM.busy      = false;
 
     // 4. Timer setup — timed levels show Blitz overlay first (timer starts on BEREIT!)
-    if (isTimedLevel(n)) {
+    if (isTimedLevel(n) && !G.isDailyChallenge) {
         G.timer    = { active: false, endTime: 0, duration: timerDuration(n), _lastTick: -1 };
         ANIM.busy  = true;   // block input until BEREIT! is clicked
         document.getElementById('timeoutOverlay').classList.remove('show');
@@ -2073,7 +2120,7 @@ function buildLevelSelect() {
 
             if (unlocked) {
                 btn.innerHTML =
-                    '<span class="ls-num">' + (isTimedLevel(n) ? '⚡' + n : n) + '</span>' +
+                    '<span class="ls-num">' + (isTimedLevel(n) ? '⚡' : '') + n + (n === dailyLevelNum() ? ' 📅' : '') + '</span>' +
                     (stars > 0 ? '<span class="ls-stars">' + '⭐'.repeat(stars) + '</span>' : '');
                 btn.addEventListener('click', () => {
                     closeLevelSelect();
@@ -2149,11 +2196,14 @@ function advanceTutStep() {
 
 /** Show the level select overlay and scroll to the first unsolved playable level. */
 function openLevelSelect() {
+    G.isDailyChallenge = false;
     buildLevelSelect();
+    updateDailyBtn();
     hideOverlay();   // close win overlay if it was open
     if (G.timer) { G.timer = null; }
     ANIM.busy = false;
     document.getElementById('blitzOverlay').classList.remove('show');
+    document.getElementById('dailyOverlay').classList.remove('show');
     document.getElementById('timeoutOverlay').classList.remove('show');
     document.getElementById('levelSelect').classList.add('show');
     // scroll to the first playable-but-unsolved card
@@ -2402,6 +2452,17 @@ document.getElementById('nextLevelBtn').addEventListener('click', () => {
 document.getElementById('menuBtn'    ).addEventListener('click', openLevelSelect);
 document.getElementById('tutSkip'   ).addEventListener('click', endTutorial);
 document.getElementById('tutBtn'    ).addEventListener('click', () => { closeLevelSelect(); startTutorial(); });
+
+document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
+    document.getElementById('levelSelect').classList.remove('show');
+    showDailyOverlay();
+});
+
+document.getElementById('dailyStartBtn').addEventListener('click', () => {
+    document.getElementById('dailyOverlay').classList.remove('show');
+    G.isDailyChallenge = true;
+    generateLevel(dailyLevelNum());
+});
 
 document.getElementById('statsBtn'    ).addEventListener('click', showStatsScreen);
 document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
