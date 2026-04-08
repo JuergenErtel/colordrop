@@ -634,15 +634,15 @@ function checkAchievements(achCtx) {
 
   check('first_solve',    true);
   check('cat_nap',        false); // TODO: streak tracking by date
-  check('paw_print',      wonCount >= 10);
+  check('paw_print',      wonCount >= 20);
   check('pride_of_lions', wonCount >= 50);
-  check('cat_king',       achCtx.levelNum >= 25);
-  check('yarn_ball',      threeStarCount >= 5);
+  check('cat_king',       achCtx.levelNum >= 30);
+  check('yarn_ball',      threeStarCount >= 10);
   check('tangled',        threeStarCount >= 20);
   check('daily_player',   achCtx.isDaily);
-  check('sharpshooter',   achCtx.stars === 3);
-  check('star_collector', totalStars >= 30);
-  check('hot_streak',     (achCtx.stats.currentStreak || 0) >= 3);
+  check('sharpshooter',   threeStarCount >= 3);
+  check('star_collector', totalStars >= 60);
+  check('hot_streak',     (achCtx.stats.currentStreak || 0) >= 5);
   check('purrfect',       threeStarCount >= 10);
   check('lightning_paw',  achCtx.isBlitz && achCtx.stars >= 2); // simplified check
 

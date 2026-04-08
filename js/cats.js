@@ -8,7 +8,7 @@ export const CATS = [
     breed: 'Russisch Blau',
     emoji: '😺',
     fact: 'Russisch-Blau-Katzen gelten als hypoallergen – sie produzieren weniger Fel-d-1-Protein als andere Rassen.',
-    unlock: { type: 'level', value: 10 },
+    unlock: { type: 'level', value: 20 },
     premium: false,
   },
   {
@@ -17,7 +17,7 @@ export const CATS = [
     breed: 'Schottische Faltohr',
     emoji: '😸',
     fact: 'Schottische Faltohren kommunizieren mit leisen, melodischen Miau-Lauten und gelten als besonders sanftmütig.',
-    unlock: { type: 'level', value: 25 },
+    unlock: { type: 'level', value: 40 },
     premium: false,
   },
   {
@@ -26,7 +26,7 @@ export const CATS = [
     breed: 'Maine Coon',
     emoji: '😻',
     fact: 'Maine Coons sind die größte Hauskatzenrasse der Welt – Männchen erreichen oft über 8 kg Körpergewicht.',
-    unlock: { type: 'level', value: 50 },
+    unlock: { type: 'level', value: 75 },
     premium: false,
   },
   {
@@ -35,7 +35,7 @@ export const CATS = [
     breed: 'Siamkatze',
     emoji: '😽',
     fact: 'Siamkatzen sind für ihre Gesprächigkeit bekannt – sie "unterhalten" sich gerne stundenlang mit ihren Besitzern.',
-    unlock: { type: 'level', value: 75 },
+    unlock: { type: 'level', value: 100 },
     premium: false,
   },
   {
@@ -44,7 +44,7 @@ export const CATS = [
     breed: 'Bombay',
     emoji: '🐱',
     fact: 'Bombay-Katzen werden wegen ihres glänzend-schwarzen Fells und ihrer goldenen Augen oft als "Miniatur-Panther" bezeichnet.',
-    unlock: { type: 'level', value: 100 },
+    unlock: { type: 'level', value: 150 },
     premium: false,
   },
   {
@@ -53,7 +53,7 @@ export const CATS = [
     breed: 'Norwegische Waldkatze',
     emoji: '😼',
     fact: 'Norwegische Waldkatzen haben ein doppeltes, wasserabweisendes Fell – perfekt für die rauen skandinavischen Winter.',
-    unlock: { type: 'level', value: 150 },
+    unlock: { type: 'level', value: 200 },
     premium: false,
   },
   {
@@ -62,7 +62,7 @@ export const CATS = [
     breed: 'Türkisch Angora',
     emoji: '😺',
     fact: 'Türkisch-Angora-Katzen sind oft zweifarbig-äugig (Heterochromie) und gehören zu den ältesten Reinzuchtrassen der Welt.',
-    unlock: { type: 'level', value: 200 },
+    unlock: { type: 'level', value: 250 },
     premium: false,
   },
   {
@@ -71,7 +71,7 @@ export const CATS = [
     breed: 'Britisch Kurzhaar',
     emoji: '😸',
     fact: 'Britisch-Kurzhaar-Katzen haben das dichteste Fell aller Hauskatzenrassen und wurden als Vorbild für den Cheshire Cat verwendet.',
-    unlock: { type: 'level', value: 250 },
+    unlock: { type: 'level', value: 300 },
     premium: false,
   },
   {
@@ -80,7 +80,7 @@ export const CATS = [
     breed: 'Savannah',
     emoji: '🦁',
     fact: 'Savannah-Katzen sind Hybriden aus Serval und Hauskatze – sie können bis zu einem Meter Höhe springen.',
-    unlock: { type: 'level', value: 300 },
+    unlock: { type: 'level', value: 350 },
     premium: false,
   },
   {
