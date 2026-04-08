@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CatSort</title>
+    <title>Kittysort</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         /* ── Reset & Design Tokens ──────────────────────────── */
@@ -152,7 +152,7 @@
             background: rgba(50,30,18,.90);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
-            z-index: 200;
+            z-index: 9200;
             opacity: 0;
             pointer-events: none;
             transition: opacity .3s ease;
@@ -227,7 +227,7 @@
             padding: .6rem 1.4rem;
             font-size: .9rem;
             color: #fff;
-            z-index: 400;
+            z-index: 9400;
             opacity: 0;
             transition: opacity .3s;
             pointer-events: none;
@@ -337,7 +337,7 @@
             background: rgba(60,40,25,.80);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
-            z-index: 300;
+            z-index: 9300;
             opacity: 0;
             pointer-events: none;
             transition: opacity .4s ease;
@@ -428,12 +428,12 @@
 
         /* ── Level Select ───────────────────────────────────── */
         .level-select {
-            position: fixed; inset: 0; z-index: 200;
+            position: fixed; inset: 0; z-index: 9100;
             display: flex; align-items: flex-start; justify-content: center;
             overflow-y: auto;
-            background: rgba(60,40,25,.94);
-            backdrop-filter: blur(20px);          /* progressive enhancement */
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(20,10,35,.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: 2rem 1rem 4rem;
             opacity: 0;
             pointer-events: none;
@@ -531,7 +531,7 @@
         .screen-overlay {
             position: fixed;
             inset: 0;
-            z-index: 250;
+            z-index: 9250;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -700,13 +700,325 @@
           border-radius: 8px; color: var(--gold); cursor: pointer;
         }
         .premium-btn:hover { background: rgba(212,135,63,.35); }
+
+        /* ══════════════════════════════════════════════════════
+           SPLASH SCREEN — Cinematic Kittysort Landing
+           ══════════════════════════════════════════════════════ */
+        .splash {
+            position: fixed; inset: 0; z-index: 9000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden;
+            /* Deep warm gradient: night violet → fireplace orange */
+            background:
+                radial-gradient(ellipse 120% 80% at 50% 110%, rgba(255,140,50,.35) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(90,40,120,.4) 0%, transparent 50%),
+                radial-gradient(ellipse 80% 60% at 80% 30%, rgba(30,20,80,.5) 0%, transparent 50%),
+                linear-gradient(175deg, #1a0a2e 0%, #2d1b4e 25%, #3a1a3a 45%, #4a2020 70%, #6b3517 90%, #a85420 100%);
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: opacity .8s cubic-bezier(.4,0,.2,1), transform .8s cubic-bezier(.4,0,.2,1);
+        }
+        .splash.hiding {
+            opacity: 0;
+            transform: scale(1.08);
+            pointer-events: none;
+        }
+        .splash.hidden { display: none; }
+        .splash.bg-only .splash-content { display: none; }
+        .splash.bg-only .splash-version { display: none; }
+
+        /* Vignette overlay */
+        .splash::before {
+            content: '';
+            position: absolute; inset: 0; z-index: 1;
+            background: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 40%, rgba(10,5,20,.7) 100%);
+            pointer-events: none;
+        }
+
+        /* Particle canvas */
+        .splash-particles {
+            position: absolute; inset: 0; z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Content wrapper */
+        .splash-content {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 0;
+            width: 100%; max-width: 500px;
+            padding: 1rem;
+        }
+
+        /* ── Logo ── */
+        .splash-logo {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: clamp(3rem, 12vw, 5.5rem);
+            line-height: 1;
+            letter-spacing: .04em;
+            color: #fff;
+            text-shadow:
+                0 2px 0 #e88a3a,
+                0 4px 0 #d4723a,
+                0 6px 0 #b55a30,
+                0 8px 0 #8a4020,
+                0 10px 20px rgba(0,0,0,.5),
+                0 0 60px rgba(255,160,60,.25);
+            animation: splashFloat 4s ease-in-out infinite;
+            margin-bottom: .15em;
+            text-align: center;
+        }
+        .splash-logo span {
+            display: inline-block;
+        }
+        .splash-logo .letter-i {
+            position: relative;
+        }
+        /* Paw print replaces the dot on the 'i' — three CSS circles */
+        .splash-logo .letter-i::after {
+            content: '';
+            position: absolute;
+            top: -.08em; left: 50%;
+            transform: translateX(-50%);
+            width: .22em; height: .18em;
+            background:
+                radial-gradient(circle at 30% 20%, #ffcba4 28%, transparent 29%),
+                radial-gradient(circle at 70% 20%, #ffcba4 28%, transparent 29%),
+                radial-gradient(circle at 15% 60%, #ffcba4 22%, transparent 23%),
+                radial-gradient(circle at 85% 60%, #ffcba4 22%, transparent 23%),
+                radial-gradient(circle at 50% 65%, #ffcba4 35%, transparent 36%);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+        }
+
+        @keyframes splashFloat {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-8px); }
+        }
+
+        .splash-tagline {
+            font-size: clamp(.7rem, 2.5vw, .95rem);
+            letter-spacing: .35em;
+            text-transform: uppercase;
+            color: rgba(255,220,180,.5);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* ── Cat Scene ── */
+        .splash-scene {
+            position: relative;
+            width: clamp(280px, 75vw, 380px);
+            height: clamp(220px, 55vw, 300px);
+            margin-bottom: 2rem;
+        }
+
+        /* Cat SVG */
+        .splash-cat {
+            position: absolute;
+            bottom: 10%; left: 50%;
+            transform: translateX(-50%);
+            width: clamp(130px, 35vw, 180px);
+            filter: drop-shadow(0 8px 24px rgba(0,0,0,.5));
+        }
+        .cat-body {
+            fill: #3a3a4a;
+        }
+        .cat-belly {
+            fill: #555568;
+        }
+        .cat-ear-inner {
+            fill: #c97a8a;
+        }
+        .cat-eye {
+            fill: #7bde7b;
+        }
+        .cat-pupil {
+            fill: #1a1a2e;
+        }
+        .cat-nose {
+            fill: #c97a8a;
+        }
+        .cat-mouth {
+            stroke: #555568;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+        }
+        .cat-whisker {
+            stroke: rgba(200,200,220,.4);
+            fill: none;
+            stroke-width: 1;
+            stroke-linecap: round;
+        }
+        .cat-tail {
+            fill: #3a3a4a;
+            transform-origin: 85% 90%;
+            animation: tailWag 3s ease-in-out infinite;
+        }
+        @keyframes tailWag {
+            0%, 100% { transform: rotate(-8deg); }
+            50%      { transform: rotate(12deg); }
+        }
+
+        /* Cat breathing */
+        .cat-chest {
+            animation: catBreathe 3.5s ease-in-out infinite;
+            transform-origin: 50% 80%;
+        }
+        @keyframes catBreathe {
+            0%, 100% { transform: scaleY(1); }
+            50%      { transform: scaleY(1.03); }
+        }
+
+        /* Cat blinking */
+        .cat-eyelid {
+            fill: #3a3a4a;
+            transform: scaleY(0);
+            transform-origin: 50% 50%;
+            animation: catBlink 4s ease-in-out infinite;
+        }
+        @keyframes catBlink {
+            0%, 92%, 100% { transform: scaleY(0); }
+            95%, 97%      { transform: scaleY(1); }
+        }
+
+        /* ── Yarn Balls ── */
+        .yarn-ball {
+            position: absolute;
+            width: clamp(42px, 11vw, 60px);
+            height: clamp(42px, 11vw, 60px);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+            will-change: transform;
+        }
+        .yarn-ball:hover, .yarn-ball:active {
+            transform: scale(1.2) rotate(20deg) !important;
+        }
+        .yarn-ball svg { width: 100%; height: 100%; }
+
+        .yarn-ball--red    { bottom: 5%;  left: 8%;  animation: yarnBob 3.2s ease-in-out infinite; }
+        .yarn-ball--blue   { bottom: 15%; right: 5%; animation: yarnBob 3.8s ease-in-out infinite .5s; }
+        .yarn-ball--green  { bottom: 0%;  left: 35%; animation: yarnBob 3.5s ease-in-out infinite 1s; }
+        .yarn-ball--yellow { bottom: 12%; right: 28%; animation: yarnBob 4s ease-in-out infinite 1.5s; }
+        .yarn-ball--purple { top: 20%;    right: 8%;  animation: yarnBob 3.6s ease-in-out infinite 2s; }
+
+        @keyframes yarnBob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50%      { transform: translateY(-6px) rotate(5deg); }
+        }
+
+        /* ── Play Button ── */
+        .splash-play {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: #fff;
+            border: none;
+            padding: .85em 2.8em;
+            border-radius: 100px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            /* Juicy gradient */
+            background: linear-gradient(135deg, #56c95a 0%, #3ab54a 50%, #2d9e3a 100%);
+            box-shadow:
+                0 4px 0 #1f7a2a,
+                0 6px 0 #155a1e,
+                0 8px 20px rgba(0,0,0,.4),
+                inset 0 2px 0 rgba(255,255,255,.25),
+                0 0 40px rgba(80,200,90,.3);
+            animation: playPulse 2s ease-in-out infinite;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .splash-play:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 6px 0 #1f7a2a,
+                0 8px 0 #155a1e,
+                0 10px 30px rgba(0,0,0,.45),
+                inset 0 2px 0 rgba(255,255,255,.25),
+                0 0 60px rgba(80,200,90,.4);
+        }
+        .splash-play:active {
+            transform: translateY(3px);
+            box-shadow:
+                0 1px 0 #1f7a2a,
+                0 2px 0 #155a1e,
+                0 3px 10px rgba(0,0,0,.3),
+                inset 0 2px 0 rgba(255,255,255,.15);
+            animation: none;
+        }
+        /* Shine sweep */
+        .splash-play::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.2) 50%, transparent 100%);
+            animation: shineSweep 3s ease-in-out infinite;
+        }
+        @keyframes shineSweep {
+            0%, 70%, 100% { left: -100%; }
+            40%            { left: 150%; }
+        }
+        @keyframes playPulse {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.04); }
+        }
+
+        /* ── Version tag ── */
+        .splash-version {
+            position: absolute;
+            bottom: 1rem; right: 1.2rem;
+            font-size: .6rem;
+            color: rgba(255,255,255,.15);
+            letter-spacing: .1em;
+            z-index: 10;
+        }
+
+        /* ── Ambient glow orbs (CSS only) ── */
+        .splash-orb {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(60px);
+            opacity: .35;
+        }
+        .splash-orb--warm {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,120,40,.6) 0%, transparent 70%);
+            bottom: -5%; left: 10%;
+            animation: orbDrift 8s ease-in-out infinite alternate;
+        }
+        .splash-orb--cool {
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(100,60,180,.5) 0%, transparent 70%);
+            top: 5%; right: 5%;
+            animation: orbDrift 10s ease-in-out infinite alternate-reverse;
+        }
+        .splash-orb--fire {
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255,80,40,.4) 0%, transparent 70%);
+            bottom: 15%; right: 20%;
+            animation: orbDrift 7s ease-in-out infinite alternate .5s;
+        }
+        @keyframes orbDrift {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -20px) scale(1.15); }
+        }
     </style>
 </head>
 
 <body>
     <div class="wrap">
         <header class="header">
-            <h1 class="title">CatSort</h1>
+            <h1 class="title">Kittysort</h1>
             <p class="tagline">sort · schnurr · solve</p>
         </header>
 
@@ -736,7 +1048,7 @@
     <!-- Level Select -->
     <div class="level-select" id="levelSelect">
         <div class="ls-inner">
-            <h1 class="ls-title">CatSort</h1>
+            <h1 class="ls-title">Kittysort</h1>
             <p class="ls-tagline">sort · schnurr · solve</p>
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
             <div class="ls-actions">
@@ -887,7 +1199,7 @@
 
     <!-- Premium Banner -->
     <div class="premium-banner" id="premiumBanner">
-      <span>🐾 CatSort Premium — Keine Werbung, unbegrenzte Hints & Undos</span>
+      <span>🐾 Kittysort Premium — Keine Werbung, unbegrenzte Hints & Undos</span>
       <button class="premium-btn" id="premiumBtn" type="button">4,99€</button>
     </div>
 
@@ -908,6 +1220,107 @@
     <div id="tutBubble" class="tut-bubble hidden">
         <span id="tutText"></span>
         <button id="tutSkip" class="tut-skip" type="button">Überspringen</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SPLASH SCREEN — Cinematic Kittysort Landing
+         ═══════════════════════════════════════════════════════ -->
+    <div class="splash" id="splashScreen">
+        <!-- Ambient glow orbs -->
+        <div class="splash-orb splash-orb--warm"></div>
+        <div class="splash-orb splash-orb--cool"></div>
+        <div class="splash-orb splash-orb--fire"></div>
+
+        <!-- Particle layer -->
+        <canvas class="splash-particles" id="splashParticles"></canvas>
+
+        <div class="splash-content">
+            <!-- Logo -->
+            <h1 class="splash-logo" aria-label="Kittysort">
+                <span>K</span><span class="letter-i">i</span><span>t</span><span>t</span><span>y</span><span>s</span><span>o</span><span>r</span><span>t</span>
+            </h1>
+            <p class="splash-tagline">sort · schnurr · solve</p>
+
+            <!-- Cat & Yarn Scene -->
+            <div class="splash-scene">
+                <!-- Yarn Balls -->
+                <div class="yarn-ball yarn-ball--red">
+                    <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#e74c3c"/><ellipse cx="30" cy="30" rx="26" ry="12" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/><ellipse cx="30" cy="30" rx="12" ry="26" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/><ellipse cx="30" cy="30" rx="20" ry="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5" transform="rotate(45 30 30)"/><circle cx="22" cy="22" r="6" fill="rgba(255,255,255,.12)"/></svg>
+                </div>
+                <div class="yarn-ball yarn-ball--blue">
+                    <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#3498db"/><ellipse cx="30" cy="30" rx="26" ry="12" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/><ellipse cx="30" cy="30" rx="12" ry="26" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/><ellipse cx="30" cy="30" rx="20" ry="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5" transform="rotate(45 30 30)"/><circle cx="22" cy="22" r="6" fill="rgba(255,255,255,.12)"/></svg>
+                </div>
+                <div class="yarn-ball yarn-ball--green">
+                    <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#2ecc71"/><ellipse cx="30" cy="30" rx="26" ry="12" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/><ellipse cx="30" cy="30" rx="12" ry="26" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/><ellipse cx="30" cy="30" rx="20" ry="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5" transform="rotate(45 30 30)"/><circle cx="22" cy="22" r="6" fill="rgba(255,255,255,.12)"/></svg>
+                </div>
+                <div class="yarn-ball yarn-ball--yellow">
+                    <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#f1c40f"/><ellipse cx="30" cy="30" rx="26" ry="12" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/><ellipse cx="30" cy="30" rx="12" ry="26" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/><ellipse cx="30" cy="30" rx="20" ry="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5" transform="rotate(45 30 30)"/><circle cx="22" cy="22" r="6" fill="rgba(255,255,255,.12)"/></svg>
+                </div>
+                <div class="yarn-ball yarn-ball--purple">
+                    <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#9b59b6"/><ellipse cx="30" cy="30" rx="26" ry="12" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/><ellipse cx="30" cy="30" rx="12" ry="26" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/><ellipse cx="30" cy="30" rx="20" ry="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1.5" transform="rotate(45 30 30)"/><circle cx="22" cy="22" r="6" fill="rgba(255,255,255,.12)"/></svg>
+                </div>
+
+                <!-- Cat SVG -->
+                <svg class="splash-cat" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Tail -->
+                    <path class="cat-tail" d="M155 165 C175 150, 190 125, 185 105 C182 92, 170 90, 165 100 C160 110, 162 130, 150 150"/>
+                    <!-- Body group (breathing) -->
+                    <g class="cat-chest">
+                        <!-- Body -->
+                        <ellipse class="cat-body" cx="100" cy="160" rx="55" ry="38"/>
+                        <!-- Belly -->
+                        <ellipse class="cat-belly" cx="100" cy="168" rx="30" ry="22"/>
+                        <!-- Head -->
+                        <circle class="cat-body" cx="100" cy="105" r="38"/>
+                        <!-- Ears -->
+                        <polygon class="cat-body" points="70,80 58,48 85,72"/>
+                        <polygon class="cat-body" points="130,80 142,48 115,72"/>
+                        <polygon class="cat-ear-inner" points="72,76 63,55 82,72"/>
+                        <polygon class="cat-ear-inner" points="128,76 137,55 118,72"/>
+                        <!-- Eyes -->
+                        <ellipse class="cat-eye" cx="85" cy="100" rx="8" ry="9"/>
+                        <ellipse class="cat-eye" cx="115" cy="100" rx="8" ry="9"/>
+                        <ellipse class="cat-pupil" cx="85" cy="101" rx="4" ry="7"/>
+                        <ellipse class="cat-pupil" cx="115" cy="101" rx="4" ry="7"/>
+                        <!-- Eyelids for blinking -->
+                        <ellipse class="cat-eyelid" cx="85" cy="100" rx="9" ry="10"/>
+                        <ellipse class="cat-eyelid" cx="115" cy="100" rx="9" ry="10"/>
+                        <!-- Eye shine -->
+                        <circle cx="82" cy="97" r="2.5" fill="rgba(255,255,255,.7)"/>
+                        <circle cx="112" cy="97" r="2.5" fill="rgba(255,255,255,.7)"/>
+                        <!-- Nose -->
+                        <polygon class="cat-nose" points="100,112 96,108 104,108"/>
+                        <!-- Mouth -->
+                        <path class="cat-mouth" d="M100 112 Q94 118 88 115"/>
+                        <path class="cat-mouth" d="M100 112 Q106 118 112 115"/>
+                        <!-- Whiskers -->
+                        <line class="cat-whisker" x1="75" y1="108" x2="45" y2="103"/>
+                        <line class="cat-whisker" x1="75" y1="112" x2="42" y2="115"/>
+                        <line class="cat-whisker" x1="75" y1="116" x2="48" y2="125"/>
+                        <line class="cat-whisker" x1="125" y1="108" x2="155" y2="103"/>
+                        <line class="cat-whisker" x1="125" y1="112" x2="158" y2="115"/>
+                        <line class="cat-whisker" x1="125" y1="116" x2="152" y2="125"/>
+                        <!-- Front paws -->
+                        <ellipse class="cat-body" cx="75" cy="190" rx="14" ry="8"/>
+                        <ellipse class="cat-body" cx="125" cy="190" rx="14" ry="8"/>
+                        <!-- Paw toes -->
+                        <circle cx="69" cy="188" r="3" fill="#555568"/>
+                        <circle cx="75" cy="186" r="3" fill="#555568"/>
+                        <circle cx="81" cy="188" r="3" fill="#555568"/>
+                        <circle cx="119" cy="188" r="3" fill="#555568"/>
+                        <circle cx="125" cy="186" r="3" fill="#555568"/>
+                        <circle cx="131" cy="188" r="3" fill="#555568"/>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Play Button -->
+            <button class="splash-play" id="splashPlayBtn" type="button">
+                ▶ &nbsp;Spielen
+            </button>
+        </div>
+
+        <span class="splash-version">v2.0</span>
     </div>
 
 <script type="module" src="js/main.js"></script>

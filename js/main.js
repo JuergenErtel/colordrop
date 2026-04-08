@@ -41,6 +41,7 @@ import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
 import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
 import { ENDLESS, endlessConfig, generateEndlessTubes, endlessParForRound, startEndless, endlessNextRound, endEndless } from './endless.js';
+import { initSplash, hideSplash, showSplash } from './splash.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -629,6 +630,8 @@ function openLevelSelect() {
   document.getElementById('blitzOverlay').classList.remove('show');
   document.getElementById('dailyOverlay').classList.remove('show');
   document.getElementById('timeoutOverlay').classList.remove('show');
+  // Show splash as atmospheric background behind level select
+  showSplash(true);
   document.getElementById('levelSelect').classList.add('show');
   requestAnimationFrame(() => {
     const first = document.querySelector('#lsTiers .ls-card:not(.solved):not(.locked)');
@@ -638,6 +641,7 @@ function openLevelSelect() {
 
 function closeLevelSelect() {
   document.getElementById('levelSelect').classList.remove('show');
+  hideSplash();
 }
 
 // ── Stats Screen ─────────────────────────────────────────────────────────
@@ -1051,8 +1055,15 @@ updatePremiumBanner();
 resizeCanvas();
 requestAnimationFrame(loop);
 
-if (!isTutorialDone()) {
-  startTutorial();
-} else {
-  openLevelSelect();
-}
+// ── Splash screen flow ───────────────────────────────────────────────────
+initSplash();
+
+document.getElementById('splashPlayBtn').addEventListener('click', async () => {
+  playSound('tap');
+  await hideSplash();
+  if (!isTutorialDone()) {
+    startTutorial();
+  } else {
+    openLevelSelect();
+  }
+});
