@@ -120,6 +120,14 @@ export function saveCollection(ids) {
   localStorage.setItem(`${PREFIX}-collection`, JSON.stringify(ids));
 }
 
+// ── Mascot ───────────────────────────────────────────────────────────────
+export function loadMascot() {
+  return localStorage.getItem(`${PREFIX}-mascot`) || 'default';
+}
+export function saveMascot(id) {
+  localStorage.setItem(`${PREFIX}-mascot`, id);
+}
+
 // ── Economy (coin balance) ────────────────────────────────────────────────
 export function loadEconomy() {
   try { return JSON.parse(localStorage.getItem(`${PREFIX}-economy`) || '0'); }

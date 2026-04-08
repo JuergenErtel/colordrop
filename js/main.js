@@ -26,6 +26,7 @@ import {
   loadSettings, saveSettings, loadEndlessBest,
   loadCollection, saveCollection,
   loadStreak, saveStreak,
+  loadMascot, saveMascot,
 } from './storage.js';
 
 import {
@@ -1066,13 +1067,17 @@ document.getElementById('catDetailBack').addEventListener('click', () => {
 
 function buildAlbumScreen() {
   const owned = new Set(loadCollection());
+  const currentMascot = loadMascot();
   document.getElementById('albumCount').textContent = owned.size + ' / ' + CATS.length;
   const grid = document.getElementById('albumGrid');
   grid.innerHTML = '';
   for (const cat of CATS) {
     const isOwned = owned.has(cat.id);
     const cell = document.createElement('div');
-    cell.className = 'album-cell' + (!isOwned ? ' locked' : '') + (!isOwned && cat.premium ? ' premium-locked' : '');
+    cell.className = 'album-cell'
+      + (!isOwned ? ' locked' : '')
+      + (!isOwned && cat.premium ? ' premium-locked' : '')
+      + (isOwned && cat.id === currentMascot ? ' mascot' : '');
 
     if (isOwned) {
       // Draw cat portrait on a small canvas
@@ -1117,6 +1122,26 @@ function showCatDetail(cat) {
   document.getElementById('catName').textContent = cat.name;
   document.getElementById('catBreed').textContent = cat.breed;
   document.getElementById('catFact').textContent = cat.fact;
+
+  // Mascot button
+  const mascotBtn = document.getElementById('mascotBtn');
+  const current = loadMascot();
+  if (current === cat.id) {
+    mascotBtn.textContent = 'Dein Maskottchen ✓';
+    mascotBtn.classList.add('active');
+    mascotBtn.onclick = null;
+  } else {
+    mascotBtn.textContent = 'Als Maskottchen wählen';
+    mascotBtn.classList.remove('active');
+    mascotBtn.onclick = () => {
+      saveMascot(cat.id);
+      mascotBtn.textContent = 'Dein Maskottchen ✓';
+      mascotBtn.classList.add('active');
+      mascotBtn.onclick = null;
+      buildAlbumScreen(); // refresh gold border
+    };
+  }
+
   document.getElementById('catDetailOverlay').classList.remove('hidden');
 }
 

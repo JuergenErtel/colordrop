@@ -707,6 +707,35 @@
         .album-cell.locked { opacity: .3; cursor: default; font-size: 1rem; }
         .album-cell.locked:hover { transform: none; background: rgba(255,255,255,.06); }
         .album-cell.premium-locked { border-color: rgba(212,135,63,.3); opacity: .5; }
+        .album-cell.mascot {
+            border: 2px solid rgba(255,200,50,.8);
+            box-shadow: 0 0 8px rgba(255,200,50,.3);
+        }
+
+        .mascot-btn {
+            display: block;
+            margin: .8rem auto .4rem;
+            padding: .5rem 1.2rem;
+            background: rgba(255,200,50,.2);
+            border: 1px solid rgba(255,200,50,.5);
+            border-radius: 12px;
+            color: #FFD54F;
+            font-family: 'Fredoka', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, transform .1s;
+        }
+        .mascot-btn:hover {
+            background: rgba(255,200,50,.35);
+            transform: scale(1.03);
+        }
+        .mascot-btn.active {
+            background: rgba(255,200,50,.1);
+            border-color: rgba(255,200,50,.3);
+            color: rgba(255,220,150,.7);
+            cursor: default;
+        }
 
         /* ── Cat Detail ────────────────────────────────────────── */
         .cat-detail { max-width: 280px; }
@@ -1246,6 +1275,7 @@
         <h2 class="stats-title" id="catName">Mochi</h2>
         <p class="cat-breed" id="catBreed">Britisch Kurzhaar</p>
         <p class="cat-fact" id="catFact">Fun fact here.</p>
+        <button class="mascot-btn" id="mascotBtn" type="button">Als Maskottchen wählen</button>
         <button class="win-btn" id="catDetailBack" type="button">← Zurück</button>
       </div>
     </div>
