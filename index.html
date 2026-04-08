@@ -102,16 +102,17 @@
         .hud-btn {
             width: 38px; height: 38px;
             border-radius: 50%;
-            background: rgba(160,120,80,.12);
-            border: 1px solid rgba(160,120,80,.20);
+            background: rgba(160,120,80,.15);
+            border: 1px solid rgba(160,120,80,.25);
             color: var(--text);
             font-size: 1rem;
             line-height: 1;
             cursor: pointer;
-            transition: background .15s, border-color .15s, transform .1s, opacity .2s;
+            box-shadow: 0 2px 0 rgba(0,0,0,.2);
+            transition: background .15s, border-color .15s, transform .1s, box-shadow .1s, opacity .2s;
         }
-        .hud-btn:hover         { background: rgba(160,120,80,.22); border-color: rgba(160,120,80,.35); }
-        .hud-btn:active        { transform: scale(.92); }
+        .hud-btn:hover         { background: rgba(160,120,80,.25); border-color: rgba(160,120,80,.4); }
+        .hud-btn:active        { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,.2); }
         .hud-btn:disabled      { opacity: .35; cursor: default; pointer-events: none; }
 
         /* ── Hint button — visually distinct as game help ────── */
@@ -163,7 +164,10 @@
             font-family: var(--f-head);
             font-size: 1.1rem;
             letter-spacing: .08em;
-            color: var(--gold);
+            background: linear-gradient(180deg, #FFD700, #d4873f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* Move counter colour coding relative to par */
@@ -292,8 +296,8 @@
             left: 50%;
             transform: translateX(-50%);
             width: min(420px, 90vw);
-            background: rgba(60,40,25,.92);
-            border: 1px solid rgba(255,255,255,.18);
+            background: linear-gradient(135deg, rgba(80,45,25,.95), rgba(60,35,20,.95));
+            border: 1px solid rgba(255,215,0,.2);
             border-radius: 14px;
             padding: .9rem 1.1rem;
             display: flex;
@@ -311,7 +315,7 @@
         .tut-skip {
             flex-shrink: 0;
             font-size: .75rem;
-            color: rgba(255,255,255,.45);
+            color: rgba(255,215,0,.6);
             background: none;
             border: none;
             cursor: pointer;
@@ -681,7 +685,7 @@
             text-align: left;
         }
         .stats-label { color: rgba(255,255,255,.55); font-size: .85rem; }
-        .stats-value { color: #fff; font-size: .85rem; font-weight: 600; text-align: right; }
+        .stats-value { color: var(--gold); font-size: .85rem; font-weight: 600; text-align: right; }
         .stats-sub {
             font-family: var(--f-mono);
             font-size: .75rem;
@@ -696,8 +700,8 @@
             justify-content: center;
             margin-bottom: 1.6rem;
         }
-        .ach-icon         { font-size: 1.4rem; opacity: .2; cursor: default; }
-        .ach-icon.unlocked { opacity: 1; }
+        .ach-icon         { font-size: 1.4rem; opacity: .2; cursor: default; transition: opacity .2s; }
+        .ach-icon.unlocked { opacity: 1; filter: drop-shadow(0 0 6px rgba(255,215,0,.3)); }
 
         .ls-grid {
             display: flex;
@@ -759,17 +763,19 @@
           margin-bottom: 1.4rem;
           text-align: left;
         }
-        .settings-label { color: rgba(255,255,255,.7); font-size: .85rem; }
+        .settings-label { color: rgba(255,255,255,.8); font-size: .85rem; font-weight: 500; }
         .settings-control { display: flex; align-items: center; gap: .5rem; }
         .settings-slider {
           flex: 1; height: 4px;
           -webkit-appearance: none; appearance: none;
-          background: rgba(255,255,255,.2); border-radius: 2px; outline: none;
+          background: rgba(255,215,0,.15); border-radius: 2px; outline: none;
         }
         .settings-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 16px; height: 16px; border-radius: 50%;
-          background: var(--gold); cursor: pointer;
+            -webkit-appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            box-shadow: 0 2px 4px rgba(0,0,0,.3);
+            cursor: pointer;
         }
         .settings-toggle {
           background: none; border: none;
@@ -793,13 +799,13 @@
         .album-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: .5rem; margin-bottom: 1.2rem; }
         .album-cell {
           aspect-ratio: 1; border-radius: 10px;
-          background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+          background: rgba(255,255,255,.06); border: 1px solid rgba(255,215,0,.12);
           display: flex; align-items: center; justify-content: center;
           font-size: 1.6rem; cursor: pointer;
           transition: transform .1s, background .15s;
         }
         .album-cell:hover { background: rgba(255,255,255,.12); transform: scale(1.05); }
-        .album-cell.locked { opacity: .3; cursor: default; font-size: 1rem; }
+        .album-cell.locked { opacity: .25; cursor: default; font-size: 1rem; }
         .album-cell.locked:hover { transform: none; background: rgba(255,255,255,.06); }
         .album-cell.premium-locked { border-color: rgba(212,135,63,.3); opacity: .5; }
         .album-cell.mascot {
@@ -856,19 +862,23 @@
           display: flex; align-items: center; justify-content: center; gap: .8rem;
           padding: .5rem 1rem;
           background: rgba(60,40,25,.92);
-          border-top: 1px solid rgba(212,135,63,.25);
+          border-top: 1px solid rgba(255,215,0,.3);
+          box-shadow: 0 -4px 20px rgba(0,0,0,.3);
           font-size: .7rem; color: rgba(255,255,255,.6);
           z-index: 100;
         }
         .premium-banner.hidden { display: none; }
         .premium-btn {
-          font-family: var(--f-head); font-size: .7rem;
-          padding: .3rem .8rem;
-          background: rgba(212,135,63,.20);
-          border: 1px solid rgba(212,135,63,.50);
-          border-radius: 8px; color: var(--gold); cursor: pointer;
+            font-family: 'Fredoka', sans-serif; font-size: .7rem; font-weight: 600;
+            padding: .35rem .9rem;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            border: none;
+            border-radius: 100px; color: #4a2000; cursor: pointer;
+            box-shadow: 0 2px 0 #B8860B, 0 3px 8px rgba(0,0,0,.3);
+            transition: transform .1s, box-shadow .1s;
         }
-        .premium-btn:hover { background: rgba(212,135,63,.35); }
+        .premium-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 0 #B8860B, 0 5px 12px rgba(0,0,0,.3); }
+        .premium-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #B8860B; }
 
         /* ══════════════════════════════════════════════════════
            CAT UNLOCK CELEBRATION
