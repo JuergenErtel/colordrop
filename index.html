@@ -516,18 +516,37 @@
             margin-top: -.75rem;
         }
 
-        .ls-tier { display: flex; flex-direction: column; gap: .6rem; }
+        .ls-tier {
+            display: flex; flex-direction: column; align-items: center; gap: .6rem;
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.1);
+        }
+        .ls-tier-connector {
+            width: 2px; height: 15px;
+            background: rgba(255,255,255,.1);
+            margin: 0 auto;
+        }
 
         .ls-tier-label {
-            font-family: var(--f-head);
-            font-size: .95rem;
-            letter-spacing: .18em;
+            font-family: 'Fredoka', sans-serif;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            text-align: center;
         }
         .ls-tier-label.easy   { color: #d4873f; }
         .ls-tier-label.medium { color: #b07baa; }
         .ls-tier-label.hard   { color: #6ba3a0; }
         .ls-tier-label.expert { color: #c96b4f; }
         .ls-tier-label.master { color: #c9a84c; }
+        .ls-tier.easy   { background: rgba(212,135,63,.08); border-color: rgba(212,135,63,.2); }
+        .ls-tier.medium { background: rgba(176,123,170,.08); border-color: rgba(176,123,170,.2); }
+        .ls-tier.hard   { background: rgba(107,163,160,.08); border-color: rgba(107,163,160,.2); }
+        .ls-tier.expert { background: rgba(201,107,79,.08); border-color: rgba(201,107,79,.2); }
+        .ls-tier.master { background: rgba(201,168,76,.08); border-color: rgba(201,168,76,.2); }
+        .ls-tier.tier-locked { opacity: .5; }
 
         .ls-tut-btn {
             position: absolute;
@@ -665,32 +684,56 @@
         .ach-icon.unlocked { opacity: 1; }
 
         .ls-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
             gap: .6rem;
         }
 
         .ls-card {
-            aspect-ratio: 1;
-            border-radius: 12px;
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.12);
+            width: 48px; height: 48px;
+            border-radius: 50%;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            gap: 2px;
+            gap: 1px;
             cursor: pointer;
-            transition: background .15s, transform .1s;
-            font-family: var(--f-mono);
-            color: var(--text);
+            transition: transform .15s, box-shadow .15s;
+            font-family: 'Fredoka', sans-serif;
+            border: none;
         }
-        .ls-card:hover:not(:disabled) { background: rgba(255,255,255,.13); transform: scale(1.04); }
-        .ls-card:active:not(:disabled){ transform: scale(.96); }
-        .ls-card.solved  { border-color: rgba(247,201,72,.38); }
-        .ls-card.locked  { opacity: .35; cursor: default; }
-        .ls-card.current { border-color: rgba(255,255,255,.45); }
+        .ls-card:hover:not(:disabled) { transform: scale(1.1); }
+        .ls-card:active:not(:disabled){ transform: scale(.93); }
 
-        .ls-num   { font-size: .95rem; font-weight: 500; line-height: 1; }
-        .ls-stars { font-size: .65rem; letter-spacing: 1px; line-height: 1; }
+        .ls-card.solved {
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            box-shadow: 0 3px 0 #B8860B, 0 0 15px rgba(255,200,0,.2);
+            color: #4a2000;
+        }
+        .ls-card.locked {
+            background: rgba(255,255,255,.05);
+            border: 2px solid rgba(255,255,255,.1);
+            cursor: default;
+            color: rgba(255,255,255,.2);
+        }
+        .ls-card.current {
+            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            box-shadow: 0 3px 0 #4C1D95, 0 0 20px rgba(139,92,246,.3);
+            color: #fff;
+            animation: nodeGlow 2s infinite alternate;
+        }
+        .ls-card:not(.solved):not(.locked):not(.current) {
+            background: rgba(255,255,255,.08);
+            border: 2px solid rgba(255,255,255,.2);
+            color: rgba(255,255,255,.7);
+        }
+
+        @keyframes nodeGlow {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+
+        .ls-num   { font-size: .8rem; font-weight: 800; line-height: 1; }
+        .ls-stars { font-size: .4rem; letter-spacing: 0; line-height: 1; }
 
         .settings-grid {
           display: grid;

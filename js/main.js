@@ -746,16 +746,26 @@ function buildLevelSelect() {
   const container   = document.getElementById('lsTiers');
   container.innerHTML = '';
 
-  TIER_DEFS.forEach(tier => {
+  TIER_DEFS.forEach((tier, idx) => {
     const tierEnd = Math.min(tier.maxLevel, showUpTo);
     if (tier.minLevel > showUpTo) return;
 
-    const section = document.createElement('div');
-    section.className = 'ls-tier';
+    // Connector between tiers (not before first)
+    if (idx > 0 && tier.minLevel <= showUpTo) {
+      const conn = document.createElement('div');
+      conn.className = 'ls-tier-connector';
+      container.appendChild(conn);
+    }
 
-    const label = document.createElement('h3');
-    label.className = 'ls-tier-label ' + tier.name.toLowerCase();
-    label.textContent = tier.name;
+    const tierKey   = tier.name.toLowerCase();
+    const tierLocked = tier.minLevel > maxUnlocked;
+
+    const section = document.createElement('div');
+    section.className = 'ls-tier ' + tierKey + (tierLocked ? ' tier-locked' : '');
+
+    const label = document.createElement('div');
+    label.className = 'ls-tier-label ' + tierKey;
+    label.textContent = tier.name + (tierLocked ? ' \uD83D\uDD12' : '');
     section.appendChild(label);
 
     const grid = document.createElement('div');
