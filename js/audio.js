@@ -101,46 +101,11 @@ function tone(freq, dur, vol, opts = {}) {
 }
 
 /**
- * Play a purring sound — rapid amplitude modulation of a low tone.
- */
-function purr(dur, vol) {
-  const ctx = getCtx();
-  if (!ctx) return;
-  const now = ctx.currentTime;
-
-  const osc = ctx.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.value = 28;  // low rumble
-
-  // Tremolo via LFO modulating gain
-  const lfo = ctx.createOscillator();
-  lfo.frequency.value = 26;  // purr vibration ~26 Hz
-  const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 0.5;
-
-  const masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(0, now);
-  masterGain.gain.linearRampToValueAtTime(vol * _sfxVolume, now + 0.05);
-  masterGain.gain.setValueAtTime(vol * _sfxVolume, now + dur * 0.7);
-  masterGain.gain.linearRampToValueAtTime(0, now + dur);
-
-  lfo.connect(lfoGain);
-  lfoGain.connect(masterGain.gain);
-  osc.connect(masterGain);
-  masterGain.connect(ctx.destination);
-
-  osc.start(now);
-  lfo.start(now);
-  osc.stop(now + dur);
-  lfo.stop(now + dur);
-}
-
-/**
- * Improved purr — sawtooth through bandpass + filtered noise + dual LFO.
+ * Purr — sawtooth through bandpass + filtered noise + dual LFO.
  * @param {number} dur — duration in seconds
  * @param {number} vol — volume 0-1
  */
-function purrV2(dur, vol) {
+function purr(dur, vol) {
   const ctx = getCtx();
   if (!ctx) return;
   const now = ctx.currentTime;
@@ -287,7 +252,7 @@ export function playSound(name) {
 
       case 'solved':
         // Satisfied purr + warm bell chime
-        purrV2(0.4, 0.2);
+        purr(0.4, 0.2);
         setTimeout(() => tone(880, 0.15, 0.2), 100);
         break;
 
@@ -298,7 +263,7 @@ export function playSound(name) {
 
       case 'win':
         // Long purr + ascending bell melody
-        purrV2(0.8, 0.18);
+        purr(0.8, 0.18);
         setTimeout(() => tone(880,  0.18, 0.25), 100);
         setTimeout(() => tone(1100, 0.18, 0.25), 280);
         setTimeout(() => tone(1320, 0.22, 0.3),  450);
