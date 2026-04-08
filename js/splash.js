@@ -9,39 +9,47 @@ let particleCtx = null;
 let particleCanvas = null;
 let animId = null;
 let active = true;
+let hideTimer = null;  // track pending hide timeout
 
 // ── Particle System ──────────────────────────────────────────────────────
 
 function initParticles() {
   particleCanvas = document.getElementById('splashParticles');
   if (!particleCanvas) return;
+  if (animId) cancelAnimationFrame(animId);
 
   particleCtx = particleCanvas.getContext('2d');
   resizeParticleCanvas();
   window.addEventListener('resize', resizeParticleCanvas);
 
-  // Create particles — mix of dust motes and firefly-like glows
-  const count = Math.min(80, Math.floor(window.innerWidth * window.innerHeight / 12000));
+  // More particles with better variety — bokeh, dust, fireflies
+  const count = Math.min(120, Math.floor(window.innerWidth * window.innerHeight / 8000));
   particles = [];
 
   for (let i = 0; i < count; i++) {
-    const isFirefly = Math.random() < 0.25;
+    const r = Math.random();
+    const type = r < 0.15 ? 'bokeh' : r < 0.4 ? 'firefly' : 'dust';
     particles.push({
-      x: Math.random() * particleCanvas.width,
-      y: Math.random() * particleCanvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: -Math.random() * 0.4 - 0.1,
-      size: isFirefly ? Math.random() * 3 + 2 : Math.random() * 1.5 + 0.5,
-      alpha: Math.random() * 0.5 + 0.1,
-      alphaDir: (Math.random() - 0.5) * 0.008,
-      isFirefly,
-      hue: isFirefly
-        ? (Math.random() < 0.5 ? 35 + Math.random() * 20 : 50 + Math.random() * 15) // warm gold/amber
-        : 30 + Math.random() * 30, // dust warmth
+      x: Math.random() * (particleCanvas.width || 1440),
+      y: Math.random() * (particleCanvas.height || 900),
+      vx: (Math.random() - 0.5) * (type === 'bokeh' ? 0.1 : 0.3),
+      vy: type === 'bokeh' ? -Math.random() * 0.15 - 0.05 : -Math.random() * 0.4 - 0.1,
+      size: type === 'bokeh' ? Math.random() * 25 + 15
+           : type === 'firefly' ? Math.random() * 3 + 2
+           : Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.4 + 0.05,
+      alphaDir: (Math.random() - 0.5) * (type === 'bokeh' ? 0.003 : 0.008),
+      type,
+      hue: type === 'bokeh'
+        ? [30, 35, 40, 280, 320][Math.floor(Math.random() * 5)]
+        : type === 'firefly'
+        ? 35 + Math.random() * 25
+        : 25 + Math.random() * 35,
       phase: Math.random() * Math.PI * 2,
     });
   }
 
+  active = true;
   renderParticles(performance.now());
 }
 
@@ -61,40 +69,46 @@ function renderParticles(time) {
   particleCtx.clearRect(0, 0, W, H);
 
   for (const p of particles) {
-    // Drift
-    p.x += p.vx + Math.sin(time * 0.0005 + p.phase) * 0.15;
+    p.x += p.vx + Math.sin(time * 0.0004 + p.phase) * (p.type === 'bokeh' ? 0.3 : 0.15);
     p.y += p.vy;
 
-    // Twinkle
     p.alpha += p.alphaDir;
-    if (p.alpha > 0.7 || p.alpha < 0.05) p.alphaDir *= -1;
-    p.alpha = Math.max(0.02, Math.min(0.7, p.alpha));
+    const maxA = p.type === 'bokeh' ? 0.12 : 0.7;
+    if (p.alpha > maxA || p.alpha < 0.02) p.alphaDir *= -1;
+    p.alpha = Math.max(0.01, Math.min(maxA, p.alpha));
 
-    // Wrap
-    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
-    if (p.x < -10) p.x = W + 10;
-    if (p.x > W + 10) p.x = -10;
+    if (p.y < -p.size * 2) { p.y = H + p.size * 2; p.x = Math.random() * W; }
+    if (p.x < -p.size * 2) p.x = W + p.size * 2;
+    if (p.x > W + p.size * 2) p.x = -p.size * 2;
 
-    // Draw
-    if (p.isFirefly) {
-      // Glow
-      const grad = particleCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
-      grad.addColorStop(0, `hsla(${p.hue}, 80%, 70%, ${p.alpha * 0.6})`);
-      grad.addColorStop(0.4, `hsla(${p.hue}, 70%, 55%, ${p.alpha * 0.2})`);
+    if (p.type === 'bokeh') {
+      // Large soft bokeh circles
+      const grad = particleCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+      grad.addColorStop(0, `hsla(${p.hue}, 60%, 70%, ${p.alpha * 0.8})`);
+      grad.addColorStop(0.5, `hsla(${p.hue}, 50%, 60%, ${p.alpha * 0.3})`);
+      grad.addColorStop(0.8, `hsla(${p.hue}, 40%, 50%, ${p.alpha * 0.08})`);
       grad.addColorStop(1, 'transparent');
       particleCtx.fillStyle = grad;
       particleCtx.beginPath();
-      particleCtx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
+      particleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      particleCtx.fill();
+    } else if (p.type === 'firefly') {
+      // Bright glow core
+      const grad = particleCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 5);
+      grad.addColorStop(0, `hsla(${p.hue}, 80%, 75%, ${p.alpha * 0.7})`);
+      grad.addColorStop(0.3, `hsla(${p.hue}, 70%, 60%, ${p.alpha * 0.25})`);
+      grad.addColorStop(1, 'transparent');
+      particleCtx.fillStyle = grad;
+      particleCtx.beginPath();
+      particleCtx.arc(p.x, p.y, p.size * 5, 0, Math.PI * 2);
       particleCtx.fill();
 
-      // Core
-      particleCtx.fillStyle = `hsla(${p.hue}, 90%, 85%, ${p.alpha})`;
+      particleCtx.fillStyle = `hsla(${p.hue}, 90%, 90%, ${p.alpha})`;
       particleCtx.beginPath();
-      particleCtx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
+      particleCtx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
       particleCtx.fill();
     } else {
-      // Dust mote
-      particleCtx.fillStyle = `hsla(${p.hue}, 40%, 80%, ${p.alpha * 0.5})`;
+      particleCtx.fillStyle = `hsla(${p.hue}, 40%, 80%, ${p.alpha * 0.45})`;
       particleCtx.beginPath();
       particleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       particleCtx.fill();
@@ -107,21 +121,6 @@ function renderParticles(time) {
 function initYarnInteractions() {
   const yarns = document.querySelectorAll('.yarn-ball');
   yarns.forEach(yarn => {
-    // Add glow shadow based on color
-    const colors = {
-      'yarn-ball--red':    'rgba(231,76,60,.5)',
-      'yarn-ball--blue':   'rgba(52,152,219,.5)',
-      'yarn-ball--green':  'rgba(46,204,113,.5)',
-      'yarn-ball--yellow': 'rgba(241,196,15,.5)',
-      'yarn-ball--purple': 'rgba(155,89,182,.5)',
-    };
-    for (const [cls, glow] of Object.entries(colors)) {
-      if (yarn.classList.contains(cls)) {
-        yarn.style.filter = `drop-shadow(0 0 12px ${glow})`;
-      }
-    }
-
-    // Bounce on click/tap
     yarn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       const angle = (Math.random() - 0.5) * 40;
@@ -144,7 +143,6 @@ function animateEntrance() {
   const scene = document.querySelector('.splash-scene');
   const btn = document.querySelector('.splash-play');
 
-  // Start invisible
   [logo, tagline, scene, btn].forEach(el => {
     if (el) {
       el.style.opacity = '0';
@@ -153,20 +151,11 @@ function animateEntrance() {
     }
   });
 
-  // Stagger reveal
   requestAnimationFrame(() => {
-    setTimeout(() => {
-      if (logo) { logo.style.opacity = '1'; logo.style.transform = 'translateY(0)'; }
-    }, 200);
-    setTimeout(() => {
-      if (tagline) { tagline.style.opacity = '1'; tagline.style.transform = 'translateY(0)'; }
-    }, 500);
-    setTimeout(() => {
-      if (scene) { scene.style.opacity = '1'; scene.style.transform = 'translateY(0)'; }
-    }, 800);
-    setTimeout(() => {
-      if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; }
-    }, 1200);
+    setTimeout(() => { if (logo) { logo.style.opacity = '1'; logo.style.transform = 'translateY(0)'; } }, 200);
+    setTimeout(() => { if (tagline) { tagline.style.opacity = '1'; tagline.style.transform = 'translateY(0)'; } }, 500);
+    setTimeout(() => { if (scene) { scene.style.opacity = '1'; scene.style.transform = 'translateY(0)'; } }, 800);
+    setTimeout(() => { if (btn) { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; } }, 1200);
   });
 }
 
@@ -185,13 +174,18 @@ export function hideSplash() {
       resolve();
       return;
     }
+    // Cancel any pending hide so showSplash can't be undone
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+
     splash.classList.add('hiding');
-    setTimeout(() => {
+    hideTimer = setTimeout(() => {
+      hideTimer = null;
+      // Only hide if still in 'hiding' state (not re-shown in the meantime)
+      if (!splash.classList.contains('hiding')) { resolve(); return; }
       splash.classList.add('hidden');
       active = false;
-      if (animId) cancelAnimationFrame(animId);
-      // Clean up particle canvas memory
-      if (particleCtx) particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      if (particleCtx && particleCanvas) particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
       particles = [];
       resolve();
     }, 850);
@@ -201,7 +195,10 @@ export function hideSplash() {
 export function showSplash(bgOnly = false) {
   const splash = document.getElementById('splashScreen');
   if (!splash) return;
-  active = true;
+
+  // Cancel any pending hide
+  if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+
   splash.classList.remove('hidden', 'hiding');
   if (bgOnly) {
     splash.classList.add('bg-only');
@@ -209,5 +206,8 @@ export function showSplash(bgOnly = false) {
     splash.classList.remove('bg-only');
     animateEntrance();
   }
-  initParticles();
+
+  if (!active || particles.length === 0) {
+    initParticles();
+  }
 }
