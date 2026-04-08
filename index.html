@@ -218,10 +218,13 @@
         }
 
         .blitz-title {
-            font-family: var(--f-head);
+            font-family: 'Fredoka', sans-serif;
             font-size: 2rem;
-            color: #fff;
             margin: 0 0 .6rem;
+            background: linear-gradient(180deg, #FFD700, #d4873f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             animation: blitz-flicker .4s ease-out;
         }
         @keyframes blitz-flicker {
@@ -246,19 +249,21 @@
             font-style: italic;
         }
         .blitz-btn {
-            font-family: var(--f-head);
+            font-family: 'Fredoka', sans-serif;
             font-size: 1.1rem;
+            font-weight: 700;
             letter-spacing: 3px;
-            color: #fff;
-            background: rgba(255,255,255,.12);
-            border: 1px solid rgba(255,255,255,.30);
-            border-radius: 12px;
-            padding: .7rem 2.2rem;
+            color: #4a2000;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            border: none;
+            border-radius: 14px;
+            padding: .75rem 2.2rem;
             cursor: pointer;
-            transition: background .15s, transform .1s;
+            box-shadow: 0 4px 0 #B8860B, 0 6px 15px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3);
+            transition: transform .1s, box-shadow .1s;
         }
-        .blitz-btn:hover  { background: rgba(255,255,255,.22); }
-        .blitz-btn:active { transform: scale(.95); }
+        .blitz-btn:hover  { transform: translateY(-1px); box-shadow: 0 5px 0 #B8860B, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+        .blitz-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #B8860B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
 
         /* ── Achievement Toast ─────────────────────────────────── */
         .achievement-toast {
@@ -402,15 +407,16 @@
             box-shadow: 0 40px 80px rgba(0,0,0,.55);
         }
 
-        .win-icon  { font-size: 2.8rem; line-height: 1; }
+        .win-icon  { font-size: 3.2rem; line-height: 1; }
 
         .win-title {
-            font-family: var(--f-head);
+            font-family: 'Fredoka', sans-serif;
             font-size: 3rem;
-            background: linear-gradient(130deg, #d4873f, #c96b4f);
+            background: linear-gradient(180deg, #FFD700, #d4873f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(255,200,0,.3));
             animation: pulse 1.2s ease-in-out infinite alternate;
         }
         @keyframes pulse {
@@ -430,6 +436,7 @@
             font-size: 1.6rem;
             letter-spacing: .1em;
             line-height: 1;
+            filter: drop-shadow(0 0 8px rgba(255,200,0,.4));
         }
 
         .win-par {
@@ -447,29 +454,34 @@
         }
 
         .win-btn {
-            font-family: var(--f-mono);
-            font-size: .78rem;
+            font-family: 'Fredoka', sans-serif;
+            font-size: .85rem;
+            font-weight: 700;
             letter-spacing: .15em;
             text-transform: uppercase;
-            padding: .65rem 1.8rem;
-            background: rgba(212,135,63,.12);
-            border: 1px solid rgba(212,135,63,.38);
+            padding: .7rem 2rem;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            border: none;
             border-radius: 100px;
-            color: var(--gold);
+            color: #4a2000;
             cursor: pointer;
-            transition: background .15s, border-color .15s;
+            box-shadow: 0 4px 0 #B8860B, 0 6px 15px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3);
+            transition: transform .1s, box-shadow .1s;
         }
-        .win-btn:hover { background: rgba(212,135,63,.22); border-color: rgba(212,135,63,.55); }
+        .win-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #B8860B, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+        .win-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #B8860B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
         .win-btn--secondary {
-            background: rgba(255,255,255,.06);
-            border-color: rgba(255,255,255,.15);
-            color: var(--muted);
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,215,0,.25);
+            color: rgba(255,255,255,.7);
+            box-shadow: none;
         }
         .win-btn--secondary:hover {
-            background: rgba(255,255,255,.12);
-            border-color: rgba(255,255,255,.30);
-            color: var(--text);
+            background: rgba(255,255,255,.14);
+            border-color: rgba(255,215,0,.4);
+            transform: none;
         }
+        .win-btn--secondary:active { transform: scale(.97); }
 
         /* ── Level Select ───────────────────────────────────── */
         .level-select {
