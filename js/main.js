@@ -422,7 +422,7 @@ function showHintAction() {
   updateHUD();
   G.hintFrom  = move.from;
   G.hintTo    = move.to;
-  G.hintUntil = G.frameTime + 2500;
+  G.hintUntil = G.frameTime + 4000;
 }
 
 function triggerFlash(idx) {

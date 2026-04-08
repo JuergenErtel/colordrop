@@ -252,6 +252,100 @@ function drawTutorialHighlight(ctx, G) {
   ctx.restore();
 }
 
+// ── Hint overlay — animated arrow + bouncing ball ────────────────────────
+
+function drawHintOverlay(ctx, ts, G) {
+  if (G.hintFrom < 0 || G.hintTo < 0 || G.frameTime >= G.hintUntil) return;
+  const tubeCount = G.tubes.length;
+  const srcX = tubeCX(G.hintFrom, tubeCount);
+  const dstX = tubeCX(G.hintTo, tubeCount);
+  const srcTube = G.tubes[G.hintFrom];
+
+  // ── Pulsing highlight on top ball ──
+  if (srcTube.length > 0) {
+    const topIdx = srcTube.length - 1;
+    const bx = srcX;
+    const baseY = ballCY(topIdx);
+    const pulse = 0.5 + 0.5 * Math.sin(ts * 0.006);
+
+    ctx.save();
+    // Outer glow
+    ctx.strokeStyle = `rgba(255,180,0,${0.3 + pulse * 0.3})`;
+    ctx.lineWidth = 6;
+    const outerR = BALL_R + 10 + pulse * 4;
+    ctx.beginPath();
+    ctx.arc(bx, baseY, outerR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner ring
+    ctx.strokeStyle = `rgba(255,200,40,${0.7 + pulse * 0.3})`;
+    ctx.lineWidth = 3;
+    const innerR = BALL_R + 5 + pulse * 2;
+    ctx.beginPath();
+    ctx.arc(bx, baseY, innerR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Animated "hand" pointer below the ball
+    const handY = baseY + BALL_R + 18 + Math.sin(ts * 0.005) * 6;
+    ctx.font = 'bold 18px Fredoka, Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = `rgba(255,200,40,${0.7 + pulse * 0.3})`;
+    ctx.fillText('☝', bx, handY);
+    ctx.restore();
+  }
+
+  // ── Animated curved arrow from source to destination ──
+  const arrowY = TUBE_TOP - 20;
+  const midX = (srcX + dstX) / 2;
+  const midY = arrowY - 40 - Math.sin(ts * 0.004) * 10;
+
+  ctx.save();
+  const pulse = 0.6 + 0.4 * Math.sin(ts * 0.005);
+
+  // Glow layer (thick, blurred)
+  ctx.strokeStyle = `rgba(255,180,0,${pulse * 0.35})`;
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.moveTo(srcX, arrowY);
+  ctx.quadraticCurveTo(midX, midY, dstX, arrowY);
+  ctx.stroke();
+
+  // Main dashed path
+  ctx.strokeStyle = `rgba(255,200,40,${0.7 + pulse * 0.3})`;
+  ctx.lineWidth = 4;
+  ctx.setLineDash([10, 6]);
+  ctx.lineDashOffset = -ts * 0.04;
+  ctx.beginPath();
+  ctx.moveTo(srcX, arrowY);
+  ctx.quadraticCurveTo(midX, midY, dstX, arrowY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Arrowhead at destination — larger, filled
+  const angle = Math.atan2(arrowY - midY, dstX - midX);
+  const headLen = 16;
+  ctx.fillStyle = `rgba(40,200,80,${0.8 + pulse * 0.2})`;
+  ctx.beginPath();
+  ctx.moveTo(dstX, arrowY);
+  ctx.lineTo(dstX - headLen * Math.cos(angle - 0.45), arrowY - headLen * Math.sin(angle - 0.45));
+  ctx.lineTo(dstX - headLen * Math.cos(angle + 0.45), arrowY - headLen * Math.sin(angle + 0.45));
+  ctx.closePath();
+  ctx.fill();
+
+  // Arrow circle markers at start/end
+  ctx.fillStyle = `rgba(255,180,0,${0.8 + pulse * 0.2})`;
+  ctx.beginPath();
+  ctx.arc(srcX, arrowY, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(40,200,80,${0.8 + pulse * 0.2})`;
+  ctx.beginPath();
+  ctx.arc(dstX, arrowY, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 // ── Main render function ─────────────────────────────────────────────────
 
 /**
@@ -290,6 +384,7 @@ export function renderFrame(ctx, ts, G) {
   }
 
   drawTubes(ctx, ts, G);
+  drawHintOverlay(ctx, ts, G);
 
   if (ANIM.arc)                        drawArcBall(ctx, ts, dt / 1000, G);
   if (G.selected !== -1 && !ANIM.busy) drawFloatingBall(ctx, ts, G);

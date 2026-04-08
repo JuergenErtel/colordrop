@@ -38,8 +38,8 @@ function roundRectCorners(ctx, x, y, w, h, tl, tr, br, bl) {
  */
 export function getBorderColor(state) {
   if (state.flashing)  return 'rgba(200,80,60,0.80)';
-  if (state.hintSrc)   return 'rgba(255,220,140,0.90)';
-  if (state.hintDst)   return 'rgba(100,190,110,0.90)';
+  if (state.hintSrc)   return 'rgba(255,180,0,1.0)';
+  if (state.hintDst)   return 'rgba(40,200,80,1.0)';
   if (state.selected)  return 'rgba(255,200,100,0.90)';
   if (state.solved)    return 'rgba(130,200,130,0.70)';
   return 'rgba(180,150,100,0.45)';
@@ -51,11 +51,13 @@ function applyStateGlow(ctx, state, ts) {
     ctx.shadowColor = 'rgba(200,80,60,0.50)';
     ctx.shadowBlur  = 28;
   } else if (state.hintSrc) {
-    ctx.shadowColor = 'rgba(255,240,200,0.55)';
-    ctx.shadowBlur  = 24;
+    const pulse = 0.5 + 0.5 * Math.sin(ts * 0.006);
+    ctx.shadowColor = `rgba(255,180,0,${0.7 + pulse * 0.3})`;
+    ctx.shadowBlur  = 28 + 22 * pulse;
   } else if (state.hintDst) {
-    ctx.shadowColor = 'rgba(130,200,130,0.55)';
-    ctx.shadowBlur  = 24;
+    const pulse = 0.5 + 0.5 * Math.sin(ts * 0.006);
+    ctx.shadowColor = `rgba(40,200,80,${0.7 + pulse * 0.3})`;
+    ctx.shadowBlur  = 28 + 22 * pulse;
   } else if (state.selected) {
     ctx.shadowColor = 'rgba(255,200,100,0.40)';
     ctx.shadowBlur  = 24;
