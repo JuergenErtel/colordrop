@@ -953,6 +953,7 @@ document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
 
 document.getElementById('dailyStartBtn').addEventListener('click', () => {
   document.getElementById('dailyOverlay').classList.remove('show');
+  hideSplash();
   G.isDailyChallenge = true;
   generateLevel(dailyLevelNum());
 });
