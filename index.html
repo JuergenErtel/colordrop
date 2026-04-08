@@ -555,23 +555,59 @@
             gap: .55rem;
             margin: .8rem 0 1rem;
         }
-        .ls-action-btn {
-            font-family: var(--f-head);
-            font-size: .8rem;
-            letter-spacing: 2px;
-            padding: .55rem 1.4rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,.22);
-            background: rgba(255,255,255,.08);
-            color: #fff;
-            cursor: pointer;
-            transition: background .15s;
+        .ls-actions-secondary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .5rem;
+            margin-top: .3rem;
         }
-        .ls-action-btn:hover  { background: rgba(255,255,255,.16); }
-        .ls-action-btn:active { transform: scale(.97); }
+
+        .ls-action-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: .75rem 1.4rem;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: transform .1s, box-shadow .1s;
+            text-transform: uppercase;
+        }
+        .ls-action-btn:active { transform: translateY(2px); }
         .ls-action-btn:disabled { opacity: .38; cursor: default; }
-        .ls-action-btn--secondary { opacity: .7; }
-        .ls-action-btn--secondary:hover { opacity: 1; }
+
+        .ls-action-btn--daily {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            color: #4a2000;
+            box-shadow: 0 4px 0 #B8860B, 0 6px 15px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3);
+        }
+        .ls-action-btn--daily:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #B8860B, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+        .ls-action-btn--daily:active { box-shadow: 0 2px 0 #B8860B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+
+        .ls-action-btn--endless {
+            background: linear-gradient(135deg, #7B68EE 0%, #6A5ACD 100%);
+            color: #fff;
+            box-shadow: 0 4px 0 #483D8B, 0 6px 15px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3);
+        }
+        .ls-action-btn--endless:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #483D8B, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+        .ls-action-btn--endless:active { box-shadow: 0 2px 0 #483D8B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+
+        .ls-action-btn--secondary {
+            font-size: .8rem;
+            font-weight: 500;
+            padding: .6rem .8rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,215,0,.25);
+            color: rgba(255,255,255,.7);
+            box-shadow: none;
+            text-transform: uppercase;
+        }
+        .ls-action-btn--secondary:hover { background: rgba(255,255,255,.12); border-color: rgba(255,215,0,.4); transform: none; }
+        .ls-action-btn--secondary:active { transform: scale(.97); }
+
+        .ls-action-btn--album { border-color: rgba(255,215,0,.4); color: rgba(255,215,0,.8); }
         /* ── Stats Screen ──────────────────────────────────────── */
         .screen-overlay {
             position: fixed;
@@ -1168,12 +1204,14 @@
             <p class="ls-tagline">sort · schnurr · solve</p>
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
             <div class="ls-actions">
-                <button id="dailyChallengeBtn" class="ls-action-btn" type="button">📅 Tages-Challenge</button>
-                <button id="endlessBtn" class="ls-action-btn" type="button">♾️ Endlos-Modus</button>
-                <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
-                <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>
-                <button id="albumBtn" class="ls-action-btn" type="button">🐱 Katzen-Album</button>
-                <button id="streakBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📅 Streak-Kalender</button>
+                <button id="dailyChallengeBtn" class="ls-action-btn ls-action-btn--daily" type="button">📅 Tages-Challenge</button>
+                <button id="endlessBtn" class="ls-action-btn ls-action-btn--endless" type="button">♾️ Endlos-Modus</button>
+                <div class="ls-actions-secondary">
+                    <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
+                    <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>
+                    <button id="albumBtn" class="ls-action-btn ls-action-btn--secondary ls-action-btn--album" type="button">🐱 Katzen-Album</button>
+                    <button id="streakBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📅 Streak-Kalender</button>
+                </div>
             </div>
             <div class="ls-tiers" id="lsTiers"></div>
         </div>
