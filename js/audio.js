@@ -8,6 +8,36 @@ let _sfxVolume  = 0.7;
 let _sfxEnabled = true;
 let _ctx = null;
 
+/** Return value ± spread%. e.g. randomize(100, 0.1) → 90-110 */
+function randomize(v, spread) {
+  return v * (1 + (Math.random() - 0.5) * spread);
+}
+
+/**
+ * Create a bandpass formant filter connected source → filter → dest.
+ * Returns the BiquadFilterNode so its frequency can be automated.
+ */
+function formant(ctx, freq, Q, source, dest) {
+  const f = ctx.createBiquadFilter();
+  f.type = 'bandpass';
+  f.frequency.value = freq;
+  f.Q.value = Q;
+  source.connect(f);
+  f.connect(dest);
+  return f;
+}
+
+/** Create a white noise AudioBufferSourceNode. */
+function makeNoise(ctx, dur) {
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  return src;
+}
+
 export function setSfxVolume(vol)      { _sfxVolume = Math.max(0, Math.min(1, vol)); }
 export function getSfxVolume()         { return _sfxVolume; }
 export function setSfxEnabled(enabled) { _sfxEnabled = !!enabled; }
