@@ -331,10 +331,38 @@ export function playSound(name) {
         break;
       }
 
-      case 'hint':
-        // Curious "Prrt?" — upward chirp
-        tone(350, 0.12, 0.22, { slide: 3000 });
+      case 'hint': {
+        // Curious "Prrt?" — noise burst into formant upglide with question rise
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const dur = randomize(0.13, 0.1);
+        const vol = 0.22 * _sfxVolume;
+
+        // Envelope
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.005);
+        gain.gain.setValueAtTime(vol, now + dur - 0.04);
+        gain.gain.linearRampToValueAtTime(0, now + dur);
+        gain.connect(ctx.destination);
+
+        const noise = makeNoise(ctx, dur);
+
+        // Single formant sweeping up — "questioning" intonation
+        // 300→600 Hz in first 60%, then quick rise to 800 Hz (question mark)
+        const f1 = formant(ctx, randomize(300, 0.1), 5, noise, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(600, 0.1), now + dur * 0.6);
+        f1.frequency.linearRampToValueAtTime(randomize(800, 0.1), now + dur);
+
+        // Subtle second formant for richness
+        const f2 = formant(ctx, randomize(900, 0.1), 3, noise, gain);
+        f2.frequency.linearRampToValueAtTime(randomize(1400, 0.1), now + dur);
+
+        noise.start(now);
+        noise.stop(now + dur);
         break;
+      }
 
       case 'cat_unlock': {
         // Excited "Mrrp!" — trilling formant sweep + jingle cascade
