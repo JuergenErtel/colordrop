@@ -55,6 +55,30 @@ export const PALETTE = {
     dark:   '#C88098',
     glow:   'rgba(232,160,180,0.45)',
   },
+  sky: {
+    base:   '#7AB0E8',
+    bright: '#98C8F5',
+    dark:   '#5C90C8',
+    glow:   'rgba(122,176,232,0.45)',
+  },
+  plum: {
+    base:   '#C07AA8',
+    bright: '#D898C0',
+    dark:   '#A05C88',
+    glow:   'rgba(192,122,168,0.45)',
+  },
+  slate: {
+    base:   '#8A9EB0',
+    bright: '#A8B8C8',
+    dark:   '#6C8090',
+    glow:   'rgba(138,158,176,0.45)',
+  },
+  ember: {
+    base:   '#D4885C',
+    bright: '#E8A878',
+    dark:   '#B06840',
+    glow:   'rgba(212,136,92,0.45)',
+  },
 };
 
 export const COLOR_KEYS = Object.keys(PALETTE);
@@ -62,7 +86,7 @@ export const COLOR_KEYS = Object.keys(PALETTE);
 // ── Difficulty themes ─────────────────────────────────────────────────────
 export const THEMES = {
   EASY: {
-    hues:           [10, 270, 150, 40, 25, 340],
+    hues:           [10, 270, 150, 40, 25, 340, 210, 310, 200, 30],
     hueDelta:       12,
     sat:            35,
     bri:            92,
@@ -72,7 +96,7 @@ export const THEMES = {
     sceneName:      'Cosy Corner',
   },
   MEDIUM: {
-    hues:           [15, 260, 155, 45, 28, 345],
+    hues:           [15, 260, 155, 45, 28, 345, 215, 305, 195, 35],
     hueDelta:       18,
     sat:            28,
     bri:            88,
@@ -82,7 +106,7 @@ export const THEMES = {
     sceneName:      'Yarn Basket',
   },
   HARD: {
-    hues:           [20, 250, 160, 50, 30, 350],
+    hues:           [20, 250, 160, 50, 30, 350, 220, 300, 190, 40],
     hueDelta:       22,
     sat:            22,
     bri:            84,
@@ -92,7 +116,7 @@ export const THEMES = {
     sceneName:      'Cat Tree',
   },
   EXPERT: {
-    hues:           [5, 280, 145, 38, 22, 335],
+    hues:           [5, 280, 145, 38, 22, 335, 205, 315, 205, 28],
     hueDelta:       28,
     sat:            18,
     bri:            80,
@@ -102,7 +126,7 @@ export const THEMES = {
     sceneName:      'Cat Bed',
   },
   MASTER: {
-    hues:           [0, 290, 140, 35, 18, 330],
+    hues:           [0, 290, 140, 35, 18, 330, 200, 320, 210, 25],
     hueDelta:       35,
     sat:            12,
     bri:            76,
@@ -115,11 +139,11 @@ export const THEMES = {
 
 // ── Tier definitions ──────────────────────────────────────────────────────
 export const TIER_DEFS = [
-  { name: 'EASY',   minLevel:  1, maxLevel:  50 },
-  { name: 'MEDIUM', minLevel: 51, maxLevel: 120 },
-  { name: 'HARD',   minLevel: 121, maxLevel: 200 },
-  { name: 'EXPERT', minLevel: 201, maxLevel: 260 },
-  { name: 'MASTER', minLevel: 261, maxLevel: 300 },
+  { name: 'EASY',   minLevel:   1, maxLevel:  15 },
+  { name: 'MEDIUM', minLevel:  16, maxLevel:  45 },
+  { name: 'HARD',   minLevel:  46, maxLevel: 100 },
+  { name: 'EXPERT', minLevel: 101, maxLevel: 180 },
+  { name: 'MASTER', minLevel: 181, maxLevel: 300 },
 ];
 
 // ── Achievements ──────────────────────────────────────────────────────────

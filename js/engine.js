@@ -36,9 +36,30 @@ export function tierDifficulty(n) {
 export function levelConfig(n) {
   const tier    = tierForLevel(n);
   const diff    = tierDifficulty(n);
-  const numColors = Math.min(2 + diff, COLOR_KEYS.length);
-  const colors    = COLOR_KEYS.slice(0, numColors);
-  const empty = diff <= 1 ? 2 : 1;
+  const tierDef = TIER_DEFS[diff];
+  const span    = tierDef.maxLevel - tierDef.minLevel || 1;
+  const progress = Math.min(1, (n - tierDef.minLevel) / span);
+
+  // Colors ramp up faster and scale within each tier:
+  //   EASY   (1-15):   2 → 3 colors
+  //   MEDIUM (16-45):  3 → 5 colors
+  //   HARD   (46-100): 5 → 7 colors
+  //   EXPERT (101-180):7 → 9 colors
+  //   MASTER (181-300):9 → 10 colors
+  const colorRanges = [
+    [2, 3],   // EASY
+    [3, 5],   // MEDIUM
+    [5, 7],   // HARD
+    [7, 9],   // EXPERT
+    [9, 10],  // MASTER
+  ];
+  const [minC, maxC] = colorRanges[diff] || [2, 3];
+  const numColors = Math.min(Math.floor(minC + progress * (maxC - minC + 0.99)), COLOR_KEYS.length);
+  const colors = COLOR_KEYS.slice(0, numColors);
+
+  // Empty tubes: 2 for early levels, 1 from MEDIUM onward, some MASTER levels get 1
+  const empty = (diff === 0 || (diff === 1 && progress < 0.3)) ? 2 : 1;
+
   return { tier, diff, colors, tubes: colors.length + empty, empty };
 }
 
@@ -46,17 +67,20 @@ export function levelConfig(n) {
 export function parForLevel(n) {
   const { colors } = levelConfig(n);
   const numColors  = colors.length;
-  const tierDef = TIER_DEFS[tierDifficulty(n)];
+  const diff = tierDifficulty(n);
+  const tierDef = TIER_DEFS[diff];
   const span    = tierDef.maxLevel - tierDef.minLevel || 1;
   const progress = (n - tierDef.minLevel) / span;
-  return Math.round(numColors * (6 - progress));
+  // Tighter par: scales with colors but gets stricter at higher tiers
+  const baseMult = 5.5 - diff * 0.5;
+  return Math.max(numColors + 2, Math.round(numColors * (baseMult - progress * 1.5)));
 }
 
-export function isTimedLevel(n) { return n >= 10 && n % 10 === 0; }
+export function isTimedLevel(n) { return n >= 8 && n % 8 === 0; }
 
 export function timerDuration(n) {
-  const tierMs = { EASY: 120, MEDIUM: 105, HARD: 90, EXPERT: 75, MASTER: 60 };
-  return (tierMs[tierForLevel(n)] || 90) * 1000;
+  const tierMs = { EASY: 100, MEDIUM: 85, HARD: 70, EXPERT: 55, MASTER: 45 };
+  return (tierMs[tierForLevel(n)] || 70) * 1000;
 }
 
 export function calcStars(moves, par) {
@@ -102,8 +126,8 @@ export function generateTubes(n) {
     for (let i = 0; i < capacity; i++) pool.push(c);
   }
 
-  // Fisher-Yates shuffle (tierDifficulty rounds)
-  const rounds = 1 + tierDifficulty(n);
+  // Fisher-Yates shuffle — more rounds = harder scramble
+  const rounds = 2 + tierDifficulty(n) * 2;
   for (let r = 0; r < rounds; r++) {
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
