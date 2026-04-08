@@ -202,4 +202,10 @@ export const TUTORIAL_SCRIPT = [
     body:    'Du hast es geschafft! Viel Spaß beim Spielen.',
     waitFor: 'win',
   },
+  {
+    step:    4,
+    heading: 'Katzen sammeln!',
+    body:    'Löse Level um Katzen zu entdecken. Jede Katze kannst du als dein Maskottchen wählen!',
+    waitFor: 'dismiss',
+  },
 ];

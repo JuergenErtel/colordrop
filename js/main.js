@@ -120,6 +120,17 @@ function showCatUnlockCelebration(cat) {
   document.getElementById('catUnlockBreed').textContent = cat.breed;
   document.getElementById('catUnlockFact').textContent = cat.fact;
 
+  // Show mascot hint only on first-ever cat unlock
+  const hintEl = document.getElementById('catUnlockHint');
+  if (hintEl) {
+    const collection = loadCollection();
+    if (collection.length <= 1) {
+      hintEl.textContent = 'Öffne das Katzen-Album um dein Maskottchen zu wählen!';
+    } else {
+      hintEl.textContent = '';
+    }
+  }
+
   // Show overlay
   const overlay = document.getElementById('catUnlockOverlay');
   overlay.classList.add('show');
@@ -898,7 +909,7 @@ function advanceTutStep() {
 
   const step = TUTORIAL_SCRIPT[G.tutStep];
   textEl.textContent  = step.heading + ': ' + step.body;
-  skipBtn.textContent = '\u00DCberspringen';
+  skipBtn.textContent = step.waitFor === 'dismiss' ? 'Weiter \u2192' : '\u00DCberspringen';
   bubble.classList.remove('hidden');
 }
 
@@ -940,7 +951,15 @@ document.getElementById('nextLevelBtn').addEventListener('click', () => {
   generateLevel(LEVEL.current + 1);
 });
 document.getElementById('menuBtn').addEventListener('click', openLevelSelect);
-document.getElementById('tutSkip').addEventListener('click', endTutorial);
+document.getElementById('tutSkip').addEventListener('click', () => {
+  if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
+      TUTORIAL_SCRIPT[G.tutStep].waitFor === 'dismiss') {
+    G.tutStep++;
+    advanceTutStep();
+  } else {
+    endTutorial();
+  }
+});
 document.getElementById('tutBtn').addEventListener('click', () => {
   closeLevelSelect();
   startTutorial();

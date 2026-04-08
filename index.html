@@ -821,6 +821,15 @@
             opacity: 0; animation: unlockFadeUp .5s ease-out 1.1s forwards;
         }
 
+        .cat-unlock-hint {
+            color: rgba(255,220,150,.9);
+            font-size: .85rem;
+            font-weight: 600;
+            margin-top: .5rem;
+            opacity: 0;
+            animation: fadeUp .5s ease-out 1.3s forwards;
+        }
+
         .cat-unlock-btn {
             font-family: 'Fredoka', var(--f-head), sans-serif;
             font-weight: 600; font-size: 1rem;
@@ -1305,6 +1314,7 @@
             <h2 class="cat-unlock-name" id="catUnlockName">Luna</h2>
             <p class="cat-unlock-breed" id="catUnlockBreed">Russisch Blau</p>
             <p class="cat-unlock-fact" id="catUnlockFact">Fun fact here.</p>
+            <p class="cat-unlock-hint" id="catUnlockHint"></p>
             <button class="cat-unlock-btn" id="catUnlockClose" type="button">Weiter</button>
         </div>
     </div>
