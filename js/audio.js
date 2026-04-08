@@ -142,10 +142,37 @@ export function playSound(name) {
   try {
     switch (name) {
 
-      case 'select':
-        // Soft "Miau" — sine sliding up
-        tone(500, 0.15, 0.3, { slide: 2500 });
+      case 'select': {
+        // Formant "Miau" — noise through 2 gliding bandpass filters
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const dur = randomize(0.18, 0.15);
+        const vol = 0.3 * _sfxVolume;
+
+        // Envelope
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.03);
+        gain.gain.setValueAtTime(vol, now + dur - 0.05);
+        gain.gain.linearRampToValueAtTime(0, now + dur);
+        gain.connect(ctx.destination);
+
+        // Noise source
+        const noise = makeNoise(ctx, dur);
+
+        // F1: 600→900 Hz — the "vowel body"
+        const f1 = formant(ctx, randomize(600, 0.1), 5, noise, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(900, 0.1), now + dur);
+
+        // F2: 1200→1600 Hz — the "brightness"
+        const f2 = formant(ctx, randomize(1200, 0.1), 4, noise, gain);
+        f2.frequency.linearRampToValueAtTime(randomize(1600, 0.1), now + dur);
+
+        noise.start(now);
+        noise.stop(now + dur);
         break;
+      }
 
       case 'pop':
         // Gentle plop + tiny collar bell
