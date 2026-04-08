@@ -114,6 +114,51 @@
         .hud-btn:active        { transform: scale(.92); }
         .hud-btn:disabled      { opacity: .35; cursor: default; pointer-events: none; }
 
+        /* ── Hint button — visually distinct as game help ────── */
+        .hud-hint {
+            position: relative;
+            width: 42px; height: 42px;
+            background: linear-gradient(145deg, rgba(255,200,60,.25) 0%, rgba(220,160,30,.18) 100%);
+            border: 2px solid rgba(255,200,60,.55);
+            box-shadow:
+                0 0 12px rgba(255,190,50,.25),
+                inset 0 1px 0 rgba(255,255,255,.15);
+            font-size: 1.15rem;
+            animation: hintGlow 2.5s ease-in-out infinite;
+        }
+        .hud-hint:hover:not(:disabled) {
+            background: linear-gradient(145deg, rgba(255,200,60,.4) 0%, rgba(220,160,30,.3) 100%);
+            border-color: rgba(255,200,60,.8);
+            box-shadow: 0 0 20px rgba(255,190,50,.4), inset 0 1px 0 rgba(255,255,255,.2);
+        }
+        .hud-hint:disabled {
+            animation: none;
+            box-shadow: none;
+            border-color: rgba(160,120,80,.2);
+            background: rgba(160,120,80,.08);
+        }
+        @keyframes hintGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,190,50,.2), inset 0 1px 0 rgba(255,255,255,.15); }
+            50%      { box-shadow: 0 0 20px rgba(255,190,50,.4), inset 0 1px 0 rgba(255,255,255,.2); }
+        }
+        /* Cost badge */
+        .hud-hint-cost {
+            position: absolute;
+            bottom: -6px; right: -8px;
+            font-family: var(--f-head);
+            font-size: .5rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: 2px 4px;
+            background: rgba(60,40,25,.85);
+            border: 1px solid rgba(255,200,60,.4);
+            border-radius: 6px;
+            color: var(--gold);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .hud-hint-cost.hidden { display: none; }
+
         .hud-level {
             font-family: var(--f-head);
             font-size: 1.1rem;
@@ -952,7 +997,7 @@
                     <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
                     <span class="hud-bones" id="bonesDisplay">🦴 0</span>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
-                    <button class="hud-btn" id="hintBtn" aria-label="Hint">🐱</button>
+                    <button class="hud-btn hud-hint" id="hintBtn" aria-label="Hint">💡<span class="hud-hint-cost" id="hintCost">🦴15</span></button>
                     <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>

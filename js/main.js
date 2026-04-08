@@ -230,6 +230,29 @@ function undo() {
   hideOverlay();
 }
 
+function setHintIcon(emoji) {
+  const btn = document.getElementById('hintBtn');
+  const cost = document.getElementById('hintCost');
+  // Preserve the cost badge — only replace the text node
+  const textNode = btn.firstChild;
+  if (textNode && textNode.nodeType === 3) {
+    textNode.textContent = emoji;
+  } else {
+    btn.insertBefore(document.createTextNode(emoji), cost);
+  }
+}
+
+function updateHintCostBadge() {
+  const el = document.getElementById('hintCost');
+  if (!el) return;
+  if (isPremium()) {
+    el.classList.add('hidden');
+  } else {
+    el.classList.remove('hidden');
+    el.textContent = `\uD83E\uDDB4${COSTS.hint}`;
+  }
+}
+
 function showHintAction() {
   if (ANIM.busy || G.won || G.tutorial) return;
   const btn = document.getElementById('hintBtn');
@@ -237,12 +260,13 @@ function showHintAction() {
   // Economy check — hints cost fish bones (free for premium)
   playSound('hint');
   if (!spendHint()) {
-    btn.textContent = '\uD83E\uDDB4?';
-    btn.disabled    = true;
-    setTimeout(() => { btn.textContent = '\uD83D\uDC31'; btn.disabled = false; }, 1500);
+    setHintIcon('\uD83E\uDDB4\u2753');  // 🦴❓
+    btn.disabled = true;
+    setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
     return;
   }
   updateBonesDisplay();
+  updateHintCostBadge();
 
   let move;
   try {
@@ -253,11 +277,11 @@ function showHintAction() {
   }
   if (!move) {
     G.hintCooldown  = true;
-    btn.textContent = '\u274C';
+    setHintIcon('\u274C');  // ❌
     btn.disabled    = true;
     setTimeout(() => {
       G.hintCooldown  = false;
-      btn.textContent = '\uD83D\uDC31';
+      setHintIcon('\uD83D\uDCA1');  // 💡
       btn.disabled    = false;
     }, 1500);
     return;
@@ -1055,7 +1079,8 @@ updatePremiumBanner();
 resizeCanvas();
 requestAnimationFrame(loop);
 
-// ── Splash screen flow ───────────────────────────────────────────────────
+// ── Hint badge & splash init ─────────────────────────────────────────────
+updateHintCostBadge();
 initSplash();
 
 document.getElementById('splashPlayBtn').addEventListener('click', async () => {
