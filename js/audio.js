@@ -249,10 +249,41 @@ export function playSound(name) {
         setTimeout(() => tone(2400, 0.08, 0.12), 50);
         break;
 
-      case 'invalid':
-        // Cat hiss — noise burst
-        tone(0, 0.12, 0.25, { noise: true, attack: 0.005 });
+      case 'invalid': {
+        // Cat hiss — bandpass-filtered noise with sharp attack
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const dur = randomize(0.12, 0.2);
+        const vol = 0.25 * _sfxVolume;
+
+        // Sharp attack, exponential decay
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        gain.connect(ctx.destination);
+
+        const noise = makeNoise(ctx, dur);
+
+        // Bandpass at ~4kHz for sibilance
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = randomize(4000, 0.15);
+        bp.Q.value = 2;
+        noise.connect(bp);
+
+        // Highpass at 2kHz to remove low rumble
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 2000;
+        bp.connect(hp);
+        hp.connect(gain);
+
+        noise.start(now);
+        noise.stop(now + dur);
         break;
+      }
 
       case 'solved':
         // Satisfied purr + warm bell chime
