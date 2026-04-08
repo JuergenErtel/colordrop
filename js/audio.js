@@ -314,14 +314,53 @@ export function playSound(name) {
         tone(350, 0.12, 0.22, { slide: 3000 });
         break;
 
-      case 'cat_unlock':
-        // Excited "Mrrp!" + jingle cascade
-        tone(400, 0.12, 0.28, { slide: 3500 });
+      case 'cat_unlock': {
+        // Excited "Mrrp!" — trilling formant sweep + jingle cascade
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const dur = randomize(0.2, 0.1);
+        const vol = 0.28 * _sfxVolume;
+
+        // Envelope
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.01);
+        gain.gain.setValueAtTime(vol, now + dur - 0.08);
+        gain.gain.linearRampToValueAtTime(0, now + dur);
+        gain.connect(ctx.destination);
+
+        // Noise source for formant excitation
+        const noise = makeNoise(ctx, dur);
+
+        // F1: fast upward sweep 400→1200 Hz
+        const f1 = formant(ctx, randomize(400, 0.12), 5, noise, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(1200, 0.12), now + dur);
+
+        // F2: 800→2000 Hz
+        const f2 = formant(ctx, randomize(800, 0.12), 4, noise, gain);
+        f2.frequency.linearRampToValueAtTime(randomize(2000, 0.12), now + dur);
+
+        // Trill — FM via amplitude modulation at ~15 Hz
+        const trillLfo = ctx.createOscillator();
+        trillLfo.frequency.value = randomize(15, 0.1);
+        const trillGain = ctx.createGain();
+        trillGain.gain.value = vol * 0.4;
+        trillLfo.connect(trillGain);
+        trillGain.connect(gain.gain);
+        trillLfo.start(now);
+        trillLfo.stop(now + dur);
+
+        noise.start(now);
+        noise.stop(now + dur);
+
+        // Jingle cascade (kept from original)
         setTimeout(() => tone(1200, 0.1, 0.18), 130);
         setTimeout(() => tone(1500, 0.1, 0.18), 250);
         setTimeout(() => tone(1800, 0.1, 0.18), 360);
         setTimeout(() => tone(2200, 0.12, 0.22), 470);
         break;
+      }
 
       default:
         break;
