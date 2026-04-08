@@ -110,63 +110,53 @@ function purr(dur, vol) {
   if (!ctx) return;
   const now = ctx.currentTime;
   const v = vol * _sfxVolume;
-  const baseFreq = randomize(25, 0.08);
 
-  // Master gain with breath rhythm (slow LFO)
   const master = ctx.createGain();
   master.gain.setValueAtTime(0, now);
   master.gain.linearRampToValueAtTime(v, now + 0.05);
-  master.gain.setValueAtTime(v, now + dur - 0.2);
+  master.gain.setValueAtTime(v, now + dur - 0.15);
   master.gain.linearRampToValueAtTime(0, now + dur);
   master.connect(ctx.destination);
-
-  // Breath LFO — slow volume swell ~0.5 Hz
-  const breathLfo = ctx.createOscillator();
-  breathLfo.frequency.value = randomize(0.5, 0.1);
-  const breathGain = ctx.createGain();
-  breathGain.gain.value = v * 0.15;
-  breathLfo.connect(breathGain);
-  breathGain.connect(master.gain);
-  breathLfo.start(now);
-  breathLfo.stop(now + dur);
-
-  // Layer 1: Sawtooth → bandpass resonance body
-  const osc = ctx.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.value = baseFreq;
-  const body = ctx.createBiquadFilter();
-  body.type = 'bandpass';
-  body.frequency.value = randomize(200, 0.1);
-  body.Q.value = 3;
-  osc.connect(body);
-  body.connect(master);
 
   // Purr rattle — amplitude tremolo at ~25 Hz
   const rattleLfo = ctx.createOscillator();
   rattleLfo.frequency.value = randomize(25, 0.1);
   const rattleGain = ctx.createGain();
-  rattleGain.gain.value = 0.4;
+  rattleGain.gain.value = 0.5;
   rattleLfo.connect(rattleGain);
   rattleGain.connect(master.gain);
   rattleLfo.start(now);
   rattleLfo.stop(now + dur);
 
-  // Layer 2: Filtered noise for breath texture
-  const noise = makeNoise(ctx, dur);
-  const noiseBp = ctx.createBiquadFilter();
-  noiseBp.type = 'bandpass';
-  noiseBp.frequency.value = randomize(280, 0.1);
-  noiseBp.Q.value = 1.5;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.value = 0.3;
-  noise.connect(noiseBp);
-  noiseBp.connect(noiseGain);
-  noiseGain.connect(master);
+  // Layer 1: Sawtooth at audible freq through bandpass body
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.value = randomize(80, 0.08);
+  const body = ctx.createBiquadFilter();
+  body.type = 'bandpass';
+  body.frequency.value = randomize(350, 0.1);
+  body.Q.value = 2;
+  osc.connect(body);
+  body.connect(master);
+
+  // Layer 2: Second harmonic for warmth
+  const osc2 = ctx.createOscillator();
+  osc2.type = 'triangle';
+  osc2.frequency.value = randomize(160, 0.08);
+  const body2 = ctx.createBiquadFilter();
+  body2.type = 'bandpass';
+  body2.frequency.value = randomize(500, 0.1);
+  body2.Q.value = 3;
+  const g2 = ctx.createGain();
+  g2.gain.value = 0.4;
+  osc2.connect(body2);
+  body2.connect(g2);
+  g2.connect(master);
 
   osc.start(now);
-  noise.start(now);
+  osc2.start(now);
   osc.stop(now + dur);
-  noise.stop(now + dur);
+  osc2.stop(now + dur);
 }
 
 // ── Public API ────────────────────────────────────────────────────────────
@@ -177,34 +167,48 @@ export function playSound(name) {
     switch (name) {
 
       case 'select': {
-        // Formant "Miau" — noise through 2 gliding bandpass filters
+        // Formant "Miau" — sawtooth through 2 gliding bandpass filters + vibrato
         const ctx = getCtx();
         if (!ctx) break;
         const now = ctx.currentTime;
-        const dur = randomize(0.18, 0.15);
-        const vol = 0.3 * _sfxVolume;
+        const dur = randomize(0.3, 0.15);
+        const vol = 0.35 * _sfxVolume;
 
         // Envelope
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0, now);
         gain.gain.linearRampToValueAtTime(vol, now + 0.03);
-        gain.gain.setValueAtTime(vol, now + dur - 0.05);
+        gain.gain.setValueAtTime(vol, now + dur - 0.08);
         gain.gain.linearRampToValueAtTime(0, now + dur);
         gain.connect(ctx.destination);
 
-        // Noise source
-        const noise = makeNoise(ctx, dur);
+        // Voiced source — sawtooth with pitch glide ("mi-au" syllables)
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(randomize(480, 0.1), now);
+        osc.frequency.linearRampToValueAtTime(randomize(650, 0.1), now + dur * 0.4);
+        osc.frequency.linearRampToValueAtTime(randomize(550, 0.1), now + dur);
 
-        // F1: 600→900 Hz — the "vowel body"
-        const f1 = formant(ctx, randomize(600, 0.1), 5, noise, gain);
-        f1.frequency.linearRampToValueAtTime(randomize(900, 0.1), now + dur);
+        // Vibrato ~6 Hz
+        const vib = ctx.createOscillator();
+        vib.frequency.value = 6;
+        const vibGain = ctx.createGain();
+        vibGain.gain.value = 15;
+        vib.connect(vibGain);
+        vibGain.connect(osc.frequency);
+        vib.start(now);
+        vib.stop(now + dur);
 
-        // F2: 1200→1600 Hz — the "brightness"
-        const f2 = formant(ctx, randomize(1200, 0.1), 4, noise, gain);
-        f2.frequency.linearRampToValueAtTime(randomize(1600, 0.1), now + dur);
+        // F1: 700→1000 Hz — vowel body
+        const f1 = formant(ctx, randomize(700, 0.1), 8, osc, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(1000, 0.1), now + dur);
 
-        noise.start(now);
-        noise.stop(now + dur);
+        // F2: 1400→1800 Hz — brightness
+        const f2 = formant(ctx, randomize(1400, 0.1), 6, osc, gain);
+        f2.frequency.linearRampToValueAtTime(randomize(1800, 0.1), now + dur);
+
+        osc.start(now);
+        osc.stop(now + dur);
         break;
       }
 
@@ -215,38 +219,80 @@ export function playSound(name) {
         break;
 
       case 'invalid': {
-        // Cat hiss — bandpass-filtered noise with sharp attack
+        // Cat hiss — 3 layers: growl+jitter, breathy mid, sharp sibilance
         const ctx = getCtx();
         if (!ctx) break;
         const now = ctx.currentTime;
-        const dur = randomize(0.12, 0.2);
-        const vol = 0.25 * _sfxVolume;
+        const dur = randomize(0.5, 0.15);
+        const vol = 0.4 * _sfxVolume;
 
-        // Sharp attack, exponential decay
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(vol, now + 0.005);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-        gain.connect(ctx.destination);
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(0, now);
+        master.gain.linearRampToValueAtTime(vol, now + 0.008);
+        master.gain.setValueAtTime(vol, now + 0.15);
+        master.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        master.connect(ctx.destination);
 
-        const noise = makeNoise(ctx, dur);
+        // Layer 1: Guttural growl with jitter for roughness
+        const growl = ctx.createOscillator();
+        growl.type = 'sawtooth';
+        growl.frequency.setValueAtTime(randomize(600, 0.1), now);
+        growl.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+        const jitter = ctx.createOscillator();
+        jitter.frequency.value = randomize(70, 0.1);
+        const jitterG = ctx.createGain();
+        jitterG.gain.value = 80;
+        jitter.connect(jitterG);
+        jitterG.connect(growl.frequency);
+        const growlBp = ctx.createBiquadFilter();
+        growlBp.type = 'bandpass';
+        growlBp.frequency.value = randomize(500, 0.1);
+        growlBp.Q.value = 4;
+        const growlVol = ctx.createGain();
+        growlVol.gain.setValueAtTime(0.7, now);
+        growlVol.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        growl.connect(growlBp);
+        growlBp.connect(growlVol);
+        growlVol.connect(master);
 
-        // Bandpass at ~4kHz for sibilance
-        const bp = ctx.createBiquadFilter();
-        bp.type = 'bandpass';
-        bp.frequency.value = randomize(4000, 0.15);
-        bp.Q.value = 2;
-        noise.connect(bp);
+        // Layer 2: Breathy mid — noise through vocal-range bandpass
+        const noise1 = makeNoise(ctx, dur);
+        const midBp = ctx.createBiquadFilter();
+        midBp.type = 'bandpass';
+        midBp.frequency.setValueAtTime(randomize(2000, 0.1), now);
+        midBp.frequency.linearRampToValueAtTime(randomize(1200, 0.1), now + dur);
+        midBp.Q.value = 2;
+        const midVol = ctx.createGain();
+        midVol.gain.value = 0.5;
+        noise1.connect(midBp);
+        midBp.connect(midVol);
+        midVol.connect(master);
 
-        // Highpass at 2kHz to remove low rumble
+        // Layer 3: Sharp sibilance — high noise
+        const noise2 = makeNoise(ctx, dur);
+        const hiBp = ctx.createBiquadFilter();
+        hiBp.type = 'bandpass';
+        hiBp.frequency.value = randomize(6000, 0.1);
+        hiBp.Q.value = 0.8;
         const hp = ctx.createBiquadFilter();
         hp.type = 'highpass';
-        hp.frequency.value = 2000;
-        bp.connect(hp);
-        hp.connect(gain);
+        hp.frequency.value = 3000;
+        const hiVol = ctx.createGain();
+        hiVol.gain.setValueAtTime(0, now);
+        hiVol.gain.linearRampToValueAtTime(0.6, now + 0.05);
+        noise2.connect(hiBp);
+        hiBp.connect(hp);
+        hp.connect(hiVol);
+        hiVol.connect(master);
 
-        noise.start(now);
-        noise.stop(now + dur);
+        growl.start(now);
+        jitter.start(now);
+        noise1.start(now);
+        noise2.start(now);
+        growl.stop(now + 0.25);
+        jitter.stop(now + 0.25);
+        noise1.stop(now + dur);
+        noise2.stop(now + dur);
         break;
       }
 
@@ -270,72 +316,79 @@ export function playSound(name) {
         break;
 
       case 'undo': {
-        // Soft "Mew" — single thin formant gliding down
+        // Soft "Mew" — thin sawtooth formant gliding down
         const ctx = getCtx();
         if (!ctx) break;
         const now = ctx.currentTime;
-        const dur = randomize(0.1, 0.15);
-        const vol = 0.2 * _sfxVolume;
+        const dur = randomize(0.18, 0.15);
+        const vol = 0.25 * _sfxVolume;
 
         // Envelope
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(vol, now + 0.015);
-        gain.gain.setValueAtTime(vol, now + dur - 0.03);
-        gain.gain.linearRampToValueAtTime(0, now + dur);
-        gain.connect(ctx.destination);
-
-        const noise = makeNoise(ctx, dur);
-
-        // Single formant, high and thin, gliding down — disappointed small cat
-        const f1 = formant(ctx, randomize(1200, 0.1), 6, noise, gain);
-        f1.frequency.linearRampToValueAtTime(randomize(800, 0.1), now + dur);
-
-        noise.start(now);
-        noise.stop(now + dur);
-        break;
-      }
-
-      case 'hint': {
-        // Curious "Prrt?" — noise burst into formant upglide with question rise
-        const ctx = getCtx();
-        if (!ctx) break;
-        const now = ctx.currentTime;
-        const dur = randomize(0.13, 0.1);
-        const vol = 0.22 * _sfxVolume;
-
-        // Envelope
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(vol, now + 0.005);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.02);
         gain.gain.setValueAtTime(vol, now + dur - 0.04);
         gain.gain.linearRampToValueAtTime(0, now + dur);
         gain.connect(ctx.destination);
 
-        const noise = makeNoise(ctx, dur);
+        // Voiced source — higher pitch, descending
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(randomize(620, 0.1), now);
+        osc.frequency.linearRampToValueAtTime(randomize(420, 0.1), now + dur);
 
-        // Single formant sweeping up — "questioning" intonation
-        // 300→600 Hz in first 60%, then quick rise to 800 Hz (question mark)
-        const f1 = formant(ctx, randomize(300, 0.1), 5, noise, gain);
-        f1.frequency.linearRampToValueAtTime(randomize(600, 0.1), now + dur * 0.6);
+        // Single thin formant gliding down — disappointed small cat
+        const f1 = formant(ctx, randomize(1200, 0.1), 8, osc, gain);
         f1.frequency.linearRampToValueAtTime(randomize(800, 0.1), now + dur);
 
-        // Subtle second formant for richness
-        const f2 = formant(ctx, randomize(900, 0.1), 3, noise, gain);
-        f2.frequency.linearRampToValueAtTime(randomize(1400, 0.1), now + dur);
-
-        noise.start(now);
-        noise.stop(now + dur);
+        osc.start(now);
+        osc.stop(now + dur);
         break;
       }
 
-      case 'cat_unlock': {
-        // Excited "Mrrp!" — trilling formant sweep + jingle cascade
+      case 'hint': {
+        // Curious "Prrt?" — sawtooth chirp with questioning rise
         const ctx = getCtx();
         if (!ctx) break;
         const now = ctx.currentTime;
         const dur = randomize(0.2, 0.1);
-        const vol = 0.28 * _sfxVolume;
+        const vol = 0.25 * _sfxVolume;
+
+        // Envelope
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.01);
+        gain.gain.setValueAtTime(vol, now + dur - 0.05);
+        gain.gain.linearRampToValueAtTime(0, now + dur);
+        gain.connect(ctx.destination);
+
+        // Voiced source — rising pitch with question-mark uptick
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(randomize(350, 0.1), now);
+        osc.frequency.linearRampToValueAtTime(randomize(500, 0.1), now + dur * 0.6);
+        osc.frequency.linearRampToValueAtTime(randomize(700, 0.1), now + dur);
+
+        // F1: questioning upglide
+        const f1 = formant(ctx, randomize(500, 0.1), 6, osc, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(900, 0.1), now + dur);
+
+        // F2: brightness
+        const f2 = formant(ctx, randomize(1100, 0.1), 4, osc, gain);
+        f2.frequency.linearRampToValueAtTime(randomize(1600, 0.1), now + dur);
+
+        osc.start(now);
+        osc.stop(now + dur);
+        break;
+      }
+
+      case 'cat_unlock': {
+        // Excited "Mrrp!" — trilling sawtooth formant sweep + jingle cascade
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const dur = randomize(0.25, 0.1);
+        const vol = 0.3 * _sfxVolume;
 
         // Envelope
         const gain = ctx.createGain();
@@ -345,18 +398,13 @@ export function playSound(name) {
         gain.gain.linearRampToValueAtTime(0, now + dur);
         gain.connect(ctx.destination);
 
-        // Noise source for formant excitation
-        const noise = makeNoise(ctx, dur);
+        // Voiced source — fast rising pitch
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(randomize(400, 0.12), now);
+        osc.frequency.linearRampToValueAtTime(randomize(750, 0.12), now + dur);
 
-        // F1: fast upward sweep 400→1200 Hz
-        const f1 = formant(ctx, randomize(400, 0.12), 5, noise, gain);
-        f1.frequency.linearRampToValueAtTime(randomize(1200, 0.12), now + dur);
-
-        // F2: 800→2000 Hz
-        const f2 = formant(ctx, randomize(800, 0.12), 4, noise, gain);
-        f2.frequency.linearRampToValueAtTime(randomize(2000, 0.12), now + dur);
-
-        // Trill — FM via amplitude modulation at ~15 Hz
+        // Trill — amplitude modulation at ~15 Hz for cat trilling
         const trillLfo = ctx.createOscillator();
         trillLfo.frequency.value = randomize(15, 0.1);
         const trillGain = ctx.createGain();
@@ -366,14 +414,22 @@ export function playSound(name) {
         trillLfo.start(now);
         trillLfo.stop(now + dur);
 
-        noise.start(now);
-        noise.stop(now + dur);
+        // F1: fast upward sweep
+        const f1 = formant(ctx, randomize(600, 0.12), 7, osc, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(1200, 0.12), now + dur);
+
+        // F2: brightness
+        const f2 = formant(ctx, randomize(1200, 0.12), 5, osc, gain);
+        f2.frequency.linearRampToValueAtTime(randomize(2000, 0.12), now + dur);
+
+        osc.start(now);
+        osc.stop(now + dur);
 
         // Jingle cascade (kept from original)
-        setTimeout(() => tone(1200, 0.1, 0.18), 130);
-        setTimeout(() => tone(1500, 0.1, 0.18), 250);
-        setTimeout(() => tone(1800, 0.1, 0.18), 360);
-        setTimeout(() => tone(2200, 0.12, 0.22), 470);
+        setTimeout(() => tone(1200, 0.1, 0.18), 230);
+        setTimeout(() => tone(1500, 0.1, 0.18), 350);
+        setTimeout(() => tone(1800, 0.1, 0.18), 460);
+        setTimeout(() => tone(2200, 0.12, 0.22), 570);
         break;
       }
 
