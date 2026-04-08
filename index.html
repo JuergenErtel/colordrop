@@ -816,20 +816,21 @@
         .mascot-btn {
             display: block;
             margin: .8rem auto .4rem;
-            padding: .5rem 1.2rem;
-            background: rgba(255,200,50,.2);
-            border: 1px solid rgba(255,200,50,.5);
-            border-radius: 12px;
-            color: #FFD54F;
+            padding: .55rem 1.4rem;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            border: none;
+            border-radius: 100px;
+            color: #4a2000;
             font-family: 'Fredoka', sans-serif;
             font-size: .9rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: background .15s, transform .1s;
+            box-shadow: 0 3px 0 #B8860B, 0 5px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3);
+            transition: transform .1s, box-shadow .1s;
         }
         .mascot-btn:hover {
-            background: rgba(255,200,50,.35);
-            transform: scale(1.03);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 0 #B8860B, 0 7px 15px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3);
         }
         .mascot-btn.active {
             background: rgba(255,200,50,.1);
@@ -845,7 +846,14 @@
         .cat-fact { font-size: .85rem; color: rgba(255,255,255,.7); font-style: italic; margin-bottom: 1.2rem; }
 
         /* ── Streak Calendar ───────────────────────────────────── */
-        .streak-info { font-size: 1rem; color: var(--gold); margin: -.3rem 0 1rem; }
+        .streak-info {
+            font-size: 1.2rem; margin: -.3rem 0 1rem;
+            background: linear-gradient(180deg, #FFD700, #d4873f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
         .streak-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 1.2rem; }
         .streak-day {
           aspect-ratio: 1; border-radius: 6px;
@@ -853,8 +861,8 @@
           display: flex; align-items: center; justify-content: center;
           font-size: .6rem; color: rgba(255,255,255,.3);
         }
-        .streak-day.played { background: rgba(212,135,63,.25); color: var(--gold); }
-        .streak-day.today { border: 1px solid var(--gold); color: var(--gold); }
+        .streak-day.played { background: linear-gradient(135deg, rgba(255,215,0,.2), rgba(255,140,0,.2)); color: var(--gold); }
+        .streak-day.today { border: 1px solid var(--gold); color: var(--gold); box-shadow: 0 0 8px rgba(255,215,0,.3); }
 
         /* ── Premium Banner ────────────────────────────────────── */
         .premium-banner {
