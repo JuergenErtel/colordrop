@@ -3,7 +3,7 @@
 import { TIER_DEFS } from './constants.js';
 
 const PREFIX  = 'catsort';
-const VERSION = '1';
+const VERSION = '2';
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function key(name) { return `${PREFIX}_${name}`; }
@@ -153,11 +153,11 @@ export function migrateIfNeeded() {
   const versionKey = key('version');
   if (localStorage.getItem(versionKey) === VERSION) return;
 
-  // Remove legacy colordrop_* keys
+  // Remove all legacy and current game keys for a clean reset
   const toRemove = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && k.startsWith('colordrop_')) toRemove.push(k);
+    if (k && (k.startsWith('colordrop_') || k.startsWith('catsort_') || k.startsWith('catsort-'))) toRemove.push(k);
   }
   toRemove.forEach(k => localStorage.removeItem(k));
 
