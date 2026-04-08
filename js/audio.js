@@ -135,6 +135,75 @@ function purr(dur, vol) {
   lfo.stop(now + dur);
 }
 
+/**
+ * Improved purr — sawtooth through bandpass + filtered noise + dual LFO.
+ * @param {number} dur — duration in seconds
+ * @param {number} vol — volume 0-1
+ */
+function purrV2(dur, vol) {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const v = vol * _sfxVolume;
+  const baseFreq = randomize(25, 0.08);
+
+  // Master gain with breath rhythm (slow LFO)
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(0, now);
+  master.gain.linearRampToValueAtTime(v, now + 0.05);
+  master.gain.setValueAtTime(v, now + dur - 0.2);
+  master.gain.linearRampToValueAtTime(0, now + dur);
+  master.connect(ctx.destination);
+
+  // Breath LFO — slow volume swell ~0.5 Hz
+  const breathLfo = ctx.createOscillator();
+  breathLfo.frequency.value = randomize(0.5, 0.1);
+  const breathGain = ctx.createGain();
+  breathGain.gain.value = v * 0.15;
+  breathLfo.connect(breathGain);
+  breathGain.connect(master.gain);
+  breathLfo.start(now);
+  breathLfo.stop(now + dur);
+
+  // Layer 1: Sawtooth → bandpass resonance body
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.value = baseFreq;
+  const body = ctx.createBiquadFilter();
+  body.type = 'bandpass';
+  body.frequency.value = randomize(200, 0.1);
+  body.Q.value = 3;
+  osc.connect(body);
+  body.connect(master);
+
+  // Purr rattle — amplitude tremolo at ~25 Hz
+  const rattleLfo = ctx.createOscillator();
+  rattleLfo.frequency.value = randomize(25, 0.1);
+  const rattleGain = ctx.createGain();
+  rattleGain.gain.value = 0.4;
+  rattleLfo.connect(rattleGain);
+  rattleGain.connect(master.gain);
+  rattleLfo.start(now);
+  rattleLfo.stop(now + dur);
+
+  // Layer 2: Filtered noise for breath texture
+  const noise = makeNoise(ctx, dur);
+  const noiseBp = ctx.createBiquadFilter();
+  noiseBp.type = 'bandpass';
+  noiseBp.frequency.value = randomize(280, 0.1);
+  noiseBp.Q.value = 1.5;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.value = 0.3;
+  noise.connect(noiseBp);
+  noiseBp.connect(noiseGain);
+  noiseGain.connect(master);
+
+  osc.start(now);
+  noise.start(now);
+  osc.stop(now + dur);
+  noise.stop(now + dur);
+}
+
 // ── Public API ────────────────────────────────────────────────────────────
 
 export function playSound(name) {
@@ -187,7 +256,7 @@ export function playSound(name) {
 
       case 'solved':
         // Satisfied purr + warm bell chime
-        purr(0.8, 0.2);
+        purrV2(0.4, 0.2);
         setTimeout(() => tone(880, 0.15, 0.2), 100);
         break;
 
@@ -198,7 +267,7 @@ export function playSound(name) {
 
       case 'win':
         // Long purr + ascending bell melody
-        purr(1.2, 0.18);
+        purrV2(0.8, 0.18);
         setTimeout(() => tone(880,  0.18, 0.25), 100);
         setTimeout(() => tone(1100, 0.18, 0.25), 280);
         setTimeout(() => tone(1320, 0.22, 0.3),  450);
