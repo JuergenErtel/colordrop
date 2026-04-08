@@ -304,10 +304,32 @@ export function playSound(name) {
         setTimeout(() => tone(1320, 0.22, 0.3),  450);
         break;
 
-      case 'undo':
-        // Soft "Mew" — downward slide
-        tone(700, 0.1, 0.2, { slide: -4000 });
+      case 'undo': {
+        // Soft "Mew" — single thin formant gliding down
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const dur = randomize(0.1, 0.15);
+        const vol = 0.2 * _sfxVolume;
+
+        // Envelope
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.015);
+        gain.gain.setValueAtTime(vol, now + dur - 0.03);
+        gain.gain.linearRampToValueAtTime(0, now + dur);
+        gain.connect(ctx.destination);
+
+        const noise = makeNoise(ctx, dur);
+
+        // Single formant, high and thin, gliding down — disappointed small cat
+        const f1 = formant(ctx, randomize(1200, 0.1), 6, noise, gain);
+        f1.frequency.linearRampToValueAtTime(randomize(800, 0.1), now + dur);
+
+        noise.start(now);
+        noise.stop(now + dur);
         break;
+      }
 
       case 'hint':
         // Curious "Prrt?" — upward chirp
