@@ -752,6 +752,10 @@
             to { transform: scale(1.08); }
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            .ls-card.current { animation: none; }
+        }
+
         .ls-num   { font-size: .8rem; font-weight: 800; line-height: 1; }
         .ls-stars { font-size: .4rem; letter-spacing: 0; line-height: 1; }
 
