@@ -380,7 +380,7 @@ export function renderFrame(ctx, ts, G) {
 
   // Draw mascot cat when idle
   if (G.selected === -1 && !ANIM.busy && !ANIM.arc && !G.won) {
-    drawMascotCat(ctx, CW - 45, CH - 35, 28, ts);
+    drawMascotCat(ctx, CW - 45, CH - 35, 28, ts, G.mascotParams);
   }
 
   drawTubes(ctx, ts, G);

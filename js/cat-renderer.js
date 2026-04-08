@@ -282,10 +282,15 @@ export function drawMiniCatFace(ctx, cx, cy, radius) {
 }
 
 // ── drawMascotCat ───────────────────────────────────────────────────────────
-export function drawMascotCat(ctx, cx, cy, size, ts) {
+export function drawMascotCat(ctx, cx, cy, size, ts, params) {
   const s = size;
   ctx.save();
-  const fur = '#D08840', furL = '#E8B878', furD = '#9A6020';
+  const fur  = params ? params.furColor : '#D08840';
+  const furL = params ? params.furLight : '#E8B878';
+  const furD = params ? params.furDark  : '#9A6020';
+  const eyeCol = params ? params.eyeColor  : '#66BB6A';
+  const earT   = params ? params.earType   : 'pointed';
+  const mark   = params ? params.markings  : 'tabby';
   // Idle animation
   const tailPhase = Math.sin(ts / 800) * 0.3;
   const isBlinking = (ts % 4000) > 3800;
@@ -317,16 +322,16 @@ export function drawMascotCat(ctx, cx, cy, size, ts) {
 
   // Head — reuse portrait components
   const hy = cy - s * 0.2, hs = s * 0.55;
-  const expr = isBlinking ? 'sleepy' : 'happy';
+  const expr = isBlinking ? 'sleepy' : (params ? params.expression : 'happy');
   ctx.fillStyle = fur;
   ctx.beginPath(); ctx.ellipse(cx, hy, hs, hs * 0.9, 0, 0, Math.PI * 2); ctx.fill();
   // Ears with twitch
   ctx.save();
   ctx.translate(cx, hy); ctx.rotate(earTwitch); ctx.translate(-cx, -hy);
-  drawEars(ctx, cx, hy, hs, fur, furL, 'pointed');
+  drawEars(ctx, cx, hy, hs, fur, furL, earT);
   ctx.restore();
-  drawMarkings(ctx, cx, hy, hs, furD, furL, 'tabby');
-  drawEyes(ctx, cx, hy, hs, '#66BB6A', expr);
+  drawMarkings(ctx, cx, hy, hs, furD, furL, mark);
+  drawEyes(ctx, cx, hy, hs, eyeCol, expr);
   drawNoseMouthWhiskers(ctx, cx, hy, hs);
 
   ctx.restore();

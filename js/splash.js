@@ -1,5 +1,7 @@
 'use strict';
 
+import { drawMascotCat, CAT_PARAMS } from './cat-renderer.js';
+
 // ══════════════════════════════════════════════════════════════════════════
 //  SPLASH SCREEN — Particles, Yarn interactions, entrance animation
 // ══════════════════════════════════════════════════════════════════════════
@@ -210,4 +212,29 @@ export function showSplash(bgOnly = false) {
   if (!active || particles.length === 0) {
     initParticles();
   }
+}
+
+export function updateSplashMascot(mascotId) {
+  const svg = document.querySelector('svg.splash-cat');
+  const canvas = document.getElementById('splashMascotCanvas');
+  if (!svg || !canvas) return;
+
+  if (!mascotId || mascotId === 'default') {
+    svg.style.display = '';
+    canvas.style.display = 'none';
+    return;
+  }
+
+  const params = CAT_PARAMS.find(p => p.id === mascotId);
+  if (!params) {
+    svg.style.display = '';
+    canvas.style.display = 'none';
+    return;
+  }
+
+  svg.style.display = 'none';
+  canvas.style.display = '';
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 220, 240);
+  drawMascotCat(ctx, 110, 120, 70, performance.now(), params);
 }

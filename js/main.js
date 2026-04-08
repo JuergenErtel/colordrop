@@ -42,7 +42,7 @@ import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
 import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
 import { ENDLESS, endlessConfig, generateEndlessTubes, endlessParForRound, startEndless, endlessNextRound, endEndless } from './endless.js';
-import { initSplash, hideSplash, showSplash } from './splash.js';
+import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -88,6 +88,11 @@ function updateBonesDisplay() {
 
 function updatePremiumBanner() {
   document.getElementById('premiumBanner').classList.toggle('hidden', isPremium());
+}
+
+function updateMascotParams() {
+  const id = loadMascot();
+  G.mascotParams = (id && id !== 'default') ? (CAT_PARAMS.find(p => p.id === id) || null) : null;
 }
 
 // ── Cat unlock celebration queue ──────────────────────────────────────────
@@ -801,6 +806,7 @@ function openLevelSelect() {
   document.getElementById('timeoutOverlay').classList.remove('show');
   // Show splash as atmospheric background behind level select
   showSplash(true);
+  updateSplashMascot(loadMascot());
   document.getElementById('levelSelect').classList.add('show');
   requestAnimationFrame(() => {
     const first = document.querySelector('#lsTiers .ls-card:not(.solved):not(.locked)');
@@ -1135,6 +1141,8 @@ function showCatDetail(cat) {
     mascotBtn.classList.remove('active');
     mascotBtn.onclick = () => {
       saveMascot(cat.id);
+      updateMascotParams();
+      updateSplashMascot(cat.id);
       mascotBtn.textContent = 'Dein Maskottchen ✓';
       mascotBtn.classList.add('active');
       mascotBtn.onclick = null;
@@ -1244,6 +1252,8 @@ function loop(ts) {
 // ══════════════════════════════════════════════════════════════════════════
 
 migrateIfNeeded();
+updateMascotParams();
+updateSplashMascot(loadMascot());
 const savedSettings = loadSettings();
 setMusicVolume(savedSettings.musicVolume);
 setSfxVolume(savedSettings.sfxVolume);
