@@ -308,6 +308,13 @@ function generateLevel(n) {
   G.solvedTubes  = new Set();
   resetAnim();
 
+  // Staggered tube drop-in animation
+  const introNow = performance.now();
+  ANIM.tubeIntro = G.tubes.map((_, i) => ({
+    startTime: introNow + i * 50,
+    duration: 400,
+  }));
+
   // Timer setup
   if (isTimedLevel(n) && !G.isDailyChallenge) {
     G.timer   = { active: false, endTime: 0, duration: timerDuration(n), _lastTick: -1 };
@@ -598,7 +605,9 @@ function showWin() {
     // Store win data for after ad dismissal
     document.getElementById('finalLevel').textContent = LEVEL.current;
     document.getElementById('finalMoves').textContent = G.moves;
-    document.getElementById('winStars').textContent   = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
+    document.getElementById('winStars').innerHTML =
+    Array.from({ length: stars }, () => '<span class="win-star">\u2B50</span>').join('') +
+    Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
     document.getElementById('winPar').textContent     = 'Par: ' + par;
     if (newAchs.length) showAchievementToast(newAchs);
     return;
@@ -606,7 +615,9 @@ function showWin() {
 
   document.getElementById('finalLevel').textContent = LEVEL.current;
   document.getElementById('finalMoves').textContent = G.moves;
-  document.getElementById('winStars').textContent   = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
+  document.getElementById('winStars').innerHTML =
+    Array.from({ length: stars }, () => '<span class="win-star">\u2B50</span>').join('') +
+    Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
   document.getElementById('winPar').textContent     = 'Par: ' + par;
   document.getElementById('overlay').classList.add('show');
 
@@ -1239,6 +1250,14 @@ function loadEndlessRound() {
   G.timer        = null;
   G.isDailyChallenge = false;
   resetAnim();
+
+  // Staggered tube drop-in animation
+  const introNow = performance.now();
+  ANIM.tubeIntro = G.tubes.map((_, i) => ({
+    startTime: introNow + i * 50,
+    duration: 400,
+  }));
+
   LEVEL.current = ENDLESS.round;
   document.getElementById('timerBar').classList.remove('visible', 'pulse');
   document.getElementById('blitzOverlay').classList.remove('show');
