@@ -659,6 +659,31 @@
         .ls-action-btn:active { transform: translateY(2px); }
         .ls-action-btn:disabled { opacity: .38; cursor: default; }
 
+        .ls-action-btn--play {
+            font-size: 1.25rem;
+            padding: 1rem 1.8rem;
+            background: linear-gradient(135deg, #00E676 0%, #00C853 50%, #00BFA5 100%);
+            color: #003d20;
+            box-shadow: 0 5px 0 #00894a, 0 8px 20px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.35);
+            animation: playPulse 2s ease-in-out infinite;
+        }
+        .ls-action-btn--play:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #00894a, 0 12px 28px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.35); }
+        .ls-action-btn--play:active { box-shadow: 0 2px 0 #00894a, 0 3px 8px rgba(0,0,0,.4), inset 0 2px 0 rgba(255,255,255,.35); }
+        @keyframes playPulse {
+            0%, 100% { box-shadow: 0 5px 0 #00894a, 0 8px 20px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.35); }
+            50% { box-shadow: 0 5px 0 #00894a, 0 8px 28px rgba(0,230,118,.4), inset 0 2px 0 rgba(255,255,255,.35); }
+        }
+
+        .ls-actions-modes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .5rem;
+        }
+        .ls-actions-modes .ls-action-btn {
+            font-size: .85rem;
+            padding: .6rem 1rem;
+        }
+
         .ls-action-btn--daily {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
             color: #4a2000;
@@ -1351,8 +1376,11 @@
             <p class="ls-tagline">sort · schnurr · solve</p>
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>
             <div class="ls-actions">
-                <button id="dailyChallengeBtn" class="ls-action-btn ls-action-btn--daily" type="button">📅 Tages-Challenge</button>
-                <button id="endlessBtn" class="ls-action-btn ls-action-btn--endless" type="button">♾️ Endlos-Modus</button>
+                <button id="playBtn" class="ls-action-btn ls-action-btn--play" type="button">▶ Spiel starten</button>
+                <div class="ls-actions-modes">
+                    <button id="dailyChallengeBtn" class="ls-action-btn ls-action-btn--daily" type="button">📅 Tages-Challenge</button>
+                    <button id="endlessBtn" class="ls-action-btn ls-action-btn--endless" type="button">♾️ Endlos-Modus</button>
+                </div>
                 <div class="ls-actions-secondary">
                     <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
                     <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>

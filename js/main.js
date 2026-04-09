@@ -877,6 +877,9 @@ function openLevelSelect() {
   // Show splash as atmospheric background behind level select
   showSplash(true);
   updateSplashMascot(loadMascot());
+  const nextLevel = maxUnlockedLevel();
+  const playBtn = document.getElementById('playBtn');
+  playBtn.textContent = nextLevel <= 1 ? '▶ Spiel starten' : '▶ Level ' + nextLevel;
   document.getElementById('levelSelect').classList.add('show');
   requestAnimationFrame(() => {
     const first = document.querySelector('#lsTiers .ls-card:not(.solved):not(.locked)');
@@ -1041,6 +1044,12 @@ document.getElementById('tutSkip').addEventListener('click', () => {
 document.getElementById('tutBtn').addEventListener('click', () => {
   closeLevelSelect();
   startTutorial();
+});
+
+document.getElementById('playBtn').addEventListener('click', () => {
+  playSound('click');
+  closeLevelSelect();
+  generateLevel(maxUnlockedLevel());
 });
 
 document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
