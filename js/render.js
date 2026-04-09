@@ -316,8 +316,8 @@ function drawTubes(ctx, ts, G) {
           const jt = Math.min(je / jiggle.duration, 1);
           if (jiggle.squash) {
             const squashT = easeOutElastic(jt);
-            jSx = 1.3 - 0.3 * squashT;
-            jSy = 0.7 + 0.3 * squashT;
+            jSx = 1.45 - 0.45 * squashT;   // 1.45 → 1.0
+            jSy = 0.55 + 0.45 * squashT;   // 0.55 → 1.0
           } else {
             const compress = 0.05 * (1 - easeOutElastic(jt));
             jSx = 1 + compress;
@@ -360,25 +360,31 @@ function drawArcBall(ctx, ts, dt, G) {
     const pA = bezier2(tA, a.p0, a.p1, a.p2);
     const pB = bezier2(tB, a.p0, a.p1, a.p2);
     angle = Math.atan2(pB.y - pA.y, pB.x - pA.x);
-    const stretchAmount = rawT < 0.85 ? 1 : (1 - rawT) / 0.15;
-    sx = 1 + 0.12 * stretchAmount;
-    sy = 1 - 0.10 * stretchAmount;
+    // Stronger stretch in middle of arc, normalize at end
+    const mid = 1 - Math.abs(rawT - 0.4) / 0.4;  // peaks at 40%
+    const stretchAmount = Math.max(0, Math.min(1, mid)) * (rawT < 0.85 ? 1 : (1 - rawT) / 0.15);
+    sx = 1 + 0.25 * stretchAmount;   // 25% elongation (was 12%)
+    sy = 1 - 0.18 * stretchAmount;   // 18% compression (was 10%)
   }
 
-  // Trail particles (denser than before, skip if reduced motion)
-  if (!REDUCED_MOTION && rawT < 0.92 && Math.random() < 0.7 * dt * 60) {
+  // Trail particles — bright, visible
+  if (!REDUCED_MOTION && rawT < 0.95) {
     const col = PALETTE[a.color];
     if (col) {
-      spawnParticle(
-        pos.x + (Math.random() - 0.5) * 4,
-        pos.y + (Math.random() - 0.5) * 4,
-        (Math.random() - 0.5) * 3,
-        -2 - Math.random() * 2,
-        col.glow,
-        4 + Math.random() * 3,
-        400 + Math.random() * 100,
-        0.08,
-      );
+      // Spawn 1-2 particles per frame
+      const count = Math.random() < 0.5 ? 2 : 1;
+      for (let pi = 0; pi < count; pi++) {
+        spawnParticle(
+          pos.x + (Math.random() - 0.5) * 6,
+          pos.y + (Math.random() - 0.5) * 6,
+          (Math.random() - 0.5) * 4,
+          -2 - Math.random() * 3,
+          col.bright,                         // bright color (was glow)
+          5 + Math.random() * 4,              // bigger (was 4+3)
+          500 + Math.random() * 200,          // longer life (was 400+100)
+          0.06,
+        );
+      }
     }
   }
 
@@ -572,12 +578,12 @@ function drawImpactRing(ctx, ts) {
   if (!r) return;
   const t = (ts - r.startTime) / r.duration;
   if (t > 1) return;
-  const radius = BALL_R + (BALL_R * t);
-  const alpha = 0.4 * (1 - t);
+  const radius = BALL_R + (BALL_R * 1.5 * t);   // expands to 2.5x ball radius
+  const alpha = 0.6 * (1 - t);                    // brighter (was 0.4)
   ctx.save();
   ctx.strokeStyle = r.color;
   ctx.globalAlpha = alpha;
-  ctx.lineWidth = 2 * (1 - t);
+  ctx.lineWidth = 3 * (1 - t);                    // thicker (was 2)
   ctx.beginPath();
   ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
   ctx.stroke();

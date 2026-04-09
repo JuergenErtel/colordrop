@@ -364,7 +364,7 @@ function doMove(from, to) {
   // Start arc animation
   const endX  = tubeCX(to, tubeCount);
   const endY  = ballCY(G.tubes[to].length - 1);
-  const peakY = Math.min(startY, endY) - 90;
+  const peakY = Math.min(startY, endY) - 130;
 
   ANIM.arc = {
     color,
