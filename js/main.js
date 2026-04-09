@@ -731,6 +731,55 @@ function checkAchievements(achCtx) {
   return newIds;
 }
 
+// ── Achievement Progress ────────────────────────────────────────────────
+
+function getAchievementProgress() {
+  const progress    = loadProgress();
+  const stats       = loadStats();
+  const unlocked    = new Set(loadAchievements());
+  const wonCount    = Object.keys(progress).length;
+  const totalStars  = Object.values(progress).reduce((s, v) => s + v, 0);
+  const threeStars  = Object.values(progress).filter(v => v >= 3).length;
+  const maxLevel    = Math.max(0, ...Object.keys(progress).map(Number));
+
+  // Build cat-unlock map: achievement_id → cat_id
+  const catMap = {};
+  for (const cat of CATS) {
+    if (cat.unlock && cat.unlock.type === 'achievement') {
+      catMap[cat.unlock.value] = cat.id;
+    }
+  }
+
+  const currentMap = {
+    first_solve:    Math.min(wonCount, 1),
+    cat_nap:        0, // TODO: streak-by-date not yet tracked
+    paw_print:      Math.min(wonCount, 20),
+    pride_of_lions: Math.min(wonCount, 50),
+    cat_king:       Math.min(maxLevel, 30),
+    yarn_ball:      Math.min(threeStars, 10),
+    tangled:        Math.min(threeStars, 20),
+    daily_player:   unlocked.has('daily_player') ? 1 : 0,
+    sharpshooter:   Math.min(threeStars, 3),
+    star_collector: Math.min(totalStars, 60),
+    hot_streak:     Math.min(stats.currentStreak || 0, 5),
+    purrfect:       Math.min(threeStars, 10),
+    lightning_paw:  unlocked.has('lightning_paw') ? 1 : 0,
+    legendary:      ACHIEVEMENTS.filter(a => a.id !== 'legendary' && unlocked.has(a.id)).length,
+  };
+
+  return ACHIEVEMENTS.map(a => ({
+    id:         a.id,
+    icon:       a.icon,
+    title:      a.title,
+    desc:       a.desc,
+    unlocked:   unlocked.has(a.id),
+    current:    unlocked.has(a.id) ? a.target : (currentMap[a.id] || 0),
+    target:     a.target,
+    percent:    unlocked.has(a.id) ? 1 : Math.min((currentMap[a.id] || 0) / a.target, 1),
+    unlocksCat: catMap[a.id] || null,
+  }));
+}
+
 // ── Achievement Toast ────────────────────────────────────────────────────
 
 const _toastQueue  = [];
