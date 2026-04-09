@@ -782,6 +782,38 @@ function getAchievementProgress() {
   }));
 }
 
+// ── Next Goal Widget ────────────────────────────────────────────────────
+
+function updateNextGoalWidget() {
+  const widget = document.getElementById('nextGoalWidget');
+  if (!widget) return;
+
+  const all       = getAchievementProgress();
+  const remaining = all.filter(a => !a.unlocked && a.id !== 'cat_nap');
+  remaining.sort((a, b) => b.percent - a.percent);
+
+  if (remaining.length === 0) {
+    // All achievements unlocked
+    widget.classList.add('all-done');
+    document.getElementById('nextGoalIcon').textContent  = '🌟';
+    document.getElementById('nextGoalName').textContent  = 'Alle Achievements freigeschaltet!';
+    document.getElementById('nextGoalCount').textContent = '';
+    document.getElementById('nextGoalFill').style.width  = '100%';
+    return;
+  }
+
+  widget.classList.remove('all-done');
+  const best = remaining[0];
+
+  document.getElementById('nextGoalIcon').textContent  = best.icon;
+  document.getElementById('nextGoalName').textContent  = best.title;
+  document.getElementById('nextGoalCount').textContent = best.current + '/' + best.target;
+
+  requestAnimationFrame(() => {
+    document.getElementById('nextGoalFill').style.width = (best.percent * 100) + '%';
+  });
+}
+
 // ── Win Overlay Progress ────────────────────────────────────────────────
 
 function buildWinAchProgress() {
@@ -1017,6 +1049,7 @@ function openLevelSelect() {
   if (ENDLESS.active) { endEndless(); stopMusic(); }
   G.isDailyChallenge = false;
   buildLevelSelect();
+  updateNextGoalWidget();
   updateDailyBtn();
   hideOverlay();
   if (G.timer) { G.timer = null; }
@@ -1216,6 +1249,7 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
 });
 
 document.getElementById('statsBtn').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
+document.getElementById('nextGoalWidget').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
 document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
 
 document.getElementById('blitzStartBtn').addEventListener('click', () => {
