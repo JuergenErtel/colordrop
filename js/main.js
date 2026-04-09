@@ -625,8 +625,18 @@ function showWin() {
   updateDailyStreak();
 
   if (ENDLESS.active) {
-    endlessNextRound();
-    setTimeout(() => loadEndlessRound(), 800);
+    // Show achievements even in endless mode before continuing
+    if (_pendingAchs.length) {
+      showAchievementOverlays(_pendingAchs, () => {
+        _pendingAchs = [];
+        _pendingCats = [];
+        endlessNextRound();
+        setTimeout(() => loadEndlessRound(), 800);
+      });
+    } else {
+      endlessNextRound();
+      setTimeout(() => loadEndlessRound(), 800);
+    }
     return;
   }
 
