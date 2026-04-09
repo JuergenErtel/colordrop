@@ -168,6 +168,26 @@
         .move-ok   { color: #ef6c00; }
         .move-over { color: #c62828; }
 
+        /* Move counter roll animation */
+        .move-counter-wrap {
+            display: inline-block;
+            overflow: hidden;
+            height: 1.4em;
+            vertical-align: middle;
+            position: relative;
+        }
+        .move-counter-wrap .move-old,
+        .move-counter-wrap .move-new {
+            display: block;
+            transition: transform .2s cubic-bezier(.2,.9,.3,1);
+        }
+        .move-counter-wrap.rolling .move-old {
+            transform: translateY(-100%);
+        }
+        .move-counter-wrap.rolling .move-new {
+            transform: translateY(-100%);
+        }
+
         /* ── Timer bar ─────────────────────────────────────────── */
         .timer-bar {
             position: absolute;
@@ -1314,7 +1334,7 @@
 
         <div class="controls">
             <div class="moves-pill">
-                <span class="moves-n" id="moveCount">0</span>
+                <span class="move-counter-wrap" id="moveCountWrap"><span class="move-old moves-n" id="moveCount">0</span><span class="move-new moves-n" id="moveCountNew">0</span></span>
                 <span class="moves-l">moves</span>
             </div>
         </div>

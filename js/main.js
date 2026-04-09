@@ -535,15 +535,28 @@ G.onTutAdvance = function () {
 // ══════════════════════════════════════════════════════════════════════════
 
 function updateHUD() {
-  const mc = document.getElementById('moveCount');
-  mc.textContent = G.moves;
+  const mc    = document.getElementById('moveCount');
+  const mcNew = document.getElementById('moveCountNew');
+  const mcWrap = document.getElementById('moveCountWrap');
+
+  if (mc.textContent !== String(G.moves)) {
+    mcNew.textContent = G.moves;
+    mcWrap.classList.add('rolling');
+    setTimeout(() => {
+      mc.textContent = G.moves;
+      mcWrap.classList.remove('rolling');
+    }, 200);
+  }
+
   mc.classList.remove('move-good', 'move-ok', 'move-over');
+  mcNew.classList.remove('move-good', 'move-ok', 'move-over');
   if (G.moves > 0) {
     const par = parForLevel(LEVEL.current);
-    mc.classList.add(
+    const cls =
       G.moves <= par       ? 'move-good' :
-      G.moves <= par * 1.5 ? 'move-ok'   : 'move-over'
-    );
+      G.moves <= par * 1.5 ? 'move-ok'   : 'move-over';
+    mc.classList.add(cls);
+    mcNew.classList.add(cls);
   }
   if (ENDLESS.active) {
     document.getElementById('levelLabel').textContent = 'ENDLOS \u00B7 RUNDE ' + ENDLESS.round;
