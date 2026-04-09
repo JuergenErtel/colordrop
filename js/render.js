@@ -155,49 +155,64 @@ function updateArc(ts, G) {
   if (won) {
     G.won = true;
 
-    // Extra-strong impact on winning ball
+    // 0ms: Extra-strong impact on winning ball
     ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
       startTime: ts,
       duration: DUR_BOUNCE,
-      amplitude: 18,
+      amplitude: 20,
     });
 
-    // 150ms: screen shake
+    // 200ms: screen shake (strong)
     if (!REDUCED_MOTION) {
       setTimeout(() => {
-        ANIM.screenShake = { startTime: performance.now(), duration: 250, amplitude: 6 };
-      }, 150);
+        ANIM.screenShake = { startTime: performance.now(), duration: 350, amplitude: 8 };
+      }, 200);
     }
 
-    // 250ms: ALL tubes explode staggered
+    // 300ms: ALL tubes explode staggered
     for (let ti = 0; ti < tubeCount; ti++) {
       setTimeout(() => {
         triggerTubeExplosion(ti, G.tubes, (i) => tubeCX(i, tubeCount));
-      }, 250 + ti * 60);
+      }, 300 + ti * 80);
     }
 
-    // 400ms: gold flash overlay (longer + brighter)
+    // 500ms: gold flash (long, bright)
     setTimeout(() => {
-      ANIM.goldFlash = { startTime: performance.now(), duration: 250 };
-    }, 400);
-
-    // 500ms: confetti + sound
-    setTimeout(() => {
-      spawnConfetti();
-      playSound('win');
+      ANIM.goldFlash = { startTime: performance.now(), duration: 400 };
     }, 500);
 
-    // 700ms: fireworks
-    setTimeout(() => scheduleWinFireworks(), 700);
+    // 600ms: win sound
+    setTimeout(() => playSound('win'), 600);
 
+    // 700ms: first confetti wave
+    setTimeout(() => spawnConfetti(), 700);
+
+    // 1000ms: second screen shake + fireworks
+    if (!REDUCED_MOTION) {
+      setTimeout(() => {
+        ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 4 };
+      }, 1000);
+    }
+    setTimeout(() => scheduleWinFireworks(), 1000);
+
+    // 1400ms: second confetti wave
+    setTimeout(() => spawnConfetti(), 1400);
+
+    // 1800ms: third confetti wave + second gold flash
+    setTimeout(() => {
+      spawnConfetti();
+      ANIM.goldFlash = { startTime: performance.now(), duration: 300 };
+    }, 1800);
+
+    // 2500ms: show win overlay
     if (G.tutorial) {
       if (G.tutStep < TUTORIAL_SCRIPT.length &&
           TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
         G.tutStep++;
       }
-      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 1100);
+      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 2500);
     } else {
-      setTimeout(() => { if (G.onWin) G.onWin(); }, 1100);
+      setTimeout(() => { if (G.onWin) G.onWin(); }, 2500);
     }
   }
 
