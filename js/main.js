@@ -452,6 +452,11 @@ function showHintAction() {
 function triggerFlash(idx) {
   G.flashTube  = idx;
   G.flashUntil = G.frameTime + 320;
+  ANIM.tubeShake.set(idx, {
+    startTime: G.frameTime,
+    duration: 300,
+    amplitude: 4,
+  });
   playSound('invalid');
 }
 
@@ -472,6 +477,7 @@ function handleInput(lx, ly) {
       G.selected     = idx;
       G.selectedTime = G.frameTime;
       playSound('select');
+      ANIM.ripple = { x: tubeCX(idx, G.tubes.length), y: ly, startTime: G.frameTime };
       // Tutorial: advance from 'select' step
       if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
           TUTORIAL_SCRIPT[G.tutStep].waitFor === 'select') {

@@ -239,9 +239,21 @@ function drawTubes(ctx, ts, G) {
       wobbleAngle = wobble.amplitude * Math.sin(wt * Math.PI * 3) * (1 - wt);
     }
 
+    // Tube shake (invalid move)
+    const shake = ANIM.tubeShake.get(i);
+    let shakeX = 0;
+    if (shake) {
+      const st = (ts - shake.startTime) / shake.duration;
+      if (st >= 1) {
+        ANIM.tubeShake.delete(i);
+      } else {
+        shakeX = shake.amplitude * Math.sin(st * Math.PI * 6) * (1 - st);
+      }
+    }
+
     ctx.save();
     if (introAlpha < 1) ctx.globalAlpha = introAlpha;
-    ctx.translate(cx, TUBE_TOP + TUBE_H / 2 + introOffsetY);
+    ctx.translate(cx + shakeX, TUBE_TOP + TUBE_H / 2 + introOffsetY);
     ctx.rotate(wobbleAngle);
     ctx.translate(-cx, -(TUBE_TOP + TUBE_H / 2));
 
@@ -535,6 +547,30 @@ function drawImpactRing(ctx, ts) {
   ctx.restore();
 }
 
+function drawRipple(ctx, ts) {
+  const r = ANIM.ripple;
+  if (!r) return;
+  const elapsed = ts - r.startTime;
+  if (elapsed > 400) { ANIM.ripple = null; return; }
+  const t = elapsed / 400;
+
+  ctx.save();
+  const radius1 = 10 + 25 * t;
+  ctx.strokeStyle = `rgba(255,215,0,${0.4 * (1 - t)})`;
+  ctx.lineWidth = 2 * (1 - t);
+  ctx.beginPath();
+  ctx.arc(r.x, r.y, radius1, 0, Math.PI * 2);
+  ctx.stroke();
+
+  const radius2 = 8 + 20 * t;
+  ctx.strokeStyle = `rgba(255,215,0,${0.25 * (1 - t)})`;
+  ctx.lineWidth = 1.5 * (1 - t);
+  ctx.beginPath();
+  ctx.arc(r.x, r.y, radius2, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 // ── Main render function ─────────────────────────────────────────────────
 
 /**
@@ -587,6 +623,7 @@ export function renderFrame(ctx, ts, G) {
 
   drawParticles(ctx);
   drawImpactRing(ctx, ts);
+  drawRipple(ctx, ts);
   drawConfetti(ctx);
   drawTutorialHighlight(ctx, G);
 
