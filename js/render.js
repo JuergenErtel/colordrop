@@ -204,15 +204,15 @@ function updateArc(ts, G) {
       ANIM.goldFlash = { startTime: performance.now(), duration: 300 };
     }, 1800);
 
-    // 2500ms: show win overlay
+    // 600ms: trigger showWin (which internally delays overlay by 1800ms)
     if (G.tutorial) {
       if (G.tutStep < TUTORIAL_SCRIPT.length &&
           TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
         G.tutStep++;
       }
-      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 2500);
+      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 600);
     } else {
-      setTimeout(() => { if (G.onWin) G.onWin(); }, 2500);
+      setTimeout(() => { if (G.onWin) G.onWin(); }, 600);
     }
   }
 
