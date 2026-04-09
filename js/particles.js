@@ -113,3 +113,47 @@ export function scheduleWinFireworks() {
     }, delay);
   });
 }
+
+// ── Ambient fireflies ────────────────────────────────────────────────────
+const FIREFLY_COUNT = 6;
+const _fireflies = [];
+
+export function spawnFireflies(accentColor) {
+  _fireflies.length = 0;
+  for (let i = 0; i < FIREFLY_COUNT; i++) {
+    _fireflies.push({
+      baseX: 30 + Math.random() * 360,
+      baseY: 80 + Math.random() * 380,
+      phase: Math.random() * Math.PI * 2,
+      freqX: 0.0003 + Math.random() * 0.0004,
+      freqY: 0.0004 + Math.random() * 0.0003,
+      ampX: 15 + Math.random() * 20,
+      ampY: 12 + Math.random() * 15,
+      size: 2 + Math.random() * 2,
+      color: accentColor || 'rgba(255,215,0,0.15)',
+    });
+  }
+}
+
+export function clearFireflies() {
+  _fireflies.length = 0;
+}
+
+export function drawFireflies(ctx, ts) {
+  for (const f of _fireflies) {
+    const x = f.baseX + Math.sin(ts * f.freqX + f.phase) * f.ampX;
+    const y = f.baseY + Math.cos(ts * f.freqY + f.phase * 1.3) * f.ampY;
+    const alpha = 0.08 + 0.07 * Math.sin(ts * 0.001 + f.phase);
+
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, f.size * 3);
+    glow.addColorStop(0, f.color.replace(/[\d.]+\)$/, `${alpha})`));
+    glow.addColorStop(1, f.color.replace(/[\d.]+\)$/, '0)'));
+    ctx.fillStyle = glow;
+    ctx.fillRect(x - f.size * 3, y - f.size * 3, f.size * 6, f.size * 6);
+
+    ctx.beginPath();
+    ctx.arc(x, y, f.size, 0, Math.PI * 2);
+    ctx.fillStyle = f.color.replace(/[\d.]+\)$/, `${alpha * 1.5})`);
+    ctx.fill();
+  }
+}

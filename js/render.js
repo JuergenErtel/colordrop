@@ -9,7 +9,7 @@ import {
 } from './constants.js';
 
 import { easeInOut, easeOutBack, easeOutBounce, easeOutQuart, easeOutElastic, bezier2, ANIM } from './animations.js';
-import { spawnParticle, updateParticles, drawParticles, drawConfetti, triggerTubeExplosion, spawnConfetti, scheduleWinFireworks } from './particles.js';
+import { spawnParticle, updateParticles, drawParticles, drawConfetti, triggerTubeExplosion, spawnConfetti, scheduleWinFireworks, spawnFireflies, clearFireflies, drawFireflies } from './particles.js';
 import { drawBackground } from './background.js';
 import { drawContainer } from './containers.js';
 import { drawBall } from './balls.js';
@@ -643,6 +643,7 @@ export function renderFrame(ctx, ts, G) {
   const theme     = THEMES[G.theme] || THEMES.EASY;
   const prevTheme = G.themePrev ? (THEMES[G.themePrev] || theme) : theme;
   drawBackground(ctx, ts, theme, prevTheme, G.themeFade);
+  if (!REDUCED_MOTION) drawFireflies(ctx, ts);
 
   // Screen shake
   if (ANIM.screenShake) {

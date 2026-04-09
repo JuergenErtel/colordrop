@@ -37,6 +37,7 @@ import {
 } from './engine.js';
 
 import { ANIM, resetAnim } from './animations.js';
+import { spawnFireflies } from './particles.js';
 import { playSound } from './audio.js';
 import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
@@ -314,6 +315,15 @@ function generateLevel(n) {
     startTime: introNow + i * 50,
     duration: 400,
   }));
+
+  // Spawn ambient fireflies
+  const themeObj = THEMES[G.theme] || THEMES.EASY;
+  const _ac = themeObj.accentColor || '#ffd700';
+  const _hex = _ac.replace('#', '');
+  const _r = parseInt(_hex.slice(0, 2), 16);
+  const _g = parseInt(_hex.slice(2, 4), 16);
+  const _b = parseInt(_hex.slice(4, 6), 16);
+  spawnFireflies(`rgba(${_r},${_g},${_b},0.15)`);
 
   // Timer setup
   if (isTimedLevel(n) && !G.isDailyChallenge) {
@@ -975,16 +985,17 @@ canvas.addEventListener('touchstart', e => {
   handleInput(p.x, p.y);
 }, { passive: false });
 
-document.getElementById('menuBtnHud').addEventListener('click', openLevelSelect);
+document.getElementById('menuBtnHud').addEventListener('click', () => { playSound('click'); openLevelSelect(); });
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('hintBtn').addEventListener('click', showHintAction);
 document.getElementById('resetBtn').addEventListener('click', () =>
   G.tutorial ? startTutorial() : generateLevel(LEVEL.current)
 );
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
+  playSound('click');
   generateLevel(LEVEL.current + 1);
 });
-document.getElementById('menuBtn').addEventListener('click', openLevelSelect);
+document.getElementById('menuBtn').addEventListener('click', () => { playSound('click'); openLevelSelect(); });
 document.getElementById('tutSkip').addEventListener('click', () => {
   if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
       TUTORIAL_SCRIPT[G.tutStep].waitFor === 'dismiss') {
@@ -1000,6 +1011,7 @@ document.getElementById('tutBtn').addEventListener('click', () => {
 });
 
 document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
+  playSound('click');
   document.getElementById('levelSelect').classList.remove('show');
   showDailyOverlay();
 });
@@ -1011,10 +1023,11 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
   generateLevel(dailyLevelNum());
 });
 
-document.getElementById('statsBtn').addEventListener('click', showStatsScreen);
+document.getElementById('statsBtn').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
 document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
 
 document.getElementById('blitzStartBtn').addEventListener('click', () => {
+  playSound('click');
   document.getElementById('blitzOverlay').classList.remove('show');
   G.timer.active  = true;
   G.timer.endTime = performance.now() + G.timer.duration;
@@ -1030,6 +1043,7 @@ window.addEventListener('resize', resizeCanvas);
 
 // ── Settings ───────────────────────────────────────────────
 document.getElementById('settingsBtn').addEventListener('click', () => {
+  playSound('click');
   const s = loadSettings();
   document.getElementById('musicVolume').value = Math.round(s.musicVolume * 100);
   document.getElementById('sfxVolume').value = Math.round(s.sfxVolume * 100);
@@ -1066,12 +1080,14 @@ document.getElementById('sfxToggle').addEventListener('click', () => {
 
 // ── Endless Mode ──────────────────────────────────────────
 document.getElementById('endlessBtn').addEventListener('click', () => {
+  playSound('click');
   closeLevelSelect();
   document.getElementById('endlessRound').textContent = 'RUNDE 1';
   document.getElementById('endlessBest').textContent = 'Rekord: ' + loadEndlessBest();
   document.getElementById('endlessOverlay').classList.add('show');
 });
 document.getElementById('endlessStartBtn').addEventListener('click', () => {
+  playSound('click');
   document.getElementById('endlessOverlay').classList.remove('show');
   startEndless();
   loadEndlessRound();
