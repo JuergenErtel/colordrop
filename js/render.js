@@ -18,6 +18,8 @@ import { playSound } from './audio.js';
 import { checkWinState, isSolved } from './engine.js';
 import { updateTimer, drawTimerBar } from './timer.js';
 
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 // ── Layout helpers (exported) ────────────────────────────────────────────
 
 /** Centre X of tube i given tubeCount total tubes */
@@ -176,11 +178,26 @@ function drawArcBall(ctx, ts, dt, G) {
   const a       = ANIM.arc;
   const elapsed = ts - a.startTime;
   const rawT    = Math.min(elapsed / a.duration, 1);
-  const easedT  = easeInOut(rawT);
+  const easedT  = easeOutQuart(rawT);
   const pos     = bezier2(easedT, a.p0, a.p1, a.p2);
 
-  // Trail particle
-  if (rawT < 0.92 && Math.random() < 0.4 * dt * 60) {
+  // Directional stretch (skip if reduced motion)
+  let sx = 1, sy = 1;
+  let angle = 0;
+  if (!REDUCED_MOTION) {
+    const epsilon = 0.01;
+    const tA = Math.max(0, easedT - epsilon);
+    const tB = Math.min(1, easedT + epsilon);
+    const pA = bezier2(tA, a.p0, a.p1, a.p2);
+    const pB = bezier2(tB, a.p0, a.p1, a.p2);
+    angle = Math.atan2(pB.y - pA.y, pB.x - pA.x);
+    const stretchAmount = rawT < 0.85 ? 1 : (1 - rawT) / 0.15;
+    sx = 1 + 0.12 * stretchAmount;
+    sy = 1 - 0.10 * stretchAmount;
+  }
+
+  // Trail particles (denser than before, skip if reduced motion)
+  if (!REDUCED_MOTION && rawT < 0.92 && Math.random() < 0.7 * dt * 60) {
     const col = PALETTE[a.color];
     if (col) {
       spawnParticle(
@@ -189,14 +206,19 @@ function drawArcBall(ctx, ts, dt, G) {
         (Math.random() - 0.5) * 3,
         -2 - Math.random() * 2,
         col.glow,
-        3 + Math.random() * 2,
-        300 + Math.random() * 100,
+        4 + Math.random() * 3,
+        400 + Math.random() * 100,
         0.08,
       );
     }
   }
 
-  drawBall(ctx, pos.x, pos.y, a.color, true, ts);
+  ctx.save();
+  ctx.translate(pos.x, pos.y);
+  ctx.rotate(angle);
+  ctx.scale(sx, sy);
+  drawBall(ctx, 0, 0, a.color, true, ts);
+  ctx.restore();
 }
 
 function drawFloatingBall(ctx, ts, G) {
@@ -214,11 +236,40 @@ function drawFloatingBall(ctx, ts, G) {
   const liftT   = Math.min(elapsed / DUR_LIFT, 1);
   const bY      = restY + (targetY - restY) * easeOutBack(liftT);
 
+  // Stretch during lift, normalize at top (skip if reduced motion)
+  let sx = 1, sy = 1;
+  if (!REDUCED_MOTION) {
+    const stretchT = liftT < 0.7 ? liftT / 0.7 : 1 - (liftT - 0.7) / 0.3;
+    sx = 1 - stretchT * 0.12;  // scaleX: 1 → 0.88 → 1
+    sy = 1 + stretchT * 0.15;  // scaleY: 1 → 1.15 → 1
+  }
+
   const pulse = liftT >= 1 ? 1 + Math.sin(ts * 0.005) * 0.04 : 1;
+
+  // Pulsing glow ring when floating
+  if (liftT >= 1 && !REDUCED_MOTION) {
+    const ringPulse = 0.5 + 0.5 * Math.sin(ts * 0.004);
+    const ringR = BALL_R + 6 + ringPulse * 4;  // 20→24px radius
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,200,100,${0.15 + ringPulse * 0.15})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, bY, ringR, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Shadow ellipse on tube below
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.beginPath();
+    ctx.ellipse(cx, ballCY(tube.length - 1) + BALL_R + 4, BALL_R * 0.7, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   ctx.save();
   ctx.translate(cx, bY);
-  ctx.scale(pulse, pulse);
+  ctx.scale(sx * pulse, sy * pulse);
   drawBall(ctx, 0, 0, color, true, ts);
   ctx.restore();
 }
