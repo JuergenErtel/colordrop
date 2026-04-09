@@ -101,46 +101,39 @@
 
         .hud-btn {
             width: 38px; height: 38px;
-            border-radius: 50%;
-            background: rgba(160,120,80,.15);
-            border: 1px solid rgba(160,120,80,.25);
-            color: var(--text);
+            border-radius: 18px;
+            border: 1px solid rgba(255,215,0,.2);
+            background: linear-gradient(180deg, rgba(255,215,0,.12), rgba(255,215,0,.04));
+            color: var(--gold);
             font-size: 1rem;
             line-height: 1;
             cursor: pointer;
-            box-shadow: 0 2px 0 rgba(0,0,0,.2);
+            box-shadow: 0 2px 0 rgba(184,134,11,.3), 0 3px 8px rgba(0,0,0,.2);
             transition: background .15s, border-color .15s, transform .1s, box-shadow .1s, opacity .2s;
         }
-        .hud-btn:hover         { background: rgba(160,120,80,.25); border-color: rgba(160,120,80,.4); }
-        .hud-btn:active        { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,.2); }
-        .hud-btn:disabled      { opacity: .35; cursor: default; pointer-events: none; }
+        .hud-btn:hover  { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(184,134,11,.3), 0 5px 12px rgba(0,0,0,.3); }
+        .hud-btn:active { transform: translateY(1px);  box-shadow: 0 1px 0 rgba(184,134,11,.3); }
+        .hud-btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
 
-        /* ── Hint button — visually distinct as game help ────── */
-        .hud-hint {
+        /* ── Hint button — gold primary ────── */
+        #hintBtn {
             position: relative;
             width: 42px; height: 42px;
-            background: linear-gradient(145deg, rgba(255,200,60,.25) 0%, rgba(220,160,30,.18) 100%);
-            border: 2px solid rgba(255,200,60,.55);
-            box-shadow:
-                0 0 12px rgba(255,190,50,.25),
-                inset 0 1px 0 rgba(255,255,255,.15);
+            background: linear-gradient(180deg, #FFD700, #CC8800);
+            color: #3a2010;
+            border: none;
             font-size: 1.15rem;
-            animation: hintGlow 2.5s ease-in-out infinite;
+            box-shadow: 0 2px 0 #B8860B, 0 4px 10px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3);
         }
-        .hud-hint:hover:not(:disabled) {
-            background: linear-gradient(145deg, rgba(255,200,60,.4) 0%, rgba(220,160,30,.3) 100%);
-            border-color: rgba(255,200,60,.8);
-            box-shadow: 0 0 20px rgba(255,190,50,.4), inset 0 1px 0 rgba(255,255,255,.2);
-        }
-        .hud-hint:disabled {
-            animation: none;
-            box-shadow: none;
-            border-color: rgba(160,120,80,.2);
-            background: rgba(160,120,80,.08);
-        }
-        @keyframes hintGlow {
-            0%, 100% { box-shadow: 0 0 10px rgba(255,190,50,.2), inset 0 1px 0 rgba(255,255,255,.15); }
-            50%      { box-shadow: 0 0 20px rgba(255,190,50,.4), inset 0 1px 0 rgba(255,255,255,.2); }
+        #hintBtn:hover    { box-shadow: 0 3px 0 #B8860B, 0 6px 14px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+        #hintBtn:active   { box-shadow: 0 1px 0 #B8860B, inset 0 1px 0 rgba(255,255,255,.3); }
+        #hintBtn:disabled { opacity: .35; background: linear-gradient(180deg, #C0A040, #A08030); }
+        #bonesDisplay {
+            background: linear-gradient(180deg, #FFD700, #d4873f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
         }
         /* Cost badge */
         .hud-hint-cost {
