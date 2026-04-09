@@ -640,6 +640,7 @@ function showWin() {
     Array.from({ length: stars }, () => '<span class="win-star">\u2B50</span>').join('') +
     Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
     document.getElementById('winPar').textContent     = 'Par: ' + par;
+    buildWinAchProgress();
     if (newAchs.length) showAchievementToast(newAchs);
     return;
   }
@@ -650,6 +651,7 @@ function showWin() {
     Array.from({ length: stars }, () => '<span class="win-star">\u2B50</span>').join('') +
     Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
   document.getElementById('winPar').textContent     = 'Par: ' + par;
+  buildWinAchProgress();
   // Delay the overlay so the canvas celebration is visible first
   setTimeout(() => {
     // Dim canvas behind win overlay
@@ -778,6 +780,46 @@ function getAchievementProgress() {
     percent:    unlocked.has(a.id) ? 1 : Math.min((currentMap[a.id] || 0) / a.target, 1),
     unlocksCat: catMap[a.id] || null,
   }));
+}
+
+// ── Win Overlay Progress ────────────────────────────────────────────────
+
+function buildWinAchProgress() {
+  const all       = getAchievementProgress();
+  const remaining = all.filter(a => !a.unlocked && a.id !== 'cat_nap');
+  remaining.sort((a, b) => b.percent - a.percent);
+  const top3 = remaining.slice(0, 3);
+
+  const container = document.getElementById('winAchProgress');
+  container.innerHTML = '';
+
+  for (let i = 0; i < top3.length; i++) {
+    const a = top3[i];
+    const row = document.createElement('div');
+    row.className = 'win-ach-row';
+    row.innerHTML =
+      '<span class="win-ach-icon">' + a.icon + '</span>' +
+      '<div class="win-ach-info">' +
+        '<div class="win-ach-header">' +
+          '<span class="win-ach-name">' + a.title + '</span>' +
+          '<span class="win-ach-count">' + a.current + '/' + a.target + '</span>' +
+        '</div>' +
+        '<div class="win-ach-bar">' +
+          '<div class="win-ach-fill" data-percent="' + (a.percent * 100) + '" style="width:0"></div>' +
+        '</div>' +
+      '</div>';
+    container.appendChild(row);
+  }
+
+  // Animate bars with staggered delay
+  requestAnimationFrame(() => {
+    const fills = container.querySelectorAll('.win-ach-fill');
+    fills.forEach((fill, i) => {
+      setTimeout(() => {
+        fill.style.width = fill.dataset.percent + '%';
+      }, 300 + i * 300);
+    });
+  });
 }
 
 // ── Achievement Overlay ─────────────────────────────────────────────────
