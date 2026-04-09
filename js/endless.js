@@ -20,7 +20,7 @@ export function endlessConfig(round) {
   const diff      = idx;
   const numColors = Math.min(2 + diff, COLOR_KEYS.length);
   const colors    = COLOR_KEYS.slice(0, numColors);
-  const empty     = diff <= 1 ? 2 : 1;
+  const empty     = 2;
   return { tier, diff, colors, tubes: colors.length + empty, empty };
 }
 

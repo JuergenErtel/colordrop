@@ -57,8 +57,8 @@ export function levelConfig(n) {
   const numColors = Math.min(Math.floor(minC + progress * (maxC - minC + 0.99)), COLOR_KEYS.length);
   const colors = COLOR_KEYS.slice(0, numColors);
 
-  // Empty tubes: 2 for early levels, 1 from MEDIUM onward, some MASTER levels get 1
-  const empty = (diff === 0 || (diff === 1 && progress < 0.3)) ? 2 : 1;
+  // Empty tubes: always 2 — ensures puzzles are solvable; difficulty comes from color count
+  const empty = 2;
 
   return { tier, diff, colors, tubes: colors.length + empty, empty };
 }
@@ -114,58 +114,17 @@ export function canMove(tubes, from, to) {
   return topSrc === topDst;
 }
 
-// ── Tube generation ───────────────────────────────────────────────────────
-export function generateTubes(n) {
-  const { colors, tubes: numTubes, empty } = levelConfig(n);
-  const capacity = CAPACITY;
-  const rng      = mulberry32(n * 1234567 + 42);
-
-  // Build a pool of balls
-  const pool = [];
-  for (const c of colors) {
-    for (let i = 0; i < capacity; i++) pool.push(c);
-  }
-
-  // Fisher-Yates shuffle — more rounds = harder scramble
-  const rounds = 2 + tierDifficulty(n) * 2;
-  for (let r = 0; r < rounds; r++) {
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-  }
-
-  // Distribute into tubes
-  const result = [];
-  for (let t = 0; t < colors.length; t++) {
-    result.push(pool.slice(t * capacity, (t + 1) * capacity));
-  }
-  // Add empty tubes
-  for (let e = 0; e < empty; e++) result.push([]);
-
-  return result;
-}
-
-export function generateTutorialTubes() {
-  return TUTORIAL_TUBES.map(t => [...t]);
-}
-
-// ── BFS hint solver ───────────────────────────────────────────────────────
-export function solveHint(tubes) {
-  const capacity = CAPACITY;
-
+// ── Solvability check (BFS, returns move count or -1) ────────────────────
+function isSolvable(tubes, limit = 200000) {
   function serialize(ts) { return ts.map(t => t.join(',')).join('|'); }
-  function cloneTs(ts)    { return ts.map(t => [...t]); }
+  function cloneTs(ts)   { return ts.map(t => [...t]); }
 
-  const start = serialize(tubes);
-  if (checkWinState(tubes)) return null;
+  if (checkWinState(tubes)) return 0;
+  const visited = new Set([serialize(tubes)]);
+  const queue   = [{ state: tubes, depth: 0 }];
 
-  const queue   = [{ state: tubes, moves: [] }];
-  const visited = new Set([start]);
-  const LIMIT   = 5000;
-
-  while (queue.length > 0 && visited.size < LIMIT) {
-    const { state, moves } = queue.shift();
+  while (queue.length > 0 && visited.size < limit) {
+    const { state, depth } = queue.shift();
     const n = state.length;
     for (let from = 0; from < n; from++) {
       for (let to = 0; to < n; to++) {
@@ -175,12 +134,212 @@ export function solveHint(tubes) {
         const key = serialize(next);
         if (visited.has(key)) continue;
         visited.add(key);
-        const newMoves = [...moves, { from, to }];
-        if (checkWinState(next)) return newMoves[0];
-        queue.push({ state: next, moves: newMoves });
+        if (checkWinState(next)) return depth + 1;
+        queue.push({ state: next, depth: depth + 1 });
       }
     }
   }
+  return -1;
+}
+
+// ── Tube generation ───────────────────────────────────────────────────────
+export function generateTubes(n) {
+  const { colors, tubes: numTubes, empty } = levelConfig(n);
+  const capacity = CAPACITY;
+  let seed = n * 1234567 + 42;
+
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const rng = mulberry32(seed + attempt * 9999991);
+
+    // Build a pool of balls
+    const pool = [];
+    for (const c of colors) {
+      for (let i = 0; i < capacity; i++) pool.push(c);
+    }
+
+    // Fisher-Yates shuffle — more rounds = harder scramble
+    const rounds = 2 + tierDifficulty(n) * 2;
+    for (let r = 0; r < rounds; r++) {
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+    }
+
+    // Distribute into tubes
+    const result = [];
+    for (let t = 0; t < colors.length; t++) {
+      result.push(pool.slice(t * capacity, (t + 1) * capacity));
+    }
+    // Add empty tubes
+    for (let e = 0; e < empty; e++) result.push([]);
+
+    // Verify solvability (skip for 2+ empty tubes — virtually always solvable)
+    if (empty >= 2 || isSolvable(result) >= 0) return result;
+  }
+
+  // Fallback: shouldn't happen, but return last attempt anyway
+  console.warn(`Level ${n}: no solvable layout found in 50 attempts`);
+  const rng = mulberry32(seed);
+  const pool = [];
+  for (const c of colors) {
+    for (let i = 0; i < capacity; i++) pool.push(c);
+  }
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const result = [];
+  for (let t = 0; t < colors.length; t++) {
+    result.push(pool.slice(t * capacity, (t + 1) * capacity));
+  }
+  for (let e = 0; e < empty; e++) result.push([]);
+  return result;
+}
+
+export function generateTutorialTubes() {
+  return TUTORIAL_TUBES.map(t => [...t]);
+}
+
+// ── Smart hint solver (A* with heuristic) ────────────────────────────────
+
+function hintHeuristic(tubes) {
+  // Lower = closer to solved
+  let h = 0;
+  const colorLocations = {};  // color → set of tube indices
+
+  for (let i = 0; i < tubes.length; i++) {
+    const t = tubes[i];
+    if (t.length === 0) continue;
+
+    // Count completed tubes as big bonus (negative penalty)
+    if (t.length === CAPACITY && t.every(c => c === t[0])) {
+      h -= 10;
+      continue;
+    }
+
+    // Count distinct colors in this tube (fragmentation penalty)
+    const seen = new Set(t);
+    h += (seen.size - 1) * 3;
+
+    // Reward consecutive same-color runs from bottom
+    let run = 1;
+    for (let j = 1; j < t.length; j++) {
+      if (t[j] === t[0]) run++; else break;
+    }
+    h -= run;
+
+    // Track color locations for spread penalty
+    for (const c of t) {
+      if (!colorLocations[c]) colorLocations[c] = new Set();
+      colorLocations[c].add(i);
+    }
+  }
+
+  // Penalize colors spread across many tubes
+  for (const c in colorLocations) {
+    h += (colorLocations[c].size - 1) * 2;
+  }
+
+  return h;
+}
+
+function generateSmartMoves(state) {
+  const n = state.length;
+  const moves = [];
+
+  for (let from = 0; from < n; from++) {
+    const src = state[from];
+    if (src.length === 0) continue;
+
+    // Skip moving from an already-complete tube
+    if (src.length === CAPACITY && src.every(c => c === src[0])) continue;
+
+    const topColor = src[src.length - 1];
+
+    for (let to = 0; to < n; to++) {
+      if (!canMove(state, from, to)) continue;
+      const dst = state[to];
+
+      // Priority scoring for move ordering (lower = tried first)
+      let priority = 0;
+
+      if (dst.length > 0) {
+        // Would this complete a tube?
+        if (dst.length + 1 === CAPACITY && dst.every(c => c === topColor)) {
+          priority = -100;  // best: completing a tube
+        } else {
+          priority = -countTopRun(dst);  // prefer stacking on longer same-color runs
+        }
+      } else {
+        // Moving to empty tube — necessary but low priority
+        priority = 10;
+        // Extra penalty if source is already pure (pointless shuffle)
+        if (src.every(c => c === src[0])) priority = 50;
+      }
+
+      moves.push({ from, to, priority });
+    }
+  }
+
+  // Sort: lower priority = better move
+  moves.sort((a, b) => a.priority - b.priority);
+  return moves;
+}
+
+function countTopRun(tube) {
+  if (tube.length === 0) return 0;
+  const top = tube[tube.length - 1];
+  let run = 1;
+  for (let j = tube.length - 2; j >= 0; j--) {
+    if (tube[j] === top) run++; else break;
+  }
+  return run;
+}
+
+export function solveHint(tubes) {
+  function serialize(ts) { return ts.map(t => t.join(',')).join('|'); }
+  function cloneTs(ts)    { return ts.map(t => [...t]); }
+
+  if (checkWinState(tubes)) return null;
+
+  const LIMIT = 50000;
+  const visited = new Set([serialize(tubes)]);
+
+  // A* open list sorted by f = g + h
+  const startH = hintHeuristic(tubes);
+  let open = [{ state: tubes, moves: [], g: 0, f: startH }];
+
+  while (open.length > 0 && visited.size < LIMIT) {
+    // Pick node with lowest f
+    let bestIdx = 0;
+    for (let i = 1; i < open.length; i++) {
+      if (open[i].f < open[bestIdx].f) bestIdx = i;
+    }
+    const node = open[bestIdx];
+    open[bestIdx] = open[open.length - 1];
+    open.pop();
+
+    const smartMoves = generateSmartMoves(node.state);
+
+    for (const { from, to } of smartMoves) {
+      const next = cloneTs(node.state);
+      // Move the top ball
+      next[to].push(next[from].pop());
+
+      const key = serialize(next);
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      const newMoves = [...node.moves, { from, to }];
+      if (checkWinState(next)) return newMoves[0];
+
+      const g = newMoves.length;
+      const h = hintHeuristic(next);
+      open.push({ state: next, moves: newMoves, g, f: g + h });
+    }
+  }
+
   return null;
 }
 

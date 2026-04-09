@@ -1,98 +1,184 @@
 'use strict';
 
-// ── Procedural Layered Music Engine ─────────────────────────────────────
-// Three layers: melody (triangle/glockenspiel), pad (sine chords), rhythm (noise hats + sine kick).
-// Tier-specific key, tempo, and mood. Random melody patterns for variety.
+// ── Procedural Layered Music Engine v2 ────────────────────────────────
+// Each tier has a distinct sonic identity:
+//   EASY:   Music-box/glockenspiel, gentle waltz-like rhythm, major pentatonic
+//   MEDIUM: Warm plucked synth, lo-fi groove, jazzy chords, syncopation
+//   HARD:   Dark pulsing synth, driving 16th hats, minor key, bass pulses
+//   EXPERT: Tense arpeggios, complex rhythms, dissonant clusters, fast
+//   MASTER: Epic/cinematic, deep drones, polyrhythmic, dramatic swells
 
 /* global AudioContext */
 
-// ── Melody patterns (relative semitone intervals) ────────────────────────
-const MELODY_PATTERNS = [
-  [0, 4, 7, 12, 7, 4],           // Aufwärts-Arpeggio
-  [12, 10, 7, 5, 4, 0],          // Abwärts-Lauf
-  [0, 2, 4, 7, 4, 2, 0],         // Wellenbewegung
-  [7, 5, 7, 12, 10, 7],          // Hüpfend
-  [0, 0, 4, 4, 7, 7, 12],        // Stufenweise Paare
-  [4, 7, 12, 11, 12, 7],         // Verspieltes Pendeln
-  [0, 7, 4, 12, 7, 0],           // Große Sprünge
-  [12, 7, 9, 5, 7, 4, 0],        // Absteigende Melodie
-];
-
 // ── Tier configurations ──────────────────────────────────────────────────
-// root: base frequency (Hz), scale: semitone steps, bpm, density (rhythm fill 0-1)
-// chords: arrays of semitone offsets from root for each chord
 const TIER_CONFIG = {
   EASY: {
-    root: 261.63,  // C4
-    scale: [0, 2, 4, 5, 7, 9, 11], // C major
-    bpm: 110,
-    density: 0.6,
+    root: 523.25,  // C5 — high, music-box range
+    scale: [0, 2, 4, 7, 9],  // major pentatonic — always sounds nice
+    bpm: 90,
+    beatsPerBar: 3,  // waltz feel (3/4)
+    melodyOsc: 'triangle',
+    melodyVol: 0.18,
+    melodyAttack: 0.005,
+    melodyDecay: 0.7,
+    padOsc: 'sine',
+    padVol: 0.10,
+    bassVol: 0.04,
+    hatVol: 0.03,
+    kickVol: 0.06,
+    hatPattern: [1, 0, 0.5, 0, 0.7, 0],  // waltz: ONE two three
+    kickPattern: [1, 0, 0, 0, 0, 0],
+    melodyNoteDivision: 6,   // 6 notes per bar
+    melodyRestChance: 0.35,
+    melodySkipChance: 0.3,   // chance to skip individual notes (space)
     chords: [
-      [0, 4, 7],    // C
-      [5, 9, 12],   // F
-      [7, 11, 14],  // G
-      [9, 12, 16],  // Am
-      [0, 4, 7],    // C
-      [5, 9, 14],   // F add9
+      [0, 4, 7],     // I   (C)
+      [0, 4, 7],     // I
+      [5, 9, 12],    // IV  (F)
+      [7, 11, 14],   // V   (G)
+      [4, 7, 12],    // iii (E)
+      [9, 12, 16],   // vi  (Am)
     ],
   },
   MEDIUM: {
-    root: 196.00,  // G3
-    scale: [0, 2, 4, 5, 7, 9, 11], // G major
-    bpm: 115,
-    density: 0.7,
+    root: 196.00,  // G3 — warmer, lower
+    scale: [0, 2, 4, 5, 7, 9, 10, 11],  // mixolydian — jazzy, soulful
+    bpm: 95,
+    beatsPerBar: 4,
+    melodyOsc: 'custom_pluck',  // handled specially: sharp attack + fast decay
+    melodyVol: 0.20,
+    melodyAttack: 0.003,
+    melodyDecay: 0.4,
+    padOsc: 'triangle',
+    padVol: 0.08,
+    bassVol: 0.08,
+    hatVol: 0.04,
+    kickVol: 0.10,
+    hatPattern: [0.8, 0.3, 0.6, 0.5, 0.9, 0.3, 0.6, 0.4],  // lo-fi shuffle
+    kickPattern: [1, 0, 0, 0.6, 0, 0, 0.8, 0],
+    melodyNoteDivision: 8,
+    melodyRestChance: 0.25,
+    melodySkipChance: 0.4,   // spacious, room to breathe
     chords: [
-      [0, 4, 7],    // G
-      [5, 9, 12],   // C
-      [2, 5, 9],    // Am
-      [7, 11, 14],  // D
-      [9, 12, 16],  // Em
-      [5, 9, 12],   // C
+      [0, 4, 7, 10],   // G7
+      [5, 9, 12, 16],  // Cmaj7
+      [2, 5, 9, 12],   // Am7
+      [7, 10, 14, 17],  // D9
+      [0, 3, 7, 10],   // Gm7
+      [5, 9, 12, 14],  // Cmaj9
     ],
   },
   HARD: {
-    root: 293.66,  // D4
-    scale: [0, 2, 3, 5, 7, 8, 10], // D minor
-    bpm: 120,
-    density: 0.75,
+    root: 146.83,  // D3 — dark, low
+    scale: [0, 1, 3, 5, 7, 8, 10],  // phrygian — dark, Spanish tension
+    bpm: 115,
+    beatsPerBar: 4,
+    melodyOsc: 'sawtooth',
+    melodyVol: 0.10,
+    melodyAttack: 0.01,
+    melodyDecay: 0.5,
+    padOsc: 'sawtooth',
+    padVol: 0.05,
+    bassVol: 0.10,
+    hatVol: 0.05,
+    kickVol: 0.12,
+    hatPattern: [0.7, 0.3, 0.5, 0.3, 0.7, 0.4, 0.5, 0.3,
+                 0.7, 0.3, 0.5, 0.3, 0.8, 0.4, 0.6, 0.3],  // 16th hats
+    kickPattern: [1, 0, 0, 0, 0.7, 0, 0, 0.5,
+                  0, 0, 1, 0, 0, 0.6, 0, 0],
+    melodyNoteDivision: 8,
+    melodyRestChance: 0.4,
+    melodySkipChance: 0.2,
     chords: [
-      [0, 3, 7],    // Dm
-      [5, 8, 12],   // Gm
-      [3, 7, 10],   // F
-      [7, 10, 14],  // Am
-      [8, 12, 15],  // Bb
-      [0, 3, 7],    // Dm
+      [0, 3, 7],     // Dm
+      [1, 5, 8],     // Eb (bII — phrygian color)
+      [0, 3, 7],     // Dm
+      [5, 8, 12],    // Gm
+      [7, 10, 13],   // Am(b5)
+      [1, 5, 8],     // Eb
     ],
   },
   EXPERT: {
-    root: 220.00,  // A3
-    scale: [0, 2, 3, 5, 7, 8, 10], // A minor
-    bpm: 125,
-    density: 0.85,
+    root: 110.00,  // A2 — deep, tense
+    scale: [0, 1, 4, 5, 7, 8, 11],  // harmonic minor — exotic, urgent
+    bpm: 128,
+    beatsPerBar: 4,
+    melodyOsc: 'square',
+    melodyVol: 0.08,
+    melodyAttack: 0.002,
+    melodyDecay: 0.25,
+    padOsc: 'sawtooth',
+    padVol: 0.04,
+    bassVol: 0.12,
+    hatVol: 0.05,
+    kickVol: 0.13,
+    // Breakbeat-ish pattern
+    hatPattern: [0.8, 0.3, 0.6, 0.2, 0.7, 0.5, 0.4, 0.3,
+                 0.9, 0.2, 0.5, 0.4, 0.6, 0.3, 0.7, 0.5],
+    kickPattern: [1, 0, 0, 0.4, 0, 0.7, 0, 0,
+                  0.5, 0, 0, 0, 1, 0, 0.6, 0],
+    melodyNoteDivision: 16,  // fast arpeggios
+    melodyRestChance: 0.3,
+    melodySkipChance: 0.15,
     chords: [
-      [0, 3, 7],    // Am
-      [3, 7, 10],   // C
-      [5, 8, 12],   // Dm
-      [7, 10, 14],  // Em
-      [8, 12, 15],  // F
-      [3, 7, 12],   // C (octave)
+      [0, 4, 7],      // Am
+      [1, 5, 8],      // Bb
+      [0, 4, 7, 11],  // Am(maj7)
+      [5, 8, 12],     // Dm
+      [7, 11, 14],    // E
+      [8, 11, 14],    // F
     ],
   },
   MASTER: {
-    root: 164.81,  // E3
-    scale: [0, 2, 3, 5, 7, 8, 10], // E minor
-    bpm: 130,
-    density: 0.95,
+    root: 82.41,   // E2 — rumbling, epic
+    scale: [0, 2, 3, 5, 7, 8, 11],  // harmonic minor on E — dramatic
+    bpm: 135,
+    beatsPerBar: 4,
+    melodyOsc: 'sawtooth',
+    melodyVol: 0.07,
+    melodyAttack: 0.01,
+    melodyDecay: 0.35,
+    padOsc: 'sawtooth',
+    padVol: 0.04,
+    bassVol: 0.14,
+    hatVol: 0.05,
+    kickVol: 0.14,
+    // Polyrhythmic — groups of 3 over 4
+    hatPattern: [0.8, 0.2, 0.5, 0.7, 0.2, 0.5, 0.8, 0.2,
+                 0.6, 0.7, 0.2, 0.5, 0.8, 0.3, 0.5, 0.7],
+    kickPattern: [1, 0, 0, 0, 0, 0.8, 0, 0,
+                  0, 0, 1, 0, 0.7, 0, 0, 0.5],
+    melodyNoteDivision: 12,
+    melodyRestChance: 0.45,
+    melodySkipChance: 0.3,
     chords: [
-      [0, 3, 7],    // Em
-      [5, 8, 12],   // Am
-      [7, 10, 14],  // Bm
-      [3, 7, 10],   // G
-      [8, 12, 15],  // C
-      [0, 3, 7],    // Em
+      [0, 3, 7],       // Em
+      [0, 3, 7, 11],   // Em(maj7)
+      [8, 12, 15],     // C
+      [7, 11, 14],     // B
+      [5, 8, 12],      // Am
+      [3, 7, 10],      // G
     ],
   },
 };
+
+// ── Melody phrase shapes (contour patterns) ─────────────────────────────
+// Each array describes relative motion: 0=repeat, positive=up, negative=down
+// These get interpreted relative to scale, not chromatic
+const PHRASE_SHAPES = [
+  [0, 1, 2, 3, 2, 1, 0, -1],       // arch
+  [0, 2, 1, 3, 2, 4, 3, 5],        // ascending zigzag
+  [4, 3, 2, 1, 0, -1, 0, 1],       // descending settle
+  [0, 3, 2, 0, -1, 1, 3, 0],       // leap and return
+  [0, 0, 1, 1, 2, 2, 3, 3],        // paired steps up
+  [3, 1, 3, 0, 2, -1, 1, 0],       // bouncy
+  [0, 4, 0, 3, 0, 2, 0, 1],        // pedal point
+  [0, -1, -2, -1, 0, 1, 2, 1],     // wave
+  [0, 2, 4, 2, 0, -2, -4, -2],     // wide wave
+  [4, 4, 3, 3, 2, 2, 1, 0],        // cascade pairs
+  [0, 1, 0, 2, 0, 3, 0, 4],        // alternating rise
+  [0, 3, 1, 4, 2, 5, 3, 6],        // thirds climbing
+];
 
 // ── State ────────────────────────────────────────────────────────────────
 let _ctx            = null;
@@ -102,7 +188,8 @@ let _enabled        = true;
 let _currentTier    = null;
 let _scheduleId     = null;
 let _barIndex       = 0;
-let _lastPatternIdx = -1;
+let _phraseIndex    = -1;
+let _scaleOffset    = 0;   // wandering root for melody variety
 let _activeNodes    = [];
 let _crossfading    = false;
 
@@ -122,91 +209,142 @@ function getCtx() {
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-/** Convert semitone offset from root to frequency. */
 function semiToFreq(root, semi) {
   return root * Math.pow(2, semi / 12);
 }
 
-/** Snap a semitone interval to the nearest note in the scale. */
-function snapToScale(semi, scale) {
-  const octave = Math.floor(semi / 12) * 12;
-  const note = ((semi % 12) + 12) % 12;
-  let best = scale[0];
-  let bestDist = 99;
-  for (const s of scale) {
-    const d = Math.abs(s - note);
-    if (d < bestDist) { bestDist = d; best = s; }
-  }
-  return octave + best;
+function scaleNoteToSemi(degree, scale) {
+  // Convert a scale degree (0,1,2,...) to semitone offset
+  const octave = Math.floor(degree / scale.length);
+  const idx = ((degree % scale.length) + scale.length) % scale.length;
+  return octave * 12 + scale[idx];
 }
 
-/** Bar duration in seconds. */
-function barDuration(bpm) {
-  return 240 / bpm; // 4 beats
+function barDuration(bpm, beatsPerBar) {
+  return (60 / bpm) * beatsPerBar;
 }
 
 // ── Melody Layer ─────────────────────────────────────────────────────────
 
-function playMelodyNote(freq, duration, startTime) {
+function playMelodyNote(freq, duration, startTime, config) {
   const ctx = _ctx;
   if (!ctx || !_masterGain) return;
 
+  const oscType = config.melodyOsc === 'custom_pluck' ? 'triangle' : config.melodyOsc;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  osc.type = 'triangle';
+  osc.type = oscType;
   osc.frequency.value = freq;
 
-  const vol = 0.15;
-  const attack = 0.02;
-  const noteDecay = duration * 0.8;
+  const vol = config.melodyVol;
+  const attack = config.melodyAttack;
+  const decay = duration * config.melodyDecay;
 
   gain.gain.setValueAtTime(0, startTime);
   gain.gain.linearRampToValueAtTime(vol, startTime + attack);
-  gain.gain.setValueAtTime(vol, startTime + attack);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + noteDecay);
+
+  if (config.melodyOsc === 'custom_pluck') {
+    // Pluck: instant attack, fast exponential decay
+    gain.gain.setValueAtTime(vol, startTime + attack);
+    gain.gain.exponentialRampToValueAtTime(vol * 0.1, startTime + decay * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + decay);
+  } else {
+    gain.gain.setValueAtTime(vol, startTime + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + decay);
+  }
+
+  // Low-pass filter for softer timbres (EASY, MEDIUM)
+  let dest = _masterGain;
+  if (config.melodyOsc === 'triangle' || config.melodyOsc === 'custom_pluck') {
+    // No filter needed for triangle
+  } else if (config.melodyOsc === 'sawtooth' || config.melodyOsc === 'square') {
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 2000 + Math.random() * 1000;
+    filter.Q.value = 1;
+    filter.connect(_masterGain);
+    dest = filter;
+  }
 
   osc.connect(gain);
-  gain.connect(_masterGain);
+  gain.connect(dest);
   osc.start(startTime);
-  osc.stop(startTime + noteDecay + 0.05);
+  osc.stop(startTime + decay + 0.05);
+  _activeNodes.push({ osc, gain });
+
+  // For pluck: add a quiet overtone for shimmer
+  if (config.melodyOsc === 'custom_pluck') {
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 3;  // 5th harmonic-ish
+    gain2.gain.setValueAtTime(0, startTime);
+    gain2.gain.linearRampToValueAtTime(vol * 0.15, startTime + 0.002);
+    gain2.gain.exponentialRampToValueAtTime(0.001, startTime + decay * 0.15);
+    osc2.connect(gain2);
+    gain2.connect(_masterGain);
+    osc2.start(startTime);
+    osc2.stop(startTime + decay * 0.2);
+    _activeNodes.push({ osc: osc2, gain: gain2 });
+  }
 }
 
-function scheduleMelody(tier, config, barStart) {
-  // 30% chance to rest this bar
-  if (Math.random() < 0.3) return;
+function scheduleMelody(config, barStart) {
+  // Chance to rest entire bar
+  if (Math.random() < config.melodyRestChance) return;
 
-  // Pick a pattern different from last
+  // Pick a phrase shape different from last
   let idx;
   do {
-    idx = Math.floor(Math.random() * MELODY_PATTERNS.length);
-  } while (idx === _lastPatternIdx && MELODY_PATTERNS.length > 1);
-  _lastPatternIdx = idx;
+    idx = Math.floor(Math.random() * PHRASE_SHAPES.length);
+  } while (idx === _phraseIndex && PHRASE_SHAPES.length > 1);
+  _phraseIndex = idx;
 
-  const pattern = MELODY_PATTERNS[idx];
-  const barDur = barDuration(config.bpm);
-  const noteDur = barDur / pattern.length;
+  const shape = PHRASE_SHAPES[idx];
+  const barDur = barDuration(config.bpm, config.beatsPerBar);
+  const numNotes = config.melodyNoteDivision;
+  const noteDur = barDur / numNotes;
 
-  // Use current chord root for transposition
+  // Use chord for harmonic context
   const chordIdx = Math.floor(_barIndex / 2) % config.chords.length;
-  const chordRoot = config.chords[chordIdx][0]; // lowest note of chord
+  const chordRoot = config.chords[chordIdx][0];
 
-  for (let i = 0; i < pattern.length; i++) {
-    const semi = snapToScale(pattern[i] + chordRoot, config.scale);
-    const freq = semiToFreq(config.root, semi);
-    // Keep melody in a pleasant range (200-1200 Hz)
-    const clampedFreq = freq < 200 ? freq * 2 : (freq > 1200 ? freq / 2 : freq);
-    const t = barStart + i * noteDur;
-    playMelodyNote(clampedFreq, noteDur, t);
+  // Slowly wandering offset for long-term variety
+  if (_barIndex % 8 === 0) {
+    _scaleOffset += Math.floor(Math.random() * 5) - 2;
+    _scaleOffset = Math.max(-3, Math.min(3, _scaleOffset));
+  }
+
+  for (let i = 0; i < numNotes; i++) {
+    // Chance to skip this note (rhythmic space)
+    if (Math.random() < config.melodySkipChance) continue;
+
+    const shapeIdx = Math.floor((i / numNotes) * shape.length);
+    const degree = shape[shapeIdx] + _scaleOffset;
+
+    // Convert scale degree to semitone, add chord root transposition
+    const semi = scaleNoteToSemi(degree, config.scale) + chordRoot;
+    let freq = semiToFreq(config.root, semi);
+
+    // Keep in pleasant range
+    while (freq < 150) freq *= 2;
+    while (freq > 1400) freq /= 2;
+
+    // Slight humanization of timing
+    const jitter = (Math.random() - 0.5) * noteDur * 0.08;
+    const t = barStart + i * noteDur + jitter;
+
+    playMelodyNote(freq, noteDur, t, config);
   }
 }
 
 // ── Rhythm Layer ─────────────────────────────────────────────────────────
 
-function playHiHat(startTime, vol) {
+function playHiHat(startTime, vol, config) {
   const ctx = _ctx;
   if (!ctx || !_masterGain) return;
 
-  const dur = 0.05;
+  const dur = 0.04;
   const bufLen = Math.floor(ctx.sampleRate * dur);
   const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
   const data = buf.getChannelData(0);
@@ -217,7 +355,8 @@ function playHiHat(startTime, vol) {
 
   const hp = ctx.createBiquadFilter();
   hp.type = 'highpass';
-  hp.frequency.value = 8000;
+  // Different hat tone per tier
+  hp.frequency.value = config.bpm > 120 ? 9000 : 7000;
 
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(vol, startTime);
@@ -230,18 +369,18 @@ function playHiHat(startTime, vol) {
   src.stop(startTime + dur + 0.01);
 }
 
-function playSoftKick(startTime) {
+function playSoftKick(startTime, vol) {
   const ctx = _ctx;
   if (!ctx || !_masterGain) return;
 
-  const dur = 0.1;
+  const dur = 0.12;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(150, startTime);
-  osc.frequency.exponentialRampToValueAtTime(50, startTime + dur);
+  osc.frequency.setValueAtTime(160, startTime);
+  osc.frequency.exponentialRampToValueAtTime(40, startTime + dur);
 
-  gain.gain.setValueAtTime(0.12, startTime);
+  gain.gain.setValueAtTime(vol, startTime);
   gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
   osc.connect(gain);
@@ -251,31 +390,26 @@ function playSoftKick(startTime) {
 }
 
 function scheduleRhythm(config, barStart) {
-  const barDur = barDuration(config.bpm);
-  const eighthDur = barDur / 8;
+  const barDur = barDuration(config.bpm, config.beatsPerBar);
+  const hatSteps = config.hatPattern.length;
+  const kickSteps = config.kickPattern.length;
+  const stepDur = barDur / hatSteps;
 
-  for (let i = 0; i < 8; i++) {
-    const t = barStart + i * eighthDur;
-    const isOnBeat = i % 2 === 0;
-    const isStrongBeat = i === 0 || i === 4;
-
-    // Hi-hat volume based on position
-    let hatVol;
-    if (isStrongBeat)    hatVol = 0.06;
-    else if (isOnBeat)   hatVol = 0.06 * 0.6;
-    else                 hatVol = 0.06 * 0.3;
-
-    // Humanize: chance to skip off-beats
-    if (!isOnBeat && Math.random() > config.density) continue;
-    // Even on-beats can occasionally be skipped for feel
-    if (!isStrongBeat && Math.random() < 0.08) continue;
-
-    playHiHat(t, hatVol);
+  for (let i = 0; i < hatSteps; i++) {
+    const vol = config.hatPattern[i] * config.hatVol;
+    if (vol < 0.005) continue;
+    // Humanize
+    if (Math.random() < 0.1) continue;
+    const jitter = (Math.random() - 0.5) * stepDur * 0.05;
+    playHiHat(barStart + i * stepDur + jitter, vol, config);
   }
 
-  // Soft kick on beat 1 and 3
-  playSoftKick(barStart);
-  playSoftKick(barStart + barDur / 2);
+  const kickStepDur = barDur / kickSteps;
+  for (let i = 0; i < kickSteps; i++) {
+    const vol = config.kickPattern[i] * config.kickVol;
+    if (vol < 0.005) continue;
+    playSoftKick(barStart + i * kickStepDur, vol);
+  }
 }
 
 // ── Pad Layer ────────────────────────────────────────────────────────────
@@ -289,61 +423,76 @@ function schedulePad(config, barStart) {
 
   const chordIdx = Math.floor(_barIndex / 2) % config.chords.length;
   const chord = config.chords[chordIdx];
-  const padDur = barDuration(config.bpm) * 2; // 2 bars
+  const padDur = barDuration(config.bpm, config.beatsPerBar) * 2;
   const now = barStart;
 
-  for (let n = 0; n < chord.length; n++) {
+  for (let n = 0; n < Math.min(chord.length, 3); n++) {
     const freq = semiToFreq(config.root, chord[n]);
-    const detune = (n % 2 === 0) ? 3 : -3;
+    const detune = (Math.random() - 0.5) * 8;  // slight detuning for width
 
-    // Main pad note
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'sine';
+    osc.type = config.padOsc;
     osc.frequency.value = freq;
     osc.detune.value = detune;
 
-    // Breathing envelope: swell up then down
-    const peakVol = 0.14;
+    // Filter for sawtooth/square pads
+    let dest = _masterGain;
+    if (config.padOsc === 'sawtooth' || config.padOsc === 'square') {
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 600 + Math.random() * 400;
+      filter.Q.value = 0.5;
+      filter.connect(_masterGain);
+      dest = filter;
+    }
+
+    const vol = config.padVol;
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(peakVol, now + padDur * 0.4);
-    gain.gain.linearRampToValueAtTime(peakVol * 0.7, now + padDur * 0.7);
+    gain.gain.linearRampToValueAtTime(vol, now + padDur * 0.35);
+    gain.gain.linearRampToValueAtTime(vol * 0.6, now + padDur * 0.7);
     gain.gain.linearRampToValueAtTime(0, now + padDur);
 
     osc.connect(gain);
-    gain.connect(_masterGain);
+    gain.connect(dest);
     osc.start(now);
     osc.stop(now + padDur + 0.1);
     _activeNodes.push({ osc, gain });
 
-    // Octave overtone (quieter)
-    const oct = ctx.createOscillator();
-    const octGain = ctx.createGain();
-    oct.type = 'sine';
-    oct.frequency.value = freq * 2;
-
-    octGain.gain.setValueAtTime(0, now);
-    octGain.gain.linearRampToValueAtTime(0.04, now + padDur * 0.4);
-    octGain.gain.linearRampToValueAtTime(0.025, now + padDur * 0.7);
-    octGain.gain.linearRampToValueAtTime(0, now + padDur);
-
-    oct.connect(octGain);
-    octGain.connect(_masterGain);
-    oct.start(now);
-    oct.stop(now + padDur + 0.1);
-    _activeNodes.push({ osc: oct, gain: octGain });
+    // Subtle octave shimmer
+    if (n === 0 && config.padVol >= 0.06) {
+      const oct = ctx.createOscillator();
+      const octGain = ctx.createGain();
+      oct.type = 'sine';
+      oct.frequency.value = freq * 2;
+      octGain.gain.setValueAtTime(0, now);
+      octGain.gain.linearRampToValueAtTime(vol * 0.2, now + padDur * 0.4);
+      octGain.gain.linearRampToValueAtTime(0, now + padDur);
+      oct.connect(octGain);
+      octGain.connect(_masterGain);
+      oct.start(now);
+      oct.stop(now + padDur + 0.1);
+      _activeNodes.push({ osc: oct, gain: octGain });
+    }
   }
 
-  // Sub-bass: lowest chord note / 2
-  const bassFreq = semiToFreq(config.root, chord[0]) / 2;
+  // Sub-bass
+  const bassNote = chord[0];
+  const bassFreq = semiToFreq(config.root, bassNote);
+  // Keep bass in sub range
+  let subFreq = bassFreq;
+  while (subFreq > 120) subFreq /= 2;
+  while (subFreq < 30) subFreq *= 2;
+
   const bass = ctx.createOscillator();
   const bassGain = ctx.createGain();
   bass.type = 'sine';
-  bass.frequency.value = bassFreq;
+  bass.frequency.value = subFreq;
 
+  const bv = config.bassVol;
   bassGain.gain.setValueAtTime(0, now);
-  bassGain.gain.linearRampToValueAtTime(0.06, now + padDur * 0.3);
-  bassGain.gain.linearRampToValueAtTime(0.04, now + padDur * 0.7);
+  bassGain.gain.linearRampToValueAtTime(bv, now + padDur * 0.2);
+  bassGain.gain.linearRampToValueAtTime(bv * 0.7, now + padDur * 0.7);
   bassGain.gain.linearRampToValueAtTime(0, now + padDur);
 
   bass.connect(bassGain);
@@ -351,6 +500,50 @@ function schedulePad(config, barStart) {
   bass.start(now);
   bass.stop(now + padDur + 0.1);
   _activeNodes.push({ osc: bass, gain: bassGain });
+}
+
+// ── Bass line (MEDIUM+) ─────────────────────────────────────────────────
+
+function scheduleBassLine(config, barStart) {
+  if (config.bassVol < 0.07) return;  // only for tiers with prominent bass
+
+  const ctx = _ctx;
+  if (!ctx || !_masterGain) return;
+
+  const barDur = barDuration(config.bpm, config.beatsPerBar);
+  const chordIdx = Math.floor(_barIndex / 2) % config.chords.length;
+  const chord = config.chords[chordIdx];
+  const rootSemi = chord[0];
+
+  // Simple walking bass pattern: root, 5th, octave, 5th
+  const bassPattern = [0, 7, 12, 7];
+  const noteDur = barDur / bassPattern.length;
+
+  for (let i = 0; i < bassPattern.length; i++) {
+    if (Math.random() < 0.15) continue;  // occasional rest
+
+    const semi = rootSemi + bassPattern[i];
+    let freq = semiToFreq(config.root, semi);
+    while (freq > 150) freq /= 2;
+    while (freq < 40) freq *= 2;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+
+    const vol = config.bassVol * 0.6;
+    const t = barStart + i * noteDur;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + noteDur * 0.85);
+
+    osc.connect(gain);
+    gain.connect(_masterGain);
+    osc.start(t);
+    osc.stop(t + noteDur);
+    _activeNodes.push({ osc, gain });
+  }
 }
 
 // ── Main scheduler ───────────────────────────────────────────────────────
@@ -362,17 +555,21 @@ function scheduleBar(tier) {
   const ctx = _ctx;
   if (!ctx) return;
 
-  const barStart = ctx.currentTime + 0.05; // small lookahead
-  const barDur = barDuration(config.bpm);
+  const barStart = ctx.currentTime + 0.05;
+  const barDur = barDuration(config.bpm, config.beatsPerBar);
 
   // Clean up finished nodes
+  const now = ctx.currentTime;
   _activeNodes = _activeNodes.filter(({ osc }) => {
-    try { return osc.context.currentTime < osc._stopTime; } catch { return false; }
+    try { return osc.playbackState !== 3; } catch { return false; }
   });
+  // Trim if too many nodes accumulated
+  if (_activeNodes.length > 100) _activeNodes = _activeNodes.slice(-50);
 
   schedulePad(config, barStart);
-  scheduleMelody(tier, config, barStart);
+  scheduleMelody(config, barStart);
   scheduleRhythm(config, barStart);
+  scheduleBassLine(config, barStart);
 
   _barIndex++;
   _scheduleId = setTimeout(() => scheduleBar(tier), barDur * 1000);
@@ -405,7 +602,8 @@ function fullStop() {
   stopActiveNodes(0.5);
   _currentTier = null;
   _barIndex = 0;
-  _lastPatternIdx = -1;
+  _phraseIndex = -1;
+  _scaleOffset = 0;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────
@@ -415,14 +613,13 @@ export function startMusic(tier) {
   const ctx = getCtx();
   if (!ctx) return;
 
-  if (_currentTier === tier) return; // already playing this tier
+  if (_currentTier === tier) return;
 
   if (_currentTier !== null) {
     // Crossfade to new tier
     _crossfading = true;
     const now = ctx.currentTime;
 
-    // Fade out current
     if (_scheduleId !== null) {
       clearTimeout(_scheduleId);
       _scheduleId = null;
@@ -434,20 +631,20 @@ export function startMusic(tier) {
     setTimeout(() => {
       stopActiveNodes(0);
       _barIndex = 0;
-      _lastPatternIdx = -1;
+      _phraseIndex = -1;
+      _scaleOffset = 0;
       _currentTier = tier;
       _crossfading = false;
 
-      // Fade in new
       _masterGain.gain.setValueAtTime(0, _ctx.currentTime);
       _masterGain.gain.linearRampToValueAtTime(_volume, _ctx.currentTime + 1.0);
       scheduleBar(tier);
     }, 1050);
   } else {
-    // Fresh start
     _currentTier = tier;
     _barIndex = 0;
-    _lastPatternIdx = -1;
+    _phraseIndex = -1;
+    _scaleOffset = 0;
     _masterGain.gain.setValueAtTime(0, ctx.currentTime);
     _masterGain.gain.linearRampToValueAtTime(_volume, ctx.currentTime + 0.5);
     scheduleBar(tier);
