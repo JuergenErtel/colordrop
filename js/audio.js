@@ -441,6 +441,32 @@ export function playSound(name) {
         break;
       }
 
+      case 'achievement': {
+        // Ascending sparkle — three quick rising tones
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const vol = 0.3 * _sfxVolume;
+        const notes = [523, 659, 784]; // C5, E5, G5
+
+        for (let i = 0; i < notes.length; i++) {
+          const t = now + i * 0.12;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0, t);
+          g.gain.linearRampToValueAtTime(vol, t + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+          g.connect(ctx.destination);
+
+          const osc = ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(notes[i], t);
+          osc.connect(g);
+          osc.start(t);
+          osc.stop(t + 0.4);
+        }
+        break;
+      }
+
       default:
         break;
     }
