@@ -780,29 +780,88 @@ function getAchievementProgress() {
   }));
 }
 
-// ── Achievement Toast ────────────────────────────────────────────────────
+// ── Achievement Overlay ─────────────────────────────────────────────────
 
-const _toastQueue  = [];
-let   _toastActive = false;
+const _achQueue    = [];
+let   _achShowing  = false;
+let   _achCallback = null;
 
-function showAchievementToast(ids) {
-  _toastQueue.push(...ids);
-  if (!_toastActive) _nextToast();
+function showAchievementOverlays(ids, onDone) {
+  // Build queue entries with cat-unlock info
+  const achProgress = getAchievementProgress();
+  for (const id of ids) {
+    const info = achProgress.find(a => a.id === id);
+    if (info) _achQueue.push(info);
+  }
+  _achCallback = onDone || null;
+  if (!_achShowing) _nextAchOverlay();
 }
 
-function _nextToast() {
-  const id = _toastQueue.shift();
-  if (!id) { _toastActive = false; return; }
-  _toastActive = true;
-  const def = ACHIEVEMENTS.find(a => a.id === id);
-  if (!def) { _nextToast(); return; }
-  const el = document.getElementById('achievementToast');
-  el.textContent = def.icon + '  ' + def.title + ' freigeschaltet!';
-  el.classList.add('show');
-  setTimeout(() => {
-    el.classList.remove('show');
-    setTimeout(_nextToast, 350);
-  }, 3000);
+function _nextAchOverlay() {
+  const info = _achQueue.shift();
+  if (!info) {
+    _achShowing = false;
+    if (_achCallback) { _achCallback(); _achCallback = null; }
+    return;
+  }
+  _achShowing = true;
+
+  const overlay = document.getElementById('achievementOverlay');
+  document.getElementById('achIcon').textContent  = info.icon;
+  document.getElementById('achTitle').textContent = info.title;
+  document.getElementById('achDesc').textContent  = info.desc;
+
+  const teaser = document.getElementById('achCatTeaser');
+  if (info.unlocksCat) {
+    teaser.classList.add('visible');
+  } else {
+    teaser.classList.remove('visible');
+  }
+
+  // Reset animations by removing and re-adding show
+  overlay.classList.remove('show');
+  void overlay.offsetHeight; // force reflow
+  overlay.classList.add('show');
+
+  playSound('achievement');
+
+  // Re-trigger icon animation
+  const icon = document.getElementById('achIcon');
+  icon.style.animation = 'none';
+  void icon.offsetHeight;
+  icon.style.animation = '';
+
+  // Click to dismiss
+  function dismiss() {
+    overlay.removeEventListener('click', dismiss);
+    overlay.classList.remove('show');
+
+    if (info.unlocksCat) {
+      // Show cat unlock after a short delay
+      const cat = CATS.find(c => c.id === info.unlocksCat);
+      if (cat) {
+        setTimeout(() => {
+          showCatUnlockCelebration(cat);
+        }, 400);
+        // Continue achievement queue after cat unlock
+        _waitForCatUnlock(() => setTimeout(_nextAchOverlay, 300));
+        return;
+      }
+    }
+    setTimeout(_nextAchOverlay, 300);
+  }
+
+  overlay.addEventListener('click', dismiss);
+}
+
+function _waitForCatUnlock(onClosed) {
+  const check = setInterval(() => {
+    const catOverlay = document.getElementById('catUnlockOverlay');
+    if (!catOverlay.classList.contains('show')) {
+      clearInterval(check);
+      onClosed();
+    }
+  }, 200);
 }
 
 // ── Blitz / Daily overlays ───────────────────────────────────────────────
