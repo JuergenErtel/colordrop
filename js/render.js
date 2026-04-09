@@ -83,16 +83,53 @@ function updateArc(ts, G) {
   const elapsed = ts - ANIM.arc.startTime;
   if (elapsed < ANIM.arc.duration) return;
 
-  const { toTube } = ANIM.arc;
+  const { toTube, color } = ANIM.arc;
   const ballIdx    = G.tubes[toTube].length - 1;
   const tubeCount  = G.tubes.length;
+  const cx         = tubeCX(toTube, tubeCount);
+  const cy         = ballCY(ballIdx);
 
-  // Start bounce on the landed ball
+  // Squash on impact: scaleY 0.7, scaleX 1.3 → spring back
+  ANIM.jiggleMap.set(`${toTube}-${ballIdx}`, {
+    startTime: ts,
+    duration: DUR_IMPACT,
+    squash: true,
+  });
+
+  // Bounce on landed ball
   ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
     startTime: ts,
     duration:  DUR_BOUNCE,
-    amplitude: 14,
+    amplitude: 10,
   });
+
+  // Impact ring
+  const col = PALETTE[color];
+  if (col) {
+    ANIM.impactRing = {
+      x: cx, y: cy,
+      startTime: ts,
+      duration: 300,
+      color: col.glow,
+    };
+  }
+
+  // Tube wobble and neighbor jiggle (skip in reduced motion)
+  if (!REDUCED_MOTION) {
+    ANIM.tubeWobble.set(toTube, {
+      startTime: ts,
+      duration: DUR_WOBBLE,
+      amplitude: 1.5 * Math.PI / 180,
+    });
+
+    for (let bi = 0; bi < ballIdx; bi++) {
+      const key = `${toTube}-${bi}`;
+      ANIM.jiggleMap.set(key, {
+        startTime: ts + (ballIdx - bi) * 30,
+        duration: DUR_JIGGLE,
+      });
+    }
+  }
 
   playSound('pop');
 
@@ -140,6 +177,24 @@ function updateBounces(ts) {
   }
 }
 
+function updateWobbles(ts) {
+  for (const [key, w] of ANIM.tubeWobble) {
+    if (ts - w.startTime >= w.duration) ANIM.tubeWobble.delete(key);
+  }
+}
+
+function updateJiggles(ts) {
+  for (const [key, j] of ANIM.jiggleMap) {
+    if (j.startTime <= ts && ts - j.startTime >= j.duration) ANIM.jiggleMap.delete(key);
+  }
+}
+
+function updateImpactRing(ts) {
+  if (ANIM.impactRing && ts - ANIM.impactRing.startTime >= ANIM.impactRing.duration) {
+    ANIM.impactRing = null;
+  }
+}
+
 // ── Drawing sub-routines ─────────────────────────────────────────────────
 
 function drawTubes(ctx, ts, G) {
@@ -157,6 +212,39 @@ function drawTubes(ctx, ts, G) {
     const arcDest  = ANIM.arc && ANIM.arc.toTube === i;
 
     const state = { selected: sel, solved, flashing, hintSrc, hintDst };
+
+    // Tube intro animation
+    let introOffsetY = 0;
+    let introAlpha = 1;
+    if (ANIM.tubeIntro && ANIM.tubeIntro[i]) {
+      const intro = ANIM.tubeIntro[i];
+      const ie = ts - intro.startTime;
+      if (ie < 0) {
+        introOffsetY = -TUBE_H - 50;
+        introAlpha = 0;
+      } else if (ie < intro.duration) {
+        const t = ie / intro.duration;
+        introOffsetY = (-TUBE_H - 50) * (1 - easeOutBounce(t));
+        introAlpha = Math.min(1, t * 3);
+      } else {
+        ANIM.tubeIntro[i] = null;
+      }
+    }
+
+    // Wobble rotation
+    const wobble = ANIM.tubeWobble.get(i);
+    let wobbleAngle = 0;
+    if (wobble) {
+      const wt = (ts - wobble.startTime) / wobble.duration;
+      wobbleAngle = wobble.amplitude * Math.sin(wt * Math.PI * 3) * (1 - wt);
+    }
+
+    ctx.save();
+    if (introAlpha < 1) ctx.globalAlpha = introAlpha;
+    ctx.translate(cx, TUBE_TOP + TUBE_H / 2 + introOffsetY);
+    ctx.rotate(wobbleAngle);
+    ctx.translate(-cx, -(TUBE_TOP + TUBE_H / 2));
+
     drawContainer(ctx, cx, theme.containerStyle, state, ts);
 
     // Balls inside tube
@@ -169,8 +257,40 @@ function drawTubes(ctx, ts, G) {
         const bt = Math.min((ts - bounce.startTime) / bounce.duration, 1);
         yOff = -bounce.amplitude * (1 - easeOutBounce(bt));
       }
-      drawBall(ctx, cx, ballCY(bi) + yOff, tube[bi], false, ts);
+
+      // Squash/jiggle deformation
+      const jiggle = ANIM.jiggleMap.get(bounceKey);
+      let jSx = 1, jSy = 1;
+      if (jiggle && !REDUCED_MOTION) {
+        const je = ts - jiggle.startTime;
+        if (je >= 0) {
+          const jt = Math.min(je / jiggle.duration, 1);
+          if (jiggle.squash) {
+            const squashT = easeOutElastic(jt);
+            jSx = 1.3 - 0.3 * squashT;
+            jSy = 0.7 + 0.3 * squashT;
+          } else {
+            const compress = 0.05 * (1 - easeOutElastic(jt));
+            jSx = 1 + compress;
+            jSy = 1 - compress;
+          }
+        }
+      }
+
+      const bx = cx;
+      const by = ballCY(bi) + yOff;
+      if (jSx !== 1) {
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.scale(jSx, jSy);
+        drawBall(ctx, 0, 0, tube[bi], false, ts);
+        ctx.restore();
+      } else {
+        drawBall(ctx, bx, by, tube[bi], false, ts);
+      }
     }
+
+    ctx.restore();
   }
 }
 
@@ -398,6 +518,23 @@ function drawHintOverlay(ctx, ts, G) {
   ctx.restore();
 }
 
+function drawImpactRing(ctx, ts) {
+  const r = ANIM.impactRing;
+  if (!r) return;
+  const t = (ts - r.startTime) / r.duration;
+  if (t > 1) return;
+  const radius = BALL_R + (BALL_R * t);
+  const alpha = 0.4 * (1 - t);
+  ctx.save();
+  ctx.strokeStyle = r.color;
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = 2 * (1 - t);
+  ctx.beginPath();
+  ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 // ── Main render function ─────────────────────────────────────────────────
 
 /**
@@ -417,7 +554,14 @@ export function renderFrame(ctx, ts, G) {
   // Update animation state
   updateArc(ts, G);
   updateBounces(ts);
+  updateWobbles(ts);
+  updateJiggles(ts);
+  updateImpactRing(ts);
   updateParticles(dt);
+
+  if (ANIM.tubeIntro && ANIM.tubeIntro.every(t => t === null)) {
+    ANIM.tubeIntro = null;
+  }
 
   // Theme fade
   if (G.themeFade < 1) {
@@ -442,6 +586,7 @@ export function renderFrame(ctx, ts, G) {
   if (G.selected !== -1 && !ANIM.busy) drawFloatingBall(ctx, ts, G);
 
   drawParticles(ctx);
+  drawImpactRing(ctx, ts);
   drawConfetti(ctx);
   drawTutorialHighlight(ctx, G);
 
