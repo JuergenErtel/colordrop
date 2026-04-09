@@ -159,37 +159,36 @@ function updateArc(ts, G) {
     ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
       startTime: ts,
       duration: DUR_BOUNCE,
-      amplitude: 15,
+      amplitude: 18,
     });
 
-    // 200ms: screen shake
+    // 150ms: screen shake
     if (!REDUCED_MOTION) {
       setTimeout(() => {
-        ANIM.screenShake = { startTime: performance.now(), duration: 150, amplitude: 4 };
-      }, 200);
+        ANIM.screenShake = { startTime: performance.now(), duration: 250, amplitude: 6 };
+      }, 150);
     }
 
-    // 300ms: tube explosions staggered
-    const solved = [...G.solvedTubes];
-    solved.forEach((ti, idx) => {
+    // 250ms: ALL tubes explode staggered
+    for (let ti = 0; ti < tubeCount; ti++) {
       setTimeout(() => {
         triggerTubeExplosion(ti, G.tubes, (i) => tubeCX(i, tubeCount));
-      }, 300 + idx * 80);
-    });
+      }, 250 + ti * 60);
+    }
 
-    // 500ms: gold flash overlay
+    // 400ms: gold flash overlay (longer + brighter)
     setTimeout(() => {
-      ANIM.goldFlash = { startTime: performance.now(), duration: 100 };
-    }, 500);
+      ANIM.goldFlash = { startTime: performance.now(), duration: 250 };
+    }, 400);
 
-    // 600ms: confetti + sound
+    // 500ms: confetti + sound
     setTimeout(() => {
       spawnConfetti();
       playSound('win');
-    }, 600);
+    }, 500);
 
-    // 750ms: fireworks
-    setTimeout(() => scheduleWinFireworks(), 750);
+    // 700ms: fireworks
+    setTimeout(() => scheduleWinFireworks(), 700);
 
     if (G.tutorial) {
       if (G.tutStep < TUTORIAL_SCRIPT.length &&
@@ -650,6 +649,7 @@ export function renderFrame(ctx, ts, G) {
   if (!REDUCED_MOTION) drawFireflies(ctx, ts);
 
   // Screen shake
+  let _shakeActive = false;
   if (ANIM.screenShake) {
     const se = performance.now() - ANIM.screenShake.startTime;
     if (se < ANIM.screenShake.duration) {
@@ -657,6 +657,7 @@ export function renderFrame(ctx, ts, G) {
       const offset = ANIM.screenShake.amplitude * Math.sin(st * Math.PI * 6) * (1 - st);
       ctx.save();
       ctx.translate(offset, offset * 0.5);
+      _shakeActive = true;
     } else {
       ANIM.screenShake = null;
     }
@@ -693,7 +694,7 @@ export function renderFrame(ctx, ts, G) {
     const gfe = performance.now() - ANIM.goldFlash.startTime;
     if (gfe < ANIM.goldFlash.duration) {
       const gft = gfe / ANIM.goldFlash.duration;
-      const gfa = 0.15 * (gft < 0.5 ? gft * 2 : 2 - gft * 2);
+      const gfa = 0.3 * (gft < 0.3 ? gft / 0.3 : (1 - gft) / 0.7);
       ctx.fillStyle = `rgba(255,215,0,${gfa})`;
       ctx.fillRect(0, 0, CW, CH);
     } else {
@@ -708,7 +709,7 @@ export function renderFrame(ctx, ts, G) {
   }
 
   // Close screen shake
-  if (ANIM.screenShake) ctx.restore();
+  if (_shakeActive) ctx.restore();
 
   // Timer
   const timerBar = document.getElementById('timerBar');
