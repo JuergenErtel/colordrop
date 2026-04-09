@@ -154,17 +154,51 @@ function updateArc(ts, G) {
   const won = G.tutorial ? checkWinTutorial(G.tubes) : checkWinState(G.tubes);
   if (won) {
     G.won = true;
-    spawnConfetti();
-    scheduleWinFireworks();
-    playSound('win');
+
+    // Extra-strong impact on winning ball
+    ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
+      startTime: ts,
+      duration: DUR_BOUNCE,
+      amplitude: 15,
+    });
+
+    // 200ms: screen shake
+    if (!REDUCED_MOTION) {
+      setTimeout(() => {
+        ANIM.screenShake = { startTime: performance.now(), duration: 150, amplitude: 4 };
+      }, 200);
+    }
+
+    // 300ms: tube explosions staggered
+    const solved = [...G.solvedTubes];
+    solved.forEach((ti, idx) => {
+      setTimeout(() => {
+        triggerTubeExplosion(ti, G.tubes, (i) => tubeCX(i, tubeCount));
+      }, 300 + idx * 80);
+    });
+
+    // 500ms: gold flash overlay
+    setTimeout(() => {
+      ANIM.goldFlash = { startTime: performance.now(), duration: 100 };
+    }, 500);
+
+    // 600ms: confetti + sound
+    setTimeout(() => {
+      spawnConfetti();
+      playSound('win');
+    }, 600);
+
+    // 750ms: fireworks
+    setTimeout(() => scheduleWinFireworks(), 750);
+
     if (G.tutorial) {
       if (G.tutStep < TUTORIAL_SCRIPT.length &&
           TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
         G.tutStep++;
       }
-      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 600);
+      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 1100);
     } else {
-      setTimeout(() => { if (G.onWin) G.onWin(); }, 600);
+      setTimeout(() => { if (G.onWin) G.onWin(); }, 1100);
     }
   }
 
@@ -610,6 +644,19 @@ export function renderFrame(ctx, ts, G) {
   const prevTheme = G.themePrev ? (THEMES[G.themePrev] || theme) : theme;
   drawBackground(ctx, ts, theme, prevTheme, G.themeFade);
 
+  // Screen shake
+  if (ANIM.screenShake) {
+    const se = performance.now() - ANIM.screenShake.startTime;
+    if (se < ANIM.screenShake.duration) {
+      const st = se / ANIM.screenShake.duration;
+      const offset = ANIM.screenShake.amplitude * Math.sin(st * Math.PI * 6) * (1 - st);
+      ctx.save();
+      ctx.translate(offset, offset * 0.5);
+    } else {
+      ANIM.screenShake = null;
+    }
+  }
+
   // Draw mascot cat when idle
   if (G.selected === -1 && !ANIM.busy && !ANIM.arc && !G.won) {
     drawMascotCat(ctx, CW - 45, CH - 35, 28, ts, G.mascotParams);
@@ -626,6 +673,28 @@ export function renderFrame(ctx, ts, G) {
   drawRipple(ctx, ts);
   drawConfetti(ctx);
   drawTutorialHighlight(ctx, G);
+
+  // Gold flash overlay (win celebration)
+  if (ANIM.goldFlash) {
+    const gfe = performance.now() - ANIM.goldFlash.startTime;
+    if (gfe < ANIM.goldFlash.duration) {
+      const gft = gfe / ANIM.goldFlash.duration;
+      const gfa = 0.15 * (gft < 0.5 ? gft * 2 : 2 - gft * 2);
+      ctx.fillStyle = `rgba(255,215,0,${gfa})`;
+      ctx.fillRect(0, 0, CW, CH);
+    } else {
+      ANIM.goldFlash = null;
+    }
+  }
+
+  // Canvas dim for win overlay
+  if (ANIM.canvasDim > 0) {
+    ctx.fillStyle = `rgba(0,0,0,${ANIM.canvasDim * 0.5})`;
+    ctx.fillRect(0, 0, CW, CH);
+  }
+
+  // Close screen shake
+  if (ANIM.screenShake) ctx.restore();
 
   // Timer
   const timerBar = document.getElementById('timerBar');
