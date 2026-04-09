@@ -635,6 +635,14 @@ function showWin() {
     Array.from({ length: stars }, () => '<span class="win-star">\u2B50</span>').join('') +
     Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
   document.getElementById('winPar').textContent     = 'Par: ' + par;
+  // Dim canvas behind win overlay
+  const dimStart = performance.now();
+  function dimStep() {
+    const elapsed = performance.now() - dimStart;
+    ANIM.canvasDim = Math.min(elapsed / 300, 1);
+    if (ANIM.canvasDim < 1) requestAnimationFrame(dimStep);
+  }
+  dimStep();
   document.getElementById('overlay').classList.add('show');
 
   if (newAchs.length) showAchievementToast(newAchs);
@@ -642,6 +650,13 @@ function showWin() {
 
 function hideOverlay() {
   document.getElementById('overlay').classList.remove('show');
+  const undimStart = performance.now();
+  function undimStep() {
+    const elapsed = performance.now() - undimStart;
+    ANIM.canvasDim = Math.max(1 - elapsed / 200, 0);
+    if (ANIM.canvasDim > 0) requestAnimationFrame(undimStep);
+  }
+  undimStep();
 }
 
 function updateStatsData(levelNum, stars, moves, isBlitz, blitzWon) {
