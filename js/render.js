@@ -657,9 +657,18 @@ export function renderFrame(ctx, ts, G) {
     }
   }
 
-  // Draw mascot cat when idle
-  if (G.selected === -1 && !ANIM.busy && !ANIM.arc && !G.won) {
-    drawMascotCat(ctx, CW - 45, CH - 35, 28, ts, G.mascotParams);
+  // Draw mascot cat (tracks flying ball)
+  if (!G.won) {
+    let lookAt = null;
+    if (ANIM.arc) {
+      const arcElapsed = ts - ANIM.arc.startTime;
+      const arcRawT = Math.min(arcElapsed / ANIM.arc.duration, 1);
+      const arcEasedT = easeOutQuart(arcRawT);
+      lookAt = bezier2(arcEasedT, ANIM.arc.p0, ANIM.arc.p1, ANIM.arc.p2);
+    }
+    if (G.selected === -1 && !ANIM.busy || ANIM.arc) {
+      drawMascotCat(ctx, CW - 45, CH - 35, 28, ts, G.mascotParams, lookAt);
+    }
   }
 
   drawTubes(ctx, ts, G);

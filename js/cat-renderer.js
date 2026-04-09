@@ -282,7 +282,7 @@ export function drawMiniCatFace(ctx, cx, cy, radius) {
 }
 
 // ── drawMascotCat ───────────────────────────────────────────────────────────
-export function drawMascotCat(ctx, cx, cy, size, ts, params) {
+export function drawMascotCat(ctx, cx, cy, size, ts, params, lookAt) {
   const s = size;
   ctx.save();
   const fur  = params ? params.furColor : '#D08840';
@@ -322,7 +322,15 @@ export function drawMascotCat(ctx, cx, cy, size, ts, params) {
 
   // Head — reuse portrait components
   const hy = cy - s * 0.2, hs = s * 0.55;
+  let headTilt = 0;
+  if (lookAt) {
+    const dx = lookAt.x - cx;
+    const dy = lookAt.y - cy;
+    headTilt = Math.atan2(dy, dx) * 0.15;
+    headTilt = Math.max(-0.26, Math.min(0.26, headTilt));
+  }
   const expr = isBlinking ? 'sleepy' : (params ? params.expression : 'happy');
+  ctx.save(); ctx.translate(cx, hy); ctx.rotate(headTilt); ctx.translate(-cx, -hy);
   ctx.fillStyle = fur;
   ctx.beginPath(); ctx.ellipse(cx, hy, hs, hs * 0.9, 0, 0, Math.PI * 2); ctx.fill();
   // Ears with twitch
@@ -333,6 +341,7 @@ export function drawMascotCat(ctx, cx, cy, size, ts, params) {
   drawMarkings(ctx, cx, hy, hs, furD, furL, mark);
   drawEyes(ctx, cx, hy, hs, eyeCol, expr);
   drawNoseMouthWhiskers(ctx, cx, hy, hs);
+  ctx.restore();
 
   ctx.restore();
 }
