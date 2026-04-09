@@ -8,7 +8,7 @@ import {
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
-import { drawCatPortrait, drawMascotCat, CAT_PARAMS } from './cat-renderer.js';
+import { drawCatPortrait, drawMascotCat, CAT_PARAMS, triggerCatShake, triggerCatWinJump } from './cat-renderer.js';
 import {
   getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
   shouldShowAd, markAdShown, tickAdLevel,
@@ -468,6 +468,7 @@ function triggerFlash(idx) {
     amplitude: 4,
   });
   playSound('invalid');
+  triggerCatShake();
 }
 
 function handleInput(lx, ly) {
@@ -558,6 +559,7 @@ function updateHUD() {
 }
 
 function showWin() {
+  triggerCatWinJump();
   if (!G.won) return;
   G.won = false; // prevent re-entry
   const par   = parForLevel(LEVEL.current);

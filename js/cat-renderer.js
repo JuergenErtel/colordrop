@@ -2,6 +2,16 @@
 
 import { CATS } from './cats.js';
 
+// ── Mascot reaction state ───────────────────────────────────────────────
+let _catIdleTimer = 0;
+let _catIdleAnim = null;
+let _catIdleStart = 0;
+let _catShake = 0;
+let _catWinJump = 0;
+
+export function triggerCatShake() { _catShake = performance.now(); }
+export function triggerCatWinJump() { _catWinJump = performance.now(); }
+
 // ── Cat Parameter Definitions ───────────────────────────────────────────────
 export const CAT_PARAMS = [
   { id: 'luna',     furColor: '#8B9DAF', furLight: '#B8C8D8', furDark: '#6B7D8F', eyeColor: '#4CAF50', earType: 'pointed', markings: 'none',   expression: 'proud' },
@@ -296,6 +306,45 @@ export function drawMascotCat(ctx, cx, cy, size, ts, params, lookAt) {
   const isBlinking = (ts % 4000) > 3800;
   const earTwitch = Math.sin(ts / 2500) * 0.03;
 
+  // Head — reuse portrait components
+  const hy = cy - s * 0.2, hs = s * 0.55;
+  let headTilt = 0;
+  if (lookAt) {
+    const dx = lookAt.x - cx;
+    const dy = lookAt.y - cy;
+    headTilt = Math.atan2(dy, dx) * 0.15;
+    headTilt = Math.max(-0.26, Math.min(0.26, headTilt));
+  }
+
+  // Idle animation cycle (8-12s)
+  if (!lookAt && !_catIdleAnim) {
+    if (ts - _catIdleTimer > 8000 + Math.random() * 4000) {
+      _catIdleTimer = ts;
+      _catIdleAnim = Math.random() > 0.5 ? 'yawn' : 'wash';
+      _catIdleStart = ts;
+    }
+  }
+  if (_catIdleAnim && ts - _catIdleStart > 1500) _catIdleAnim = null;
+
+  // Win jump
+  let jumpY = 0;
+  if (_catWinJump && ts - _catWinJump < 600) {
+    const jt = (ts - _catWinJump) / 600;
+    jumpY = -10 * Math.sin(jt * Math.PI * 2) * (1 - jt);
+  }
+
+  // Headshake on invalid move
+  let shakeAngle = 0;
+  if (_catShake && ts - _catShake < 400) {
+    const sht = (ts - _catShake) / 400;
+    shakeAngle = 0.15 * Math.sin(sht * Math.PI * 4) * (1 - sht);
+  }
+
+  // Apply win jump offset
+  if (jumpY !== 0) {
+    ctx.translate(0, jumpY);
+  }
+
   // Body (sitting upright)
   ctx.fillStyle = fur;
   ctx.beginPath(); ctx.ellipse(cx, cy + s * 0.35, s * 0.45, s * 0.55, 0, 0, Math.PI * 2); ctx.fill();
@@ -320,17 +369,8 @@ export function drawMascotCat(ctx, cx, cy, size, ts, params, lookAt) {
     ctx.beginPath(); ctx.ellipse(cx + side * s * 0.2, cy + s * 0.82, s * 0.1, s * 0.06, 0, 0, Math.PI * 2); ctx.fill();
   }
 
-  // Head — reuse portrait components
-  const hy = cy - s * 0.2, hs = s * 0.55;
-  let headTilt = 0;
-  if (lookAt) {
-    const dx = lookAt.x - cx;
-    const dy = lookAt.y - cy;
-    headTilt = Math.atan2(dy, dx) * 0.15;
-    headTilt = Math.max(-0.26, Math.min(0.26, headTilt));
-  }
   const expr = isBlinking ? 'sleepy' : (params ? params.expression : 'happy');
-  ctx.save(); ctx.translate(cx, hy); ctx.rotate(headTilt); ctx.translate(-cx, -hy);
+  ctx.save(); ctx.translate(cx, hy); ctx.rotate(headTilt + shakeAngle); ctx.translate(-cx, -hy);
   ctx.fillStyle = fur;
   ctx.beginPath(); ctx.ellipse(cx, hy, hs, hs * 0.9, 0, 0, Math.PI * 2); ctx.fill();
   // Ears with twitch
