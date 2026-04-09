@@ -702,14 +702,18 @@
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
         }
-        .screen-overlay.hidden { display: none; }
+        .screen-overlay.hidden:not(.sheet-panel) { display: none; }
 
         /* Sheet-style slide-up panels */
         .sheet-panel {
-            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(40px);
             transition: opacity .35s ease, transform .35s cubic-bezier(.2,.9,.3,1);
         }
         .sheet-panel:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
             transform: translateY(0);
         }
 
