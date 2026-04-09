@@ -99,6 +99,8 @@ function updateMascotParams() {
 // ── Cat unlock celebration queue ──────────────────────────────────────────
 const unlockQueue = [];
 let unlockShowing = false;
+let _pendingAchs = [];
+let _pendingCats = [];
 
 function showCatUnlockToast(cat) {
   unlockQueue.push(cat);
@@ -603,7 +605,7 @@ function showWin() {
   updateBonesDisplay();
   tickAdLevel();
 
-  // ── Cat unlocks ──
+  // ── Cat unlocks (store for after win overlay) ──
   const owned = new Set(loadCollection());
   const maxLvl = Math.max(LEVEL.current, ...Object.keys(progress).map(Number));
   const newCats = checkCatUnlocks(owned, {
@@ -616,11 +618,10 @@ function showWin() {
   if (newCats.length) {
     newCats.forEach(id => owned.add(id));
     saveCollection([...owned]);
-    for (const id of newCats) {
-      const cat = CATS.find(c => c.id === id);
-      if (cat) showCatUnlockToast(cat);
-    }
   }
+
+  _pendingAchs = newAchs;
+  _pendingCats = newCats;
   updateDailyStreak();
 
   if (ENDLESS.active) {
@@ -641,7 +642,6 @@ function showWin() {
     Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
     document.getElementById('winPar').textContent     = 'Par: ' + par;
     buildWinAchProgress();
-    if (newAchs.length) showAchievementToast(newAchs);
     return;
   }
 
@@ -663,8 +663,6 @@ function showWin() {
     }
     dimStep();
     document.getElementById('overlay').classList.add('show');
-
-    if (newAchs.length) showAchievementToast(newAchs);
   }, 1800);
 }
 
@@ -936,6 +934,43 @@ function _waitForCatUnlock(onClosed) {
       onClosed();
     }
   }, 200);
+}
+
+function processPendingUnlocks(onDone) {
+  if (_pendingAchs.length === 0) {
+    // No achievements, but maybe non-achievement cat unlocks
+    for (const id of _pendingCats) {
+      const cat = CATS.find(c => c.id === id);
+      if (cat) showCatUnlockToast(cat);
+    }
+    _pendingAchs = [];
+    _pendingCats = [];
+    if (onDone) onDone();
+    return;
+  }
+
+  // Show achievement overlays; cat unlocks for achievement-linked cats
+  // are handled inside showAchievementOverlays via unlocksCat.
+  // Non-achievement cat unlocks still use the old toast.
+  const achCatIds = new Set();
+  const achProgress = getAchievementProgress();
+  for (const id of _pendingAchs) {
+    const info = achProgress.find(a => a.id === id);
+    if (info && info.unlocksCat) achCatIds.add(info.unlocksCat);
+  }
+
+  showAchievementOverlays(_pendingAchs, () => {
+    // Show any non-achievement cat unlocks after
+    for (const id of _pendingCats) {
+      if (!achCatIds.has(id)) {
+        const cat = CATS.find(c => c.id === id);
+        if (cat) showCatUnlockToast(cat);
+      }
+    }
+    _pendingAchs = [];
+    _pendingCats = [];
+    if (onDone) onDone();
+  });
 }
 
 // ── Blitz / Daily overlays ───────────────────────────────────────────────
@@ -1212,9 +1247,14 @@ document.getElementById('resetBtn').addEventListener('click', () =>
 );
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
   playSound('click');
-  generateLevel(LEVEL.current + 1);
+  hideOverlay();
+  processPendingUnlocks(() => generateLevel(LEVEL.current + 1));
 });
-document.getElementById('menuBtn').addEventListener('click', () => { playSound('click'); openLevelSelect(); });
+document.getElementById('menuBtn').addEventListener('click', () => {
+  playSound('click');
+  hideOverlay();
+  processPendingUnlocks(() => openLevelSelect());
+});
 document.getElementById('tutSkip').addEventListener('click', () => {
   if (G.tutorial && G.tutStep < TUTORIAL_SCRIPT.length &&
       TUTORIAL_SCRIPT[G.tutStep].waitFor === 'dismiss') {
