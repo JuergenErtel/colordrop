@@ -433,8 +433,29 @@ export function playSound(name) {
         break;
       }
 
+      case 'click': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const t0 = ctx.currentTime;
+        synthClick(ctx, ctx.destination, t0);
+        break;
+      }
+
       default:
         break;
     }
   } catch { /* audio blocked or not supported */ }
+}
+
+function synthClick(ctx, dest, t0) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.value = 1200;
+  osc.type = 'sine';
+  gain.gain.setValueAtTime(0.15 * _sfxVolume, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+  osc.connect(gain);
+  gain.connect(dest);
+  osc.start(t0);
+  osc.stop(t0 + 0.05);
 }

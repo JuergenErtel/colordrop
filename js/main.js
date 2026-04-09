@@ -1104,6 +1104,7 @@ document.getElementById('endlessMenuBtn').addEventListener('click', () => {
 
 // ── Cat Album ────────────────────────────────────────────────
 document.getElementById('albumBtn').addEventListener('click', () => {
+  playSound('click');
   buildAlbumScreen();
   document.getElementById('albumScreen').classList.remove('hidden');
 });
