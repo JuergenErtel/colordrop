@@ -57,7 +57,7 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   const grad = ctx.createRadialGradient(gx, gy, gr * 0.05, gx, gy, gr);
   grad.addColorStop(0.00, `hsl(${h},${s}%,${b}%)`);
   grad.addColorStop(0.55, `hsl(${(h + 8) % 360},${Math.max(s - 5, 8)}%,${Math.max(b - 8, 60)}%)`);
-  grad.addColorStop(1.00, `hsl(${(h + 18) % 360},${Math.max(s - 10, 6)}%,${Math.max(b - 18, 48)}%)`);
+  grad.addColorStop(1.00, `hsl(${(h + 18) % 360},${Math.max(s - 10, 6)}%,${Math.max(b - 18, 36)}%)`);
 
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, CW, CH);
@@ -68,6 +68,13 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   vig.addColorStop(1, 'rgba(30,15,5,0.25)');
 
   ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, CW, CH);
+
+  // ── 3b. Warm gold ambient glow at bottom ───────────────────────────────
+  const goldGlow = ctx.createRadialGradient(CW / 2, CH + 20, 0, CW / 2, CH + 20, CH * 0.55);
+  goldGlow.addColorStop(0, 'rgba(212,135,63,0.10)');
+  goldGlow.addColorStop(1, 'rgba(212,135,63,0)');
+  ctx.fillStyle = goldGlow;
   ctx.fillRect(0, 0, CW, CH);
 
   // ── 4. Floating dust motes ─────────────────────────────────────────────
@@ -82,7 +89,7 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
 
     ctx.beginPath();
     ctx.arc(mx, my, m.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,240,210,${alpha.toFixed(3)})`;
+    ctx.fillStyle = `rgba(255,225,180,${alpha.toFixed(3)})`;
     ctx.fill();
   }
   ctx.restore();
