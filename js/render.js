@@ -4,10 +4,11 @@ import {
   CW, CH, TUBE_W, TUBE_H, TUBE_TOP, TUBE_BOT,
   BALL_R, BALL_D, BALL_GAP, BALL_PAD,
   FLOAT_Y_BASE, DUR_LIFT, DUR_ARC, DUR_BOUNCE,
+  DUR_IMPACT, DUR_SETTLE, DUR_WOBBLE, DUR_JIGGLE,
   PALETTE, THEMES, TUTORIAL_SCRIPT,
 } from './constants.js';
 
-import { easeInOut, easeOutBack, easeOutBounce, bezier2, ANIM } from './animations.js';
+import { easeInOut, easeOutBack, easeOutBounce, easeOutQuart, easeOutElastic, bezier2, ANIM } from './animations.js';
 import { spawnParticle, updateParticles, drawParticles, drawConfetti, triggerTubeExplosion, spawnConfetti, scheduleWinFireworks } from './particles.js';
 import { drawBackground } from './background.js';
 import { drawContainer } from './containers.js';

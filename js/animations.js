@@ -27,6 +27,15 @@ export function easeOutBounce(t) {
   }
 }
 
+export function easeOutQuart(t) {
+  return 1 - Math.pow(1 - t, 4);
+}
+
+export function easeOutElastic(t) {
+  if (t === 0 || t === 1) return t;
+  return Math.pow(2, -10 * t) * Math.sin((t - 0.1) * 5 * Math.PI) + 1;
+}
+
 // ── Quadratic Bézier ──────────────────────────────────────────────────────
 /** p0, p1 (control), p2 are {x, y} objects */
 export function bezier2(t, p0, p1, p2) {
@@ -40,21 +49,48 @@ export function bezier2(t, p0, p1, p2) {
 /**
  * ANIM holds all transient animation data.
  *
- * arc:       current ball-arc animation  {from, to, startTime, ball, srcX, srcY, dstX, dstY}
- * bounceMap: Map of tubeIdx → bounce state {startTime}
- * particles: particle array (managed by particles.js)
- * busy:      true while any animation is running
+ * arc:        current ball-arc animation  {from, to, startTime, ball, srcX, srcY, dstX, dstY}
+ * bounceMap:  Map of tubeIdx → bounce state {startTime}
+ * particles:  particle array (managed by particles.js)
+ * busy:       true while any animation is running
+ * tubeWobble: Map of tubeIdx → wobble state
+ * jiggleMap:  Map of tubeIdx → jiggle state
+ * impactRing: impact ring animation state
+ * tubeIntro:  tube intro animation state
+ * ripple:     ripple animation state
+ * tubeShake:  Map of tubeIdx → shake state
+ * screenShake: screen shake state
+ * goldFlash:  gold flash animation state
+ * canvasDim:  canvas dim level (0–1)
  */
 export const ANIM = {
-  arc:       null,
-  bounceMap: new Map(),
-  particles: [],
-  busy:      false,
+  arc:        null,
+  bounceMap:  new Map(),
+  particles:  [],
+  busy:       false,
+  tubeWobble: new Map(),
+  jiggleMap:  new Map(),
+  impactRing: null,
+  tubeIntro:  null,
+  ripple:     null,
+  tubeShake:  new Map(),
+  screenShake: null,
+  goldFlash:  null,
+  canvasDim:  0,
 };
 
 export function resetAnim() {
-  ANIM.arc       = null;
-  ANIM.bounceMap = new Map();
-  ANIM.particles = [];
-  ANIM.busy      = false;
+  ANIM.arc        = null;
+  ANIM.bounceMap  = new Map();
+  ANIM.particles  = [];
+  ANIM.busy       = false;
+  ANIM.tubeWobble = new Map();
+  ANIM.jiggleMap  = new Map();
+  ANIM.impactRing = null;
+  ANIM.tubeIntro  = null;
+  ANIM.ripple     = null;
+  ANIM.tubeShake  = new Map();
+  ANIM.screenShake = null;
+  ANIM.goldFlash  = null;
+  ANIM.canvasDim  = 0;
 }

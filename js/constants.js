@@ -13,8 +13,12 @@ export const BALL_GAP    = 3;
 export const BALL_PAD    = 10;
 export const FLOAT_Y_BASE = 118;
 export const DUR_LIFT    = 220;
-export const DUR_ARC     = 380;
+export const DUR_ARC     = 420;
 export const DUR_BOUNCE  = 480;
+export const DUR_IMPACT  = 80;
+export const DUR_SETTLE  = 280;
+export const DUR_WOBBLE  = 400;
+export const DUR_JIGGLE  = 200;
 export const MAX_PARTS   = 500;
 
 // ── Cat-café colour palette ───────────────────────────────────────────────
