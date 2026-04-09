@@ -346,6 +346,42 @@ function drawGolden(ctx, cx, state, ts) {
   ctx.restore();
 }
 
+/** Draw gold rim at tube opening */
+function drawGoldRim(ctx, cx) {
+  const x = cx - TUBE_W / 2;
+  const rimGrad = ctx.createLinearGradient(x, TUBE_TOP, x + TUBE_W, TUBE_TOP);
+  rimGrad.addColorStop(0, 'rgba(255,215,0,0)');
+  rimGrad.addColorStop(0.3, 'rgba(255,215,0,0.25)');
+  rimGrad.addColorStop(0.5, 'rgba(255,215,0,0.35)');
+  rimGrad.addColorStop(0.7, 'rgba(255,215,0,0.25)');
+  rimGrad.addColorStop(1, 'rgba(255,215,0,0)');
+
+  ctx.save();
+  ctx.strokeStyle = rimGrad;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 6, TUBE_TOP);
+  ctx.lineTo(x + TUBE_W - 6, TUBE_TOP);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** Solved tube gold glow (pulsing) */
+function drawSolvedGlow(ctx, cx, ts) {
+  const x = cx - TUBE_W / 2;
+  const pulse = 0.15 + 0.10 * Math.sin(ts * 0.002);
+  ctx.save();
+  ctx.shadowColor = `rgba(255,215,0,${pulse})`;
+  ctx.shadowBlur = 18;
+  roundRect(ctx, x - 2, TUBE_TOP - 2, TUBE_W + 4, TUBE_H + 4, 10);
+  ctx.strokeStyle = `rgba(255,215,0,${pulse * 0.6})`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 // ── Main export ───────────────────────────────────────────────────────────
 /**
  * drawContainer(ctx, cx, style, state, ts)
@@ -355,6 +391,8 @@ function drawGolden(ctx, cx, state, ts) {
  *   ts    — timestamp in ms (for pulsing animations)
  */
 export function drawContainer(ctx, cx, style, state, ts) {
+  if (state.solved) drawSolvedGlow(ctx, cx, ts);
+
   switch (style) {
     case 'cardboard': drawCardboard(ctx, cx, state, ts); break;
     case 'basket':    drawBasket   (ctx, cx, state, ts); break;
@@ -363,4 +401,6 @@ export function drawContainer(ctx, cx, style, state, ts) {
     case 'golden':    drawGolden   (ctx, cx, state, ts); break;
     default:          drawCardboard(ctx, cx, state, ts); break;
   }
+
+  drawGoldRim(ctx, cx);
 }
