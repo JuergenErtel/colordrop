@@ -47,6 +47,11 @@ export function getBorderColor(state) {
 
 /** Apply shadow/glow settings derived from state */
 function applyStateGlow(ctx, state, ts) {
+  if (state.tapFlash) {
+    ctx.shadowColor = 'rgba(255,215,0,0.3)';
+    ctx.shadowBlur = 12;
+    return;
+  }
   if (state.flashing) {
     ctx.shadowColor = 'rgba(200,80,60,0.50)';
     ctx.shadowBlur  = 28;

@@ -245,7 +245,11 @@ function drawTubes(ctx, ts, G) {
     const hintDst  = G.hintTo === i && G.frameTime < G.hintUntil;
     const arcDest  = ANIM.arc && ANIM.arc.toTube === i;
 
-    const state = { selected: sel, solved, flashing, hintSrc, hintDst };
+    const tapFlash = ANIM.ripple && Math.abs(cx - ANIM.ripple.x) < TUBE_W &&
+                     ts - ANIM.ripple.startTime < 50;
+    const redFlash = ANIM.tubeShake.has(i) &&
+                     ts - ANIM.tubeShake.get(i).startTime < 50;
+    const state = { selected: sel, solved, flashing: flashing || redFlash, hintSrc, hintDst, tapFlash };
 
     // Tube intro animation
     let introOffsetY = 0;
