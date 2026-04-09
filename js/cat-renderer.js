@@ -4,6 +4,7 @@ import { CATS } from './cats.js';
 
 // ── Mascot reaction state ───────────────────────────────────────────────
 let _catIdleTimer = 0;
+let _catIdleNext = 10000;
 let _catIdleAnim = null;
 let _catIdleStart = 0;
 let _catShake = 0;
@@ -318,13 +319,27 @@ export function drawMascotCat(ctx, cx, cy, size, ts, params, lookAt) {
 
   // Idle animation cycle (8-12s)
   if (!lookAt && !_catIdleAnim) {
-    if (ts - _catIdleTimer > 8000 + Math.random() * 4000) {
+    if (ts - _catIdleTimer > _catIdleNext) {
       _catIdleTimer = ts;
+      _catIdleNext = 8000 + Math.random() * 4000;
       _catIdleAnim = Math.random() > 0.5 ? 'yawn' : 'wash';
       _catIdleStart = ts;
     }
   }
   if (_catIdleAnim && ts - _catIdleStart > 1500) _catIdleAnim = null;
+
+  // Yawn visual: open mouth wider
+  let mouthOpen = 0;
+  if (_catIdleAnim === 'yawn') {
+    const yt = (ts - _catIdleStart) / 1500;
+    mouthOpen = yt < 0.4 ? yt / 0.4 : (1 - yt) / 0.6;
+  }
+  // Wash visual: paw rises to face
+  let washPaw = 0;
+  if (_catIdleAnim === 'wash') {
+    const wt = (ts - _catIdleStart) / 1500;
+    washPaw = wt < 0.3 ? wt / 0.3 : wt < 0.7 ? 1 : (1 - wt) / 0.3;
+  }
 
   // Win jump
   let jumpY = 0;
@@ -379,8 +394,35 @@ export function drawMascotCat(ctx, cx, cy, size, ts, params, lookAt) {
   drawEars(ctx, cx, hy, hs, fur, furL, earT);
   ctx.restore();
   drawMarkings(ctx, cx, hy, hs, furD, furL, mark);
-  drawEyes(ctx, cx, hy, hs, eyeCol, expr);
+  drawEyes(ctx, cx, hy, hs, eyeCol, _catIdleAnim === 'yawn' ? 'sleepy' : expr);
   drawNoseMouthWhiskers(ctx, cx, hy, hs);
+
+  // Yawn: draw open mouth over the existing one
+  if (mouthOpen > 0.05) {
+    const ny = hy + hs * 0.15;
+    const my = ny + hs * 0.06;
+    const openH = hs * 0.12 * mouthOpen;
+    ctx.fillStyle = 'rgba(60,30,20,0.8)';
+    ctx.beginPath();
+    ctx.ellipse(cx, my + openH * 0.3, hs * 0.1, openH, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Tongue
+    ctx.fillStyle = 'rgba(220,140,140,0.7)';
+    ctx.beginPath();
+    ctx.ellipse(cx, my + openH * 0.5, hs * 0.06, openH * 0.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Wash: draw paw near face
+  if (washPaw > 0.05) {
+    const pawX = cx - hs * 0.3;
+    const pawBaseY = cy + s * 0.82;
+    const pawY = pawBaseY + (hy + hs * 0.3 - pawBaseY) * washPaw;
+    ctx.fillStyle = fur;
+    ctx.beginPath();
+    ctx.ellipse(pawX, pawY, s * 0.1, s * 0.08, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
 
   ctx.restore();
