@@ -19,6 +19,11 @@ export function updateParticles(dt) {
     p.x    += p.vx * dt * 0.06;
     p.y    += p.vy * dt * 0.06;
     p.vy   += p.gravity * dt * 0.06;
+    // Confetti: sinusoidal horizontal drift for organic flutter
+    if (p.isConfetti) {
+      const age = (p.maxLife - p.life) * 0.003;
+      p.x += Math.sin(age * 2.5 + (p.rotation || 0)) * 0.4;
+    }
     p.life -= dt;
     p.alpha = Math.max(0, p.life / p.maxLife);
     if (p.life <= 0) arr.splice(i, 1);
@@ -115,7 +120,7 @@ export function scheduleWinFireworks() {
 }
 
 // ── Ambient fireflies ────────────────────────────────────────────────────
-const FIREFLY_COUNT = 6;
+const FIREFLY_COUNT = 8;
 const _fireflies = [];
 
 export function spawnFireflies(accentColor) {
@@ -143,17 +148,21 @@ export function drawFireflies(ctx, ts) {
   for (const f of _fireflies) {
     const x = f.baseX + Math.sin(ts * f.freqX + f.phase) * f.ampX;
     const y = f.baseY + Math.cos(ts * f.freqY + f.phase * 1.3) * f.ampY;
-    const alpha = 0.08 + 0.07 * Math.sin(ts * 0.001 + f.phase);
+    const alpha = 0.12 + 0.10 * Math.sin(ts * 0.0012 + f.phase);
+    // Gentle size pulse — breathe in and out
+    const sizeScale = 1 + 0.2 * Math.sin(ts * 0.0008 + f.phase * 2.1);
+    const sz = f.size * sizeScale;
 
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, f.size * 3);
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, sz * 3.5);
     glow.addColorStop(0, f.color.replace(/[\d.]+\)$/, `${alpha})`));
+    glow.addColorStop(0.5, f.color.replace(/[\d.]+\)$/, `${alpha * 0.3})`));
     glow.addColorStop(1, f.color.replace(/[\d.]+\)$/, '0)'));
     ctx.fillStyle = glow;
-    ctx.fillRect(x - f.size * 3, y - f.size * 3, f.size * 6, f.size * 6);
+    ctx.fillRect(x - sz * 3.5, y - sz * 3.5, sz * 7, sz * 7);
 
     ctx.beginPath();
-    ctx.arc(x, y, f.size, 0, Math.PI * 2);
-    ctx.fillStyle = f.color.replace(/[\d.]+\)$/, `${alpha * 1.5})`);
+    ctx.arc(x, y, sz, 0, Math.PI * 2);
+    ctx.fillStyle = f.color.replace(/[\d.]+\)$/, `${alpha * 1.8})`);
     ctx.fill();
   }
 }

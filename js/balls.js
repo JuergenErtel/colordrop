@@ -22,24 +22,28 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
   if (floating) {
     // Warm glow halo behind ball
     ctx.shadowColor = pal.glow;
-    ctx.shadowBlur  = 18;
+    ctx.shadowBlur  = 22;
   } else {
     // Soft warm drop shadow (painted manually for control)
     ctx.save();
-    ctx.fillStyle = 'rgba(60,30,10,0.35)';
+    const shGrad = ctx.createRadialGradient(cx + 2, cy + 5, 0, cx + 2, cy + 5, R * 0.95);
+    shGrad.addColorStop(0, 'rgba(40,20,5,0.38)');
+    shGrad.addColorStop(1, 'rgba(40,20,5,0)');
+    ctx.fillStyle = shGrad;
     ctx.beginPath();
-    ctx.ellipse(cx + 3, cy + 4, R * 0.85, R * 0.40, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + 2, cy + 5, R * 0.92, R * 0.42, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
 
   // ── Layer 1 (cont.): Yarn ball base — radial gradient ───────────────────
   const grad = ctx.createRadialGradient(
-    cx - R * 0.28, cy - R * 0.28, R * 0.08,   // inner highlight offset
-    cx,            cy,            R,
+    cx - R * 0.30, cy - R * 0.32, R * 0.05,   // inner highlight offset
+    cx + R * 0.05, cy + R * 0.06, R,
   );
   grad.addColorStop(0,    pal.bright);
-  grad.addColorStop(0.55, pal.base);
+  grad.addColorStop(0.45, pal.base);
+  grad.addColorStop(0.85, pal.dark);
   grad.addColorStop(1,    pal.dark);
 
   ctx.beginPath();
@@ -51,28 +55,44 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur  = 0;
 
-  // ── Layer 2: Yarn texture — 6 curved lines (clipped) ────────────────────
+  // ── Layer 1b: Inner shadow for roundness ────────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.clip();
+  const innerSh = ctx.createRadialGradient(cx, cy - R * 0.3, R * 0.4, cx, cy, R);
+  innerSh.addColorStop(0, 'rgba(0,0,0,0)');
+  innerSh.addColorStop(0.7, 'rgba(0,0,0,0)');
+  innerSh.addColorStop(1, 'rgba(30,15,5,0.14)');
+  ctx.fillStyle = innerSh;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // ── Layer 2: Yarn texture — 8 curved lines (clipped) ────────────────────
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.clip();
 
+  // Primary strands — warm bright
   ctx.strokeStyle = pal.bright;
-  ctx.globalAlpha = 0.15;
-  ctx.lineWidth   = 2;
-
-  // 6 quadratic bezier strands distributed around the ball
-  for (let i = 0; i < 6; i++) {
-    const baseAngle = (i / 6) * Math.PI * 2;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 8; i++) {
+    const baseAngle = (i / 8) * Math.PI * 2 + 0.2;
     const x0 = cx + Math.cos(baseAngle)             * R;
     const y0 = cy + Math.sin(baseAngle)             * R;
     const x2 = cx + Math.cos(baseAngle + Math.PI)   * R;
     const y2 = cy + Math.sin(baseAngle + Math.PI)   * R;
-    // Control point offset perpendicular to the strand
     const cpAngle = baseAngle + Math.PI / 2;
-    const cpDist  = R * (0.5 + (i % 3) * 0.15);
+    const cpDist  = R * (0.45 + (i % 4) * 0.12);
     const cpX     = cx + Math.cos(cpAngle) * cpDist;
     const cpY     = cy + Math.sin(cpAngle) * cpDist;
+
+    // Alternate thickness and opacity for organic feel
+    ctx.globalAlpha = i % 2 === 0 ? 0.18 : 0.10;
+    ctx.lineWidth   = i % 3 === 0 ? 2.5 : 1.5;
 
     ctx.beginPath();
     ctx.moveTo(x0, y0);
@@ -86,11 +106,37 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
   // ── Layer 3: Cat face ────────────────────────────────────────────────────
   drawMiniCatFace(ctx, cx, cy - R * 0.05, BALL_R);
 
-  // ── Layer 4: Specular highlight ──────────────────────────────────────────
+  // ── Layer 4: Specular highlight — soft gradient ──────────────────────────
+  const specGrad = ctx.createRadialGradient(
+    cx - R * 0.28, cy - R * 0.30, 0,
+    cx - R * 0.28, cy - R * 0.30, R * 0.32,
+  );
+  specGrad.addColorStop(0,   'rgba(255,255,255,0.55)');
+  specGrad.addColorStop(0.5, 'rgba(255,255,255,0.18)');
+  specGrad.addColorStop(1,   'rgba(255,255,255,0)');
   ctx.beginPath();
-  ctx.arc(cx - R * 0.30, cy - R * 0.30, R * 0.22, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.arc(cx - R * 0.28, cy - R * 0.30, R * 0.32, 0, Math.PI * 2);
+  ctx.fillStyle = specGrad;
   ctx.fill();
+
+  // ── Layer 5: Rim light (bottom-right edge) ──────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.clip();
+  const rimGrad = ctx.createRadialGradient(
+    cx + R * 0.5, cy + R * 0.5, R * 0.5,
+    cx + R * 0.5, cy + R * 0.5, R * 1.1,
+  );
+  rimGrad.addColorStop(0, 'rgba(255,255,255,0)');
+  rimGrad.addColorStop(0.55, 'rgba(255,255,255,0)');
+  rimGrad.addColorStop(0.82, 'rgba(255,240,210,0.15)');
+  rimGrad.addColorStop(1, 'rgba(255,240,210,0)');
+  ctx.fillStyle = rimGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 
   ctx.restore();
 }

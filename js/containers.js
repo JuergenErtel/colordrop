@@ -87,6 +87,32 @@ function geom(cx) {
 
 // ── Style renderers ───────────────────────────────────────────────────────
 
+function drawInnerShadow(ctx, x, y, w, h, r) {
+  ctx.save();
+  ctx.beginPath();
+  roundRect(ctx, x, y, w, h, r);
+  ctx.clip();
+  // Top inner shadow
+  const topSh = ctx.createLinearGradient(x, y, x, y + 28);
+  topSh.addColorStop(0, 'rgba(20,10,0,0.18)');
+  topSh.addColorStop(1, 'rgba(20,10,0,0)');
+  ctx.fillStyle = topSh;
+  ctx.fillRect(x, y, w, 28);
+  // Bottom inner shadow
+  const botSh = ctx.createLinearGradient(x, y + h - 20, x, y + h);
+  botSh.addColorStop(0, 'rgba(20,10,0,0)');
+  botSh.addColorStop(1, 'rgba(20,10,0,0.12)');
+  ctx.fillStyle = botSh;
+  ctx.fillRect(x, y + h - 20, w, 20);
+  // Left highlight edge
+  const leftHl = ctx.createLinearGradient(x, y, x + 8, y);
+  leftHl.addColorStop(0, 'rgba(255,240,220,0.08)');
+  leftHl.addColorStop(1, 'rgba(255,240,220,0)');
+  ctx.fillStyle = leftHl;
+  ctx.fillRect(x, y, 8, h);
+  ctx.restore();
+}
+
 function drawCardboard(ctx, cx, state, ts) {
   const { x, y, w, h } = geom(cx);
   const border = getBorderColor(state);
@@ -94,9 +120,13 @@ function drawCardboard(ctx, cx, state, ts) {
   ctx.save();
   applyStateGlow(ctx, state, ts);
 
-  // Body fill
+  // Body fill — vertical gradient for depth
   roundRect(ctx, x, y, w, h, 6);
-  ctx.fillStyle = 'rgba(160,120,80,0.35)';
+  const bodyGrad = ctx.createLinearGradient(x, y, x, y + h);
+  bodyGrad.addColorStop(0, 'rgba(175,135,90,0.38)');
+  bodyGrad.addColorStop(0.5, 'rgba(160,120,80,0.32)');
+  bodyGrad.addColorStop(1, 'rgba(140,100,65,0.38)');
+  ctx.fillStyle = bodyGrad;
   ctx.fill();
   ctx.strokeStyle = border;
   ctx.lineWidth   = 2;
@@ -116,6 +146,9 @@ function drawCardboard(ctx, cx, state, ts) {
     ctx.stroke();
   }
   ctx.restore();
+
+  // Inner shadow for depth
+  drawInnerShadow(ctx, x, y, w, h, 6);
 
   // Flap tabs at top — two small rectangles
   ctx.fillStyle   = 'rgba(145,105,65,0.45)';
@@ -142,9 +175,13 @@ function drawBasket(ctx, cx, state, ts) {
   ctx.save();
   applyStateGlow(ctx, state, ts);
 
-  // Body fill
+  // Body fill — vertical gradient
   roundRect(ctx, x, y, w, h, 8);
-  ctx.fillStyle = 'rgba(180,140,90,0.30)';
+  const bodyGrad = ctx.createLinearGradient(x, y, x, y + h);
+  bodyGrad.addColorStop(0, 'rgba(195,155,105,0.34)');
+  bodyGrad.addColorStop(0.5, 'rgba(180,140,90,0.28)');
+  bodyGrad.addColorStop(1, 'rgba(160,120,75,0.34)');
+  ctx.fillStyle = bodyGrad;
   ctx.fill();
   ctx.strokeStyle = border;
   ctx.lineWidth   = 2;
@@ -173,6 +210,9 @@ function drawBasket(ctx, cx, state, ts) {
   }
   ctx.restore();
 
+  // Inner shadow for depth
+  drawInnerShadow(ctx, x, y, w, h, 8);
+
   // Raised rim at top — thicker horizontal band
   ctx.fillStyle   = 'rgba(190,150,100,0.38)';
   ctx.strokeStyle = border;
@@ -197,7 +237,11 @@ function drawCattree(ctx, cx, state, ts) {
   // Vertical post below platform (bottom portion)
   const platformH = Math.round(h * 0.72);
   const postY     = y + platformH;
-  ctx.fillStyle   = 'rgba(140,110,70,0.40)';
+  const postGrad = ctx.createLinearGradient(postX, postY, postX + postW, postY);
+  postGrad.addColorStop(0, 'rgba(155,125,85,0.45)');
+  postGrad.addColorStop(0.5, 'rgba(140,110,70,0.35)');
+  postGrad.addColorStop(1, 'rgba(125,95,55,0.45)');
+  ctx.fillStyle   = postGrad;
   ctx.strokeStyle = border;
   ctx.lineWidth   = 1.5;
   ctx.beginPath();
@@ -220,9 +264,13 @@ function drawCattree(ctx, cx, state, ts) {
   }
   ctx.restore();
 
-  // Platform body
+  // Platform body — vertical gradient
   roundRect(ctx, x, y, w, platformH, 6);
-  ctx.fillStyle = 'rgba(140,180,160,0.25)';
+  const platGrad = ctx.createLinearGradient(x, y, x, y + platformH);
+  platGrad.addColorStop(0, 'rgba(155,195,175,0.30)');
+  platGrad.addColorStop(0.5, 'rgba(140,180,160,0.22)');
+  platGrad.addColorStop(1, 'rgba(125,165,145,0.30)');
+  ctx.fillStyle = platGrad;
   ctx.fill();
   ctx.strokeStyle = border;
   ctx.lineWidth   = 2;
@@ -243,6 +291,9 @@ function drawCattree(ctx, cx, state, ts) {
   }
   ctx.restore();
 
+  // Inner shadow for depth
+  drawInnerShadow(ctx, x, y, w, platformH, 6);
+
   ctx.restore();
 }
 
@@ -253,10 +304,14 @@ function drawCatbed(ctx, cx, state, ts) {
   ctx.save();
   applyStateGlow(ctx, state, ts);
 
-  // Cushion body — very rounded top corners
+  // Cushion body — very rounded top corners, vertical gradient
   ctx.beginPath();
   roundRectCorners(ctx, x, y, w, h, 16, 16, 20, 20);
-  ctx.fillStyle = 'rgba(200,160,170,0.28)';
+  const bodyGrad = ctx.createLinearGradient(x, y, x, y + h);
+  bodyGrad.addColorStop(0, 'rgba(215,175,185,0.32)');
+  bodyGrad.addColorStop(0.5, 'rgba(200,160,170,0.25)');
+  bodyGrad.addColorStop(1, 'rgba(185,145,155,0.32)');
+  ctx.fillStyle = bodyGrad;
   ctx.fill();
   ctx.strokeStyle = border;
   ctx.lineWidth   = 2;
@@ -282,6 +337,28 @@ function drawCatbed(ctx, cx, state, ts) {
   }
   ctx.restore();
 
+  // Inner shadow for depth (match body's rounded corners)
+  ctx.save();
+  ctx.beginPath();
+  roundRectCorners(ctx, x, y, w, h, 16, 16, 20, 20);
+  ctx.clip();
+  const topSh = ctx.createLinearGradient(x, y, x, y + 28);
+  topSh.addColorStop(0, 'rgba(20,10,0,0.18)');
+  topSh.addColorStop(1, 'rgba(20,10,0,0)');
+  ctx.fillStyle = topSh;
+  ctx.fillRect(x, y, w, 28);
+  const botSh = ctx.createLinearGradient(x, y + h - 20, x, y + h);
+  botSh.addColorStop(0, 'rgba(20,10,0,0)');
+  botSh.addColorStop(1, 'rgba(20,10,0,0.12)');
+  ctx.fillStyle = botSh;
+  ctx.fillRect(x, y + h - 20, w, 20);
+  const leftHl = ctx.createLinearGradient(x, y, x + 8, y);
+  leftHl.addColorStop(0, 'rgba(255,240,220,0.08)');
+  leftHl.addColorStop(1, 'rgba(255,240,220,0)');
+  ctx.fillStyle = leftHl;
+  ctx.fillRect(x, y, 8, h);
+  ctx.restore();
+
   // Raised rim at top
   ctx.fillStyle   = 'rgba(210,170,180,0.38)';
   ctx.strokeStyle = border;
@@ -301,11 +378,12 @@ function drawGolden(ctx, cx, state, ts) {
   ctx.save();
   applyStateGlow(ctx, state, ts);
 
-  // Gold gradient fill (top → bottom)
+  // Gold gradient fill (top → bottom) — richer gradient
   const goldGrad = ctx.createLinearGradient(x, y, x, y + h);
-  goldGrad.addColorStop(0,   'rgba(255,215,100,0.20)');
-  goldGrad.addColorStop(0.5, 'rgba(255,210,80,0.24)');
-  goldGrad.addColorStop(1,   'rgba(255,200,50,0.28)');
+  goldGrad.addColorStop(0,   'rgba(255,225,120,0.24)');
+  goldGrad.addColorStop(0.3, 'rgba(255,215,100,0.20)');
+  goldGrad.addColorStop(0.7, 'rgba(255,200,70,0.24)');
+  goldGrad.addColorStop(1,   'rgba(240,185,40,0.30)');
 
   roundRect(ctx, x, y, w, h, 8);
   ctx.fillStyle = goldGrad;
@@ -333,6 +411,9 @@ function drawGolden(ctx, cx, state, ts) {
     ctx.stroke();
   }
   ctx.restore();
+
+  // Inner shadow for depth
+  drawInnerShadow(ctx, x, y, w, h, 8);
 
   // Ornate rim — double border at top
   ctx.strokeStyle = 'rgba(255,220,80,0.55)';

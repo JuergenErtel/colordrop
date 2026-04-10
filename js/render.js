@@ -448,11 +448,15 @@ function drawFloatingBall(ctx, ts, G) {
     ctx.stroke();
     ctx.restore();
 
-    // Shadow ellipse on tube below
+    // Shadow ellipse on tube below — softer gradient shadow
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    const shCY = ballCY(tube.length - 1) + BALL_R + 4;
+    const shGrad = ctx.createRadialGradient(cx, shCY, 0, cx, shCY, BALL_R * 0.85);
+    shGrad.addColorStop(0, 'rgba(0,0,0,0.16)');
+    shGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = shGrad;
     ctx.beginPath();
-    ctx.ellipse(cx, ballCY(tube.length - 1) + BALL_R + 4, BALL_R * 0.7, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, shCY, BALL_R * 0.85, 5, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -593,15 +597,42 @@ function drawImpactRing(ctx, ts) {
   if (!r) return;
   const t = (ts - r.startTime) / r.duration;
   if (t > 1) return;
-  const radius = BALL_R + (BALL_R * 1.5 * t);   // expands to 2.5x ball radius
-  const alpha = 0.6 * (1 - t);                    // brighter (was 0.4)
+
   ctx.save();
+
+  // Inner ring — fast, bright
+  const r1 = BALL_R + BALL_R * 1.2 * t;
+  const a1 = 0.6 * (1 - t * t);                   // quadratic fade for snappier feel
   ctx.strokeStyle = r.color;
-  ctx.globalAlpha = alpha;
-  ctx.lineWidth = 3 * (1 - t);                    // thicker (was 2)
+  ctx.globalAlpha = a1;
+  ctx.lineWidth = 3.5 * (1 - t);
   ctx.beginPath();
-  ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+  ctx.arc(r.x, r.y, r1, 0, Math.PI * 2);
   ctx.stroke();
+
+  // Outer ring — slower, softer
+  const r2 = BALL_R + BALL_R * 2.2 * t;
+  const a2 = 0.25 * (1 - t);
+  ctx.globalAlpha = a2;
+  ctx.lineWidth = 1.5 * (1 - t);
+  ctx.beginPath();
+  ctx.arc(r.x, r.y, r2, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Centre glow dot — brief bright flash
+  if (t < 0.3) {
+    const dotAlpha = 0.5 * (1 - t / 0.3);
+    const dotR = BALL_R * 0.4 * (1 - t / 0.3);
+    const glow = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, dotR);
+    glow.addColorStop(0, r.color.replace(/[\d.]+\)$/, `${dotAlpha})`));
+    glow.addColorStop(1, r.color.replace(/[\d.]+\)$/, '0)'));
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, dotR, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   ctx.restore();
 }
 
@@ -710,13 +741,18 @@ export function renderFrame(ctx, ts, G) {
   drawConfetti(ctx);
   drawTutorialHighlight(ctx, G);
 
-  // Gold flash overlay (win celebration)
+  // Gold flash overlay (win celebration) — warm radial with smooth ease
   if (ANIM.goldFlash) {
     const gfe = performance.now() - ANIM.goldFlash.startTime;
     if (gfe < ANIM.goldFlash.duration) {
       const gft = gfe / ANIM.goldFlash.duration;
-      const gfa = 0.3 * (gft < 0.3 ? gft / 0.3 : (1 - gft) / 0.7);
-      ctx.fillStyle = `rgba(255,215,0,${gfa})`;
+      // Smooth bell curve: fast in, slow out
+      const gfa = 0.28 * Math.sin(gft * Math.PI);
+      const flashGrad = ctx.createRadialGradient(CW / 2, CH / 2, 0, CW / 2, CH / 2, CH * 0.7);
+      flashGrad.addColorStop(0, `rgba(255,225,120,${gfa * 1.2})`);
+      flashGrad.addColorStop(0.5, `rgba(255,200,60,${gfa})`);
+      flashGrad.addColorStop(1, `rgba(255,180,30,${gfa * 0.3})`);
+      ctx.fillStyle = flashGrad;
       ctx.fillRect(0, 0, CW, CH);
     } else {
       ANIM.goldFlash = null;

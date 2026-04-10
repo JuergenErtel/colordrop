@@ -3,16 +3,16 @@
 import { CW, CH } from './constants.js';
 
 // ── Dust mote constants ───────────────────────────────────────────────────
-const MOTE_COUNT   = 8;
+const MOTE_COUNT   = 12;
 const GOLDEN_ANGLE = 2.39996322972865; // radians
 
 // Pre-compute stable per-mote phase offsets using golden angle spread
 const MOTES = Array.from({ length: MOTE_COUNT }, (_, i) => ({
   phase:  i * GOLDEN_ANGLE,
-  rx:     0.28 + (i % 3) * 0.18,   // relative X anchor (0..1 of CW)
-  ry:     0.15 + (i % 4) * 0.20,   // relative Y anchor (0..1 of CH)
-  size:   1.2 + (i % 3) * 0.8,
-  speed:  0.00028 + (i % 5) * 0.00008,
+  rx:     0.12 + (i * GOLDEN_ANGLE * 0.14) % 0.76,  // better spread
+  ry:     0.10 + (i * GOLDEN_ANGLE * 0.11) % 0.80,
+  size:   0.8 + (i % 4) * 0.7,                       // wider range: 0.8–2.9
+  speed:  0.00022 + (i % 7) * 0.00006,
 }));
 
 // ── Interpolation helpers ─────────────────────────────────────────────────
@@ -62,19 +62,29 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, CW, CH);
 
-  // ── 3. Soft warm vignette ──────────────────────────────────────────────
-  const vig = ctx.createRadialGradient(CW / 2, CH / 2, CH * 0.25, CW / 2, CH / 2, CH * 0.78);
+  // ── 3. Soft warm vignette — deeper, warmer ─────────────────────────────
+  const vig = ctx.createRadialGradient(CW / 2, CH * 0.45, CH * 0.22, CW / 2, CH * 0.45, CH * 0.82);
   vig.addColorStop(0, 'rgba(30,15,5,0)');
-  vig.addColorStop(1, 'rgba(30,15,5,0.25)');
+  vig.addColorStop(0.7, 'rgba(30,15,5,0.08)');
+  vig.addColorStop(1, 'rgba(25,12,3,0.30)');
 
   ctx.fillStyle = vig;
   ctx.fillRect(0, 0, CW, CH);
 
-  // ── 3b. Warm gold ambient glow at bottom ───────────────────────────────
-  const goldGlow = ctx.createRadialGradient(CW / 2, CH + 20, 0, CW / 2, CH + 20, CH * 0.55);
-  goldGlow.addColorStop(0, 'rgba(212,135,63,0.10)');
-  goldGlow.addColorStop(1, 'rgba(212,135,63,0)');
-  ctx.fillStyle = goldGlow;
+  // ── 3b. Warm lamplight pool at bottom — cozy table glow ─────────────────
+  const lampX = CW * 0.5 + Math.sin(ts * 0.00008) * 15;
+  const lampGlow = ctx.createRadialGradient(lampX, CH + 10, 0, lampX, CH + 10, CH * 0.58);
+  lampGlow.addColorStop(0, 'rgba(225,160,80,0.14)');
+  lampGlow.addColorStop(0.4, 'rgba(212,135,63,0.08)');
+  lampGlow.addColorStop(1, 'rgba(212,135,63,0)');
+  ctx.fillStyle = lampGlow;
+  ctx.fillRect(0, 0, CW, CH);
+
+  // ── 3c. Soft warm highlight at top-left — directional light ────────────
+  const topGlow = ctx.createRadialGradient(CW * 0.15, -10, 0, CW * 0.15, -10, CH * 0.45);
+  topGlow.addColorStop(0, `hsla(${h},${Math.min(s + 8, 40)}%,${Math.min(b + 5, 95)}%,0.06)`);
+  topGlow.addColorStop(1, 'rgba(255,240,220,0)');
+  ctx.fillStyle = topGlow;
   ctx.fillRect(0, 0, CW, CH);
 
   // ── 4. Floating dust motes ─────────────────────────────────────────────
@@ -84,8 +94,8 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
     const mx  = m.rx * CW + Math.cos(t)              * 18;
     const my  = m.ry * CH + Math.sin(t * 1.31 + 0.7) * 14;
 
-    // Soft twinkle via alpha modulation
-    const alpha = 0.18 + 0.22 * Math.abs(Math.sin(t * 0.47));
+    // Soft twinkle via alpha modulation — slightly more visible
+    const alpha = 0.22 + 0.26 * Math.abs(Math.sin(t * 0.47));
 
     ctx.beginPath();
     ctx.arc(mx, my, m.size, 0, Math.PI * 2);
