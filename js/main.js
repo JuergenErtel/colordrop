@@ -1334,6 +1334,13 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
 document.getElementById('settingsBackBtn').addEventListener('click', () => {
   document.getElementById('settingsScreen').classList.add('hidden');
 });
+// TODO: Remove reset button before production release
+document.getElementById('resetAllBtn').addEventListener('click', () => {
+  if (confirm('Wirklich ALLES zurücksetzen?\nFortschritt, Katzen, Achievements — alles weg!')) {
+    localStorage.clear();
+    location.reload();
+  }
+});
 document.getElementById('musicVolume').addEventListener('input', (e) => {
   const vol = parseInt(e.target.value) / 100;
   setMusicVolume(vol);
