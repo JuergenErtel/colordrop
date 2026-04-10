@@ -97,6 +97,15 @@
     width: 100%; max-width: 520px; padding: 1.25rem 1rem;
 }
 
+.splash-presents {
+    font-size: clamp(.6rem, 2vw, .75rem);
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: rgba(255,200,150,.35);
+    margin-bottom: .6rem;
+    text-align: center;
+}
+
 /* ── Logo ── */
 .splash-logo {
     font-family: 'Fredoka', sans-serif; font-weight: 700;
