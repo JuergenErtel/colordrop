@@ -44,6 +44,7 @@ import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
 import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
 import { ENDLESS, endlessConfig, generateEndlessTubes, endlessParForRound, startEndless, endlessNextRound, endEndless } from './endless.js';
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
+import { buildRoomPanel, buildWinRoomHint } from './room.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -652,6 +653,7 @@ function showWin() {
     Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
     document.getElementById('winPar').textContent     = 'Par: ' + par;
     buildWinAchProgress();
+    buildWinRoomHint('winRoomHint');
     return;
   }
 
@@ -662,6 +664,7 @@ function showWin() {
     Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
   document.getElementById('winPar').textContent     = 'Par: ' + par;
   buildWinAchProgress();
+  buildWinRoomHint('winRoomHint');
   // Delay the overlay so the canvas celebration is visible first
   setTimeout(() => {
     // Dim canvas behind win overlay
@@ -1095,6 +1098,7 @@ function openLevelSelect() {
   G.isDailyChallenge = false;
   buildLevelSelect();
   updateNextGoalWidget();
+  buildRoomPanel('roomPanel');
   updateDailyBtn();
   hideOverlay();
   if (G.timer) { G.timer = null; }

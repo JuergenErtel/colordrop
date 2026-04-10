@@ -243,6 +243,66 @@ function updateImpactRing(ts) {
   }
 }
 
+// ── Board frame — visual containment for the puzzle area ─────────────────
+
+const BOARD_PAD_X = 14;
+const BOARD_PAD_TOP = 22;
+const BOARD_PAD_BOT = 18;
+const BOARD_R = 16;
+
+function drawBoardFrame(ctx, ts, G) {
+  const tubeCount = G.tubes.length;
+  if (tubeCount === 0) return;
+
+  // Compute board bounds from tube grid
+  const firstCX = tubeCX(0, tubeCount);
+  const lastCX  = tubeCX(tubeCount - 1, tubeCount);
+  const bx = firstCX - TUBE_W / 2 - BOARD_PAD_X;
+  const by = TUBE_TOP - BOARD_PAD_TOP;
+  const bw = (lastCX + TUBE_W / 2 + BOARD_PAD_X) - bx;
+  const bh = TUBE_H + BOARD_PAD_TOP + BOARD_PAD_BOT;
+
+  // ── Board drop shadow (underneath, offset down) ──
+  ctx.save();
+  const shY = by + 6;
+  const shGrad = ctx.createRadialGradient(bx + bw / 2, shY + bh / 2 + 8, bw * 0.15,
+                                           bx + bw / 2, shY + bh / 2 + 8, bw * 0.6);
+  shGrad.addColorStop(0, 'rgba(20,10,5,0.22)');
+  shGrad.addColorStop(1, 'rgba(20,10,5,0)');
+  ctx.fillStyle = shGrad;
+  ctx.fillRect(bx - 20, shY, bw + 40, bh + 20);
+  ctx.restore();
+
+  // ── Board surface (rounded rect) ──
+  ctx.save();
+  roundRect(ctx, bx, by, bw, bh, BOARD_R);
+
+  // Fill — semi-transparent warm surface
+  const boardFill = ctx.createLinearGradient(bx, by, bx, by + bh);
+  boardFill.addColorStop(0.0, 'rgba(255,240,215,0.07)');
+  boardFill.addColorStop(0.3, 'rgba(255,235,200,0.05)');
+  boardFill.addColorStop(1.0, 'rgba(200,160,100,0.04)');
+  ctx.fillStyle = boardFill;
+  ctx.fill();
+
+  // Border — very subtle warm edge
+  ctx.strokeStyle = 'rgba(200,160,100,0.12)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Inner top highlight (catches the spotlight)
+  ctx.beginPath();
+  roundRect(ctx, bx, by, bw, bh, BOARD_R);
+  ctx.clip();
+  const topHL = ctx.createLinearGradient(bx, by, bx, by + 16);
+  topHL.addColorStop(0, 'rgba(255,245,225,0.08)');
+  topHL.addColorStop(1, 'rgba(255,245,225,0)');
+  ctx.fillStyle = topHL;
+  ctx.fillRect(bx, by, bw, 16);
+
+  ctx.restore();
+}
+
 // ── Drawing sub-routines ─────────────────────────────────────────────────
 
 function drawTubes(ctx, ts, G) {
@@ -339,6 +399,14 @@ function drawTubes(ctx, ts, G) {
             jSy = 1 - compress;
           }
         }
+      }
+
+      // Idle breathing — gentle scale pulse on topmost ball only
+      const isTop = bi === renderCount - 1;
+      if (isTop && !sel && !solved && jSx === 1 && !bounce && !REDUCED_MOTION) {
+        const breath = 1 + 0.018 * Math.sin(ts * 0.003 + i * 1.8);
+        jSx = breath;
+        jSy = 2 - breath;  // inverse: slightly squash when wide
       }
 
       const bx = cx;
@@ -729,6 +797,7 @@ export function renderFrame(ctx, ts, G) {
     }
   }
 
+  drawBoardFrame(ctx, ts, G);
   drawTubes(ctx, ts, G);
   drawHintOverlay(ctx, ts, G);
 

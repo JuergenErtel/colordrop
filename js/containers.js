@@ -477,6 +477,20 @@ function drawSolvedGlow(ctx, cx, ts) {
  *   ts    — timestamp in ms (for pulsing animations)
  */
 export function drawContainer(ctx, cx, style, state, ts) {
+  // Ground contact shadow — anchors the tube to the surface
+  ctx.save();
+  const shCX = cx + 2;
+  const shCY = TUBE_TOP + TUBE_H + 4;
+  const shGrad = ctx.createRadialGradient(shCX, shCY, 0, shCX, shCY, TUBE_W * 0.52);
+  shGrad.addColorStop(0, 'rgba(20,10,5,0.25)');
+  shGrad.addColorStop(0.6, 'rgba(20,10,5,0.08)');
+  shGrad.addColorStop(1, 'rgba(20,10,5,0)');
+  ctx.fillStyle = shGrad;
+  ctx.beginPath();
+  ctx.ellipse(shCX, shCY, TUBE_W * 0.52, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
   if (state.solved) drawSolvedGlow(ctx, cx, ts);
 
   switch (style) {

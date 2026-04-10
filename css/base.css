@@ -1,0 +1,92 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   BASE — Reset, Design Tokens, Body, Layout, Header, Canvas Frame
+   Layer: Foundation
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Reset & Design Tokens ──────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:       #fdf6ec;
+    --surface:  rgba(160,120,80,.08);
+    --border:   rgba(160,120,80,.15);
+    --gold:     #d4873f;
+    --text:     #4a3728;
+    --muted:    rgba(74,55,40,.45);
+    --f-head:   'Nunito', sans-serif;
+    --f-mono:   'Nunito', sans-serif;
+}
+
+/* ── Base ───────────────────────────────────────────── */
+html, body { height: 100%; }
+
+body {
+    background-color: var(--bg);
+    /* Ambient colour blobs – warm cozy atmosphere */
+    background-image:
+        radial-gradient(ellipse 70% 50% at 10% 5%, rgba(220,175,120,.20) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 45% at 88% 92%, rgba(195,145,100,.15) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 50% 50%, rgba(240,200,150,.06) 0%, transparent 60%);
+    color: var(--text);
+    font-family: var(--f-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ── Game wrapper ───────────────────────────────────── */
+.wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.header { text-align: center; }
+
+.title {
+    font-family: var(--f-head);
+    font-size: clamp(2rem, 9vw, 3.6rem);
+    letter-spacing: .08em;
+    line-height: 1;
+    /* Warm gradient */
+    background: linear-gradient(130deg, #d4873f 0%, #c96b4f 45%, #a67c52 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tagline {
+    font-size: .68rem;
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: .25rem;
+}
+
+/* ── Canvas container ───────────────────────────────── */
+.canvas-wrap { width: 100%; display: flex; justify-content: center; }
+
+/* Inner wrapper shrinks to canvas CSS width so the HUD aligns exactly */
+.canvas-inner { position: relative; display: inline-block; }
+
+#c {
+    display: block;
+    cursor: pointer;
+    touch-action: none;
+    border-radius: 20px;
+    /* Floating-card illusion — warm layered shadow */
+    box-shadow:
+        0 0 60px rgba(180,130,70,.15),
+        0 0 20px rgba(220,160,80,.08),
+        0 20px 40px rgba(40,20,0,.40),
+        0 4px 12px rgba(40,20,0,.18);
+}

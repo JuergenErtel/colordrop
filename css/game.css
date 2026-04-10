@@ -1,0 +1,219 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   GAME — HUD, Controls, Timer, Tutorial, Move Counter
+   Layer: GameHUD / TopBar / ActionButtons
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── HUD strip overlaid on top of the canvas ──────────── */
+.hud-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, rgba(55,35,20,.62), rgba(60,40,25,.52));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(160,120,80,.18);
+    border-radius: 20px 20px 0 0;
+    z-index: 10;
+}
+
+.hud-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,215,0,.2);
+    background: linear-gradient(180deg, rgba(255,215,0,.14), rgba(255,215,0,.05));
+    color: var(--gold);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(184,134,11,.3), 0 3px 8px rgba(0,0,0,.25);
+    transition: background .15s, border-color .15s, transform .1s, box-shadow .1s, opacity .2s;
+}
+.hud-btn:hover  { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(184,134,11,.3), 0 5px 12px rgba(0,0,0,.35); }
+.hud-btn:active { transform: translateY(1px);  box-shadow: 0 1px 0 rgba(184,134,11,.3); }
+.hud-btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
+
+/* ── Hint button — gold primary ────── */
+#hintBtn {
+    position: relative;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFD700, #CC8800);
+    color: #3a2010;
+    border: none;
+    font-size: 1.15rem;
+    box-shadow: 0 2px 0 #B8860B, 0 4px 10px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.3);
+}
+#hintBtn:hover    { box-shadow: 0 3px 0 #B8860B, 0 6px 14px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+#hintBtn:active   { box-shadow: 0 1px 0 #B8860B, inset 0 1px 0 rgba(255,255,255,.3); }
+#hintBtn:disabled { opacity: .35; background: linear-gradient(180deg, #C0A040, #A08030); }
+#bonesDisplay {
+    background: linear-gradient(180deg, #FFD700, #d4873f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+}
+/* Cost badge */
+.hud-hint-cost {
+    position: absolute;
+    bottom: -6px; right: -8px;
+    font-family: var(--f-head);
+    font-size: .5rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 4px;
+    background: rgba(60,40,25,.85);
+    border: 1px solid rgba(255,200,60,.4);
+    border-radius: 6px;
+    color: var(--gold);
+    white-space: nowrap;
+    pointer-events: none;
+}
+.hud-hint-cost.hidden { display: none; }
+
+.hud-level {
+    font-family: var(--f-head);
+    font-size: 1.1rem;
+    letter-spacing: .08em;
+    background: linear-gradient(180deg, #FFD700, #d4873f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Move counter colour coding relative to par */
+.move-good { color: #7cb342; }
+.move-ok   { color: #ef6c00; }
+.move-over { color: #c62828; }
+
+/* Move counter roll animation */
+.move-counter-wrap {
+    display: inline-block;
+    overflow: hidden;
+    height: 1.4em;
+    vertical-align: middle;
+    position: relative;
+}
+.move-counter-wrap .move-old,
+.move-counter-wrap .move-new {
+    display: block;
+    transition: transform .2s cubic-bezier(.2,.9,.3,1);
+}
+.move-counter-wrap.rolling .move-old {
+    transform: translateY(-100%);
+}
+.move-counter-wrap.rolling .move-new {
+    transform: translateY(-100%);
+}
+
+/* ── Timer bar ─────────────────────────────────────────── */
+.timer-bar {
+    position: absolute;
+    top: 59px;          /* just below the HUD strip */
+    left: 0; right: 0;
+    height: 6px;
+    background: #4caf50;
+    transform-origin: left;
+    z-index: 9;
+    display: none;      /* hidden until a timed level starts */
+    transition: background .4s;
+}
+.timer-bar.visible { display: block; }
+.timer-bar.pulse   { animation: timer-pulse .5s ease-in-out infinite alternate; }
+@keyframes timer-pulse { from { opacity: .55; } to { opacity: 1; } }
+
+/* ── Fish bone counter ─────────────────────────────────── */
+.hud-bones { font-family: var(--f-head); font-size: .75rem; color: var(--gold); letter-spacing: .05em; }
+
+/* ── Controls strip ─────────────────────────────────── */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: .875rem;
+}
+
+.btn {
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .5rem 1.1rem;
+    background: rgba(160,120,80,.10);
+    border: 1px solid rgba(160,120,80,.20);
+    border-radius: 100px;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    transition: background .15s, border-color .15s, transform .1s, box-shadow .15s;
+}
+.btn:hover  { background: rgba(160,120,80,.16); border-color: rgba(160,120,80,.30); box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.btn:active { transform: scale(.95); box-shadow: none; }
+
+/* Move counter pill */
+.moves-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: .35rem 1rem;
+    background: rgba(160,120,80,.06);
+    border: 1px solid rgba(160,120,80,.18);
+    border-radius: 100px;
+    min-width: 72px;
+}
+.moves-n {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--gold);
+    line-height: 1.1;
+}
+.moves-l {
+    font-size: .58rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* ── Tutorial bubble ────────────────────────────────── */
+.tut-bubble {
+    position: fixed;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(420px, 90vw);
+    background: linear-gradient(145deg, rgba(82,48,26,.95), rgba(58,34,20,.95));
+    border: 1px solid rgba(255,215,0,.15);
+    border-radius: 14px;
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    font-size: .9rem;
+    color: #e8eaf0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 50;
+    transition: opacity .2s;
+}
+.tut-bubble.hidden { opacity: 0; pointer-events: none; }
+.tut-skip {
+    flex-shrink: 0;
+    font-size: .75rem;
+    color: rgba(255,215,0,.6);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: .2rem .4rem;
+    text-decoration: underline;
+}
+
+/* ── Global button press feedback ─────────────────────── */
+.hud-btn:active, .win-btn:active, .blitz-btn:active,
+.ls-action-btn:active, .premium-btn:active {
+    transform: translateY(1px) scale(0.96) !important;
+    transition: transform 0.08s ease !important;
+}
