@@ -628,8 +628,13 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 .room-panel {
-    margin-top: .3rem;
+    margin-top: .5rem;
     margin-bottom: .5rem;
+    padding: .8rem;
+    background: linear-gradient(145deg, rgba(85,55,32,.60), rgba(60,38,22,.50));
+    border: 1px solid rgba(255,215,0,.15);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,240,220,.06);
 }
 
 /* ── Room Header ── */
@@ -641,76 +646,84 @@
 }
 .room-title {
     font-family: 'Fredoka', sans-serif;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     background: linear-gradient(180deg, #FFD700, #d4873f);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: drop-shadow(0 0 8px rgba(255,200,0,.2));
 }
 .room-count {
-    font-size: .7rem;
-    color: rgba(255,215,0,.5);
-    font-weight: 600;
+    font-size: .8rem;
+    color: rgba(255,215,0,.7);
+    font-weight: 700;
     letter-spacing: 1px;
+    background: rgba(255,215,0,.08);
+    padding: .15rem .5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255,215,0,.15);
 }
 
 /* ── Next Reward Card ── */
 .room-next-card {
     display: flex;
     align-items: center;
-    gap: .6rem;
-    padding: .6rem .8rem;
-    background: linear-gradient(135deg, rgba(255,215,0,.05), rgba(255,165,0,.03));
-    border: 1px solid rgba(255,215,0,.12);
-    border-radius: 12px;
-    margin-bottom: .6rem;
+    gap: .7rem;
+    padding: .7rem 1rem;
+    background: linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,165,0,.06));
+    border: 1px solid rgba(255,215,0,.25);
+    border-radius: 14px;
+    margin-bottom: .7rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,240,200,.06);
     transition: border-color .3s, box-shadow .3s;
 }
 .room-next-card--close {
-    border-color: rgba(255,215,0,.30);
-    box-shadow: 0 0 12px rgba(255,215,0,.08);
+    border-color: rgba(255,215,0,.45);
+    box-shadow: 0 0 20px rgba(255,215,0,.15), 0 4px 16px rgba(0,0,0,.2);
     animation: roomNextPulse 2s ease-in-out infinite alternate;
 }
 @keyframes roomNextPulse {
-    from { box-shadow: 0 0 8px rgba(255,215,0,.06); }
-    to   { box-shadow: 0 0 18px rgba(255,215,0,.15); }
+    from { box-shadow: 0 0 12px rgba(255,215,0,.10), 0 4px 16px rgba(0,0,0,.2); }
+    to   { box-shadow: 0 0 28px rgba(255,215,0,.25), 0 4px 16px rgba(0,0,0,.2); }
 }
 .room-next-icon {
-    font-size: 1.5rem;
-    filter: drop-shadow(0 0 4px rgba(255,215,0,.2));
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,.35));
 }
 .room-next-info { flex: 1; }
 .room-next-label {
-    font-size: .45rem;
-    letter-spacing: 1.5px;
-    color: rgba(255,215,0,.45);
+    font-size: .55rem;
+    letter-spacing: 2px;
+    color: rgba(255,215,0,.65);
     text-transform: uppercase;
-    margin-bottom: .15rem;
-}
-.room-next-name {
-    font-size: .75rem;
-    font-weight: 600;
-    color: rgba(255,255,255,.7);
+    font-weight: 700;
     margin-bottom: .2rem;
 }
+.room-next-name {
+    font-size: .85rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.85);
+    margin-bottom: .25rem;
+}
 .room-next-bar {
-    height: 3px;
-    background: rgba(255,255,255,.06);
-    border-radius: 2px;
+    height: 5px;
+    background: rgba(255,255,255,.10);
+    border-radius: 3px;
     overflow: hidden;
 }
 .room-next-fill {
     height: 100%;
     background: linear-gradient(90deg, #FFD700, #FFA500);
-    border-radius: 2px;
+    border-radius: 3px;
     transition: width .6s ease;
+    box-shadow: 0 0 6px rgba(255,215,0,.3);
 }
 .room-next-dist {
-    font-size: .65rem;
-    color: rgba(255,215,0,.5);
-    font-weight: 600;
+    font-size: .75rem;
+    color: rgba(255,215,0,.75);
+    font-weight: 700;
     white-space: nowrap;
 }
 
@@ -718,33 +731,34 @@
 .room-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: .4rem;
+    gap: .5rem;
 }
 
 .room-slot {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: .4rem .2rem;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,.06);
-    background: rgba(255,255,255,.03);
+    gap: 3px;
+    padding: .5rem .25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.05);
     position: relative;
     transition: transform .15s, background .2s, border-color .2s;
 }
 
 .room-slot-icon {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     line-height: 1;
     transition: filter .3s;
 }
 .room-slot-name {
-    font-size: .42rem;
-    color: rgba(255,255,255,.4);
+    font-size: .5rem;
+    color: rgba(255,255,255,.5);
     text-align: center;
     line-height: 1.2;
     letter-spacing: .3px;
+    font-weight: 600;
 }
 .room-slot-lock {
     position: absolute;
@@ -755,7 +769,7 @@
 
 /* Locked state */
 .room-slot--locked {
-    opacity: .35;
+    opacity: .40;
 }
 .room-slot--locked .room-slot-icon {
     filter: grayscale(1) brightness(0.6);
@@ -763,11 +777,12 @@
 
 /* Unlockable state (close to unlocking) */
 .room-slot--unlockable {
-    border-color: rgba(255,215,0,.20);
-    background: rgba(255,215,0,.04);
+    border-color: rgba(255,215,0,.35);
+    background: rgba(255,215,0,.08);
+    box-shadow: 0 0 10px rgba(255,215,0,.08);
 }
 .room-slot--unlockable .room-slot-icon {
-    filter: grayscale(0.5) brightness(0.8);
+    filter: grayscale(0.3) brightness(0.9);
     animation: slotPeek 2.5s ease-in-out infinite;
 }
 @keyframes slotPeek {
@@ -777,28 +792,30 @@
 
 .room-slot-bar {
     width: 100%;
-    height: 2px;
-    background: rgba(255,255,255,.06);
-    border-radius: 1px;
+    height: 3px;
+    background: rgba(255,255,255,.10);
+    border-radius: 2px;
     overflow: hidden;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 .room-slot-fill {
     height: 100%;
     background: linear-gradient(90deg, #FFD700, #FFA500);
-    border-radius: 1px;
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba(255,215,0,.3);
 }
 
 /* Unlocked state */
 .room-slot--unlocked {
-    border-color: rgba(255,215,0,.18);
-    background: rgba(255,215,0,.06);
+    border-color: rgba(255,215,0,.30);
+    background: rgba(255,215,0,.10);
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 .room-slot--unlocked .room-slot-icon {
-    filter: drop-shadow(0 0 4px rgba(255,215,0,.25));
+    filter: drop-shadow(0 0 6px rgba(255,215,0,.35));
 }
 .room-slot--unlocked .room-slot-name {
-    color: rgba(255,215,0,.6);
+    color: rgba(255,215,0,.75);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -811,19 +828,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: .4rem;
-    font-size: .65rem;
-    color: rgba(255,255,255,.4);
-    padding-top: .5rem;
-    border-top: 1px solid rgba(255,255,255,.06);
-    margin-top: .3rem;
-}
-.room-win-hint--unlock {
-    color: rgba(255,215,0,.7);
+    gap: .5rem;
+    font-size: .75rem;
+    color: rgba(255,255,255,.55);
+    padding-top: .6rem;
+    border-top: 1px solid rgba(255,255,255,.10);
+    margin-top: .4rem;
     font-weight: 600;
 }
+.room-win-hint--unlock {
+    color: rgba(255,215,0,.85);
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(255,215,0,.2);
+}
 .room-win-hint--done {
-    color: rgba(255,215,0,.5);
+    color: rgba(255,215,0,.65);
+    font-weight: 700;
 }
 .room-win-icon {
     font-size: .85rem;

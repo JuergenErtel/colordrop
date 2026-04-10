@@ -65,15 +65,15 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   //  LAYER 1 — WALL (upper portion)
   // ══════════════════════════════════════════════════════════════════════
   const wallGrad = ctx.createLinearGradient(0, 0, 0, FLOOR_Y);
-  wallGrad.addColorStop(0.00, `hsl(${h}, ${Math.max(s - 4, 6)}%, ${Math.max(b - 16, 40)}%)`);
-  wallGrad.addColorStop(0.45, `hsl(${(h + 5) % 360}, ${Math.max(s - 2, 8)}%, ${Math.max(b - 8, 55)}%)`);
-  wallGrad.addColorStop(1.00, `hsl(${(h + 10) % 360}, ${s}%, ${b}%)`);
+  wallGrad.addColorStop(0.00, `hsl(${h}, ${Math.max(s + 6, 18)}%, ${Math.max(b - 22, 38)}%)`);
+  wallGrad.addColorStop(0.35, `hsl(${(h + 6) % 360}, ${Math.max(s + 4, 16)}%, ${Math.max(b - 10, 50)}%)`);
+  wallGrad.addColorStop(1.00, `hsl(${(h + 12) % 360}, ${Math.min(s + 8, 50)}%, ${b}%)`);
   ctx.fillStyle = wallGrad;
   ctx.fillRect(0, 0, CW, FLOOR_Y);
 
-  // Subtle wall texture — faint horizontal stripes (paint strokes)
+  // Wall texture — visible horizontal stripes (paint strokes)
   ctx.save();
-  ctx.globalAlpha = 0.045;
+  ctx.globalAlpha = 0.09;
   for (let y = 12; y < FLOOR_Y; y += 24) {
     ctx.fillStyle = y % 48 === 0
       ? 'rgba(255,240,220,1)'
@@ -87,16 +87,16 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   //  LAYER 2 — FLOOR (lower portion)
   // ══════════════════════════════════════════════════════════════════════
   const floorGrad = ctx.createLinearGradient(0, FLOOR_Y, 0, CH);
-  const floorH = (h + 15) % 360;
-  floorGrad.addColorStop(0.00, `hsl(${floorH}, ${Math.max(s - 6, 5)}%, ${Math.max(b - 22, 32)}%)`);
-  floorGrad.addColorStop(0.40, `hsl(${floorH}, ${Math.max(s - 8, 4)}%, ${Math.max(b - 28, 26)}%)`);
-  floorGrad.addColorStop(1.00, `hsl(${floorH}, ${Math.max(s - 10, 3)}%, ${Math.max(b - 34, 20)}%)`);
+  const floorH = (h + 18) % 360;
+  floorGrad.addColorStop(0.00, `hsl(${floorH}, ${Math.max(s - 2, 10)}%, ${Math.max(b - 28, 28)}%)`);
+  floorGrad.addColorStop(0.40, `hsl(${floorH}, ${Math.max(s - 4, 8)}%, ${Math.max(b - 36, 20)}%)`);
+  floorGrad.addColorStop(1.00, `hsl(${floorH}, ${Math.max(s - 6, 6)}%, ${Math.max(b - 42, 14)}%)`);
   ctx.fillStyle = floorGrad;
   ctx.fillRect(0, FLOOR_Y, CW, CH - FLOOR_Y);
 
-  // Floor grain — subtle perspective lines converging toward center
+  // Floor grain — visible perspective lines converging toward center
   ctx.save();
-  ctx.globalAlpha = 0.04;
+  ctx.globalAlpha = 0.10;
   ctx.strokeStyle = 'rgba(180,140,100,1)';
   ctx.lineWidth = 1;
   const vanishX = CW * 0.5;
@@ -120,12 +120,12 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   // ══════════════════════════════════════════════════════════════════════
   //  LAYER 3 — BASEBOARD (wall/floor junction)
   // ══════════════════════════════════════════════════════════════════════
-  // Dark line
-  ctx.fillStyle = `hsla(${floorH}, ${Math.max(s, 8)}%, ${Math.max(b - 30, 20)}%, 0.5)`;
-  ctx.fillRect(0, FLOOR_Y - 1, CW, 3);
+  // Dark line — strong separation
+  ctx.fillStyle = `hsla(${floorH}, ${Math.max(s + 5, 14)}%, ${Math.max(b - 40, 12)}%, 0.7)`;
+  ctx.fillRect(0, FLOOR_Y - 1, CW, 4);
   // Highlight above
-  ctx.fillStyle = `hsla(${h}, ${s}%, ${Math.min(b + 5, 96)}%, 0.12)`;
-  ctx.fillRect(0, FLOOR_Y - 3, CW, 2);
+  ctx.fillStyle = `hsla(${h}, ${Math.min(s + 10, 45)}%, ${Math.min(b + 10, 98)}%, 0.22)`;
+  ctx.fillRect(0, FLOOR_Y - 4, CW, 3);
 
   // ══════════════════════════════════════════════════════════════════════
   //  LAYER 4 — TABLE SURFACE (oval beneath puzzle)
@@ -143,7 +143,7 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   ctx.fill();
   ctx.restore();
 
-  // Table top — warm bright oval
+  // Table top — warm bright oval (clearly visible surface)
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(TABLE_CX, TABLE_CY, TABLE_RX, TABLE_RY, 0, 0, Math.PI * 2);
@@ -151,16 +151,23 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
     TABLE_CX - TABLE_RX * 0.2, TABLE_CY - TABLE_RY * 0.3, 0,
     TABLE_CX, TABLE_CY, TABLE_RX
   );
-  tableGrad.addColorStop(0.0, `hsla(${(h + 8) % 360}, ${Math.min(s + 10, 45)}%, ${Math.min(b + 6, 96)}%, 0.28)`);
-  tableGrad.addColorStop(0.5, `hsla(${(h + 5) % 360}, ${Math.min(s + 5, 38)}%, ${Math.min(b + 2, 92)}%, 0.18)`);
-  tableGrad.addColorStop(1.0, `hsla(${h}, ${s}%, ${Math.max(b - 5, 60)}%, 0.10)`);
+  tableGrad.addColorStop(0.0, `hsla(${(h + 8) % 360}, ${Math.min(s + 18, 55)}%, ${Math.min(b + 10, 96)}%, 0.50)`);
+  tableGrad.addColorStop(0.5, `hsla(${(h + 5) % 360}, ${Math.min(s + 12, 48)}%, ${Math.min(b + 5, 92)}%, 0.35)`);
+  tableGrad.addColorStop(1.0, `hsla(${h}, ${Math.min(s + 6, 40)}%, ${Math.max(b - 5, 60)}%, 0.20)`);
   ctx.fillStyle = tableGrad;
   ctx.fill();
 
-  // Table edge highlight (top rim)
+  // Table edge highlight (top rim) — visible edge
   ctx.beginPath();
-  ctx.ellipse(TABLE_CX, TABLE_CY, TABLE_RX, TABLE_RY, 0, Math.PI * 1.15, Math.PI * 1.85);
-  ctx.strokeStyle = `hsla(${h}, ${Math.min(s + 8, 40)}%, ${Math.min(b + 10, 98)}%, 0.10)`;
+  ctx.ellipse(TABLE_CX, TABLE_CY, TABLE_RX, TABLE_RY, 0, Math.PI * 1.05, Math.PI * 1.95);
+  ctx.strokeStyle = `hsla(${h}, ${Math.min(s + 15, 50)}%, ${Math.min(b + 15, 98)}%, 0.28)`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Table bottom edge — subtle dark outline for depth
+  ctx.beginPath();
+  ctx.ellipse(TABLE_CX, TABLE_CY, TABLE_RX, TABLE_RY, 0, 0.05, Math.PI * 0.95);
+  ctx.strokeStyle = `hsla(${floorH}, ${Math.min(s + 8, 40)}%, ${Math.max(b - 25, 30)}%, 0.25)`;
   ctx.lineWidth = 1.5;
   ctx.stroke();
   ctx.restore();
@@ -171,8 +178,8 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   const spotX = CW * 0.30 + Math.sin(ts * 0.00006) * 8;
   const spotY = -20;
   const spotGrad = ctx.createRadialGradient(spotX, spotY, 0, spotX, spotY, CH * 0.75);
-  spotGrad.addColorStop(0.0, `hsla(${(h + 10) % 360}, ${Math.min(s + 15, 50)}%, ${Math.min(b + 8, 98)}%, 0.10)`);
-  spotGrad.addColorStop(0.3, `hsla(${(h + 5) % 360}, ${Math.min(s + 8, 40)}%, ${Math.min(b + 4, 95)}%, 0.05)`);
+  spotGrad.addColorStop(0.0, `hsla(${(h + 10) % 360}, ${Math.min(s + 20, 55)}%, ${Math.min(b + 12, 98)}%, 0.20)`);
+  spotGrad.addColorStop(0.3, `hsla(${(h + 5) % 360}, ${Math.min(s + 12, 45)}%, ${Math.min(b + 6, 95)}%, 0.10)`);
   spotGrad.addColorStop(1.0, 'rgba(255,240,220,0)');
   ctx.fillStyle = spotGrad;
   ctx.fillRect(0, 0, CW, CH);
@@ -180,10 +187,10 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   // ══════════════════════════════════════════════════════════════════════
   //  LAYER 6 — VIGNETTE (cinematic edge darkening)
   // ══════════════════════════════════════════════════════════════════════
-  const vig = ctx.createRadialGradient(CW / 2, CH * 0.42, CH * 0.20, CW / 2, CH * 0.42, CH * 0.82);
+  const vig = ctx.createRadialGradient(CW / 2, CH * 0.42, CH * 0.18, CW / 2, CH * 0.42, CH * 0.82);
   vig.addColorStop(0.0, 'rgba(30,15,5,0)');
-  vig.addColorStop(0.65, 'rgba(30,15,5,0.06)');
-  vig.addColorStop(1.0, 'rgba(20,10,3,0.32)');
+  vig.addColorStop(0.55, 'rgba(30,15,5,0.10)');
+  vig.addColorStop(1.0, 'rgba(20,10,3,0.45)');
   ctx.fillStyle = vig;
   ctx.fillRect(0, 0, CW, CH);
 
@@ -192,8 +199,8 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   // ══════════════════════════════════════════════════════════════════════
   const lampX = CW * 0.5 + Math.sin(ts * 0.00008) * 12;
   const lampGlow = ctx.createRadialGradient(lampX, CH + 5, 0, lampX, CH + 5, CH * 0.50);
-  lampGlow.addColorStop(0.0, 'rgba(235,170,90,0.12)');
-  lampGlow.addColorStop(0.4, 'rgba(212,140,70,0.06)');
+  lampGlow.addColorStop(0.0, 'rgba(235,170,90,0.22)');
+  lampGlow.addColorStop(0.4, 'rgba(212,140,70,0.12)');
   lampGlow.addColorStop(1.0, 'rgba(212,135,63,0)');
   ctx.fillStyle = lampGlow;
   ctx.fillRect(0, 0, CW, CH);
@@ -204,12 +211,12 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
   ctx.save();
   for (const m of MOTES) {
     const t   = ts * m.speed + m.phase;
-    const mx  = m.rx * CW + Math.cos(t) * 16;
-    const my  = m.ry * CH + Math.sin(t * 1.31 + 0.7) * 12;
-    const alpha = 0.18 + 0.24 * Math.abs(Math.sin(t * 0.47));
+    const mx  = m.rx * CW + Math.cos(t) * 18;
+    const my  = m.ry * CH + Math.sin(t * 1.31 + 0.7) * 14;
+    const alpha = 0.28 + 0.32 * Math.abs(Math.sin(t * 0.47));
 
     ctx.beginPath();
-    ctx.arc(mx, my, m.size, 0, Math.PI * 2);
+    ctx.arc(mx, my, m.size * 1.3, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(255,225,180,${alpha.toFixed(3)})`;
     ctx.fill();
   }
