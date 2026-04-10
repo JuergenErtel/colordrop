@@ -45,6 +45,7 @@ import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled,
 import { ENDLESS, endlessConfig, generateEndlessTubes, endlessParForRound, startEndless, endlessNextRound, endEndless } from './endless.js';
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
+import { invalidateRoomDecorCache } from './room-decor.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -1080,6 +1081,7 @@ function buildLevelSelect() {
         btn.addEventListener('click', () => {
           closeLevelSelect();
           generateLevel(n);
+          invalidateRoomDecorCache();
         });
       } else {
         btn.innerHTML = '<span class="ls-num">\uD83D\uDD12</span>';
@@ -1205,6 +1207,7 @@ function endTutorial() {
   G.tutStep  = 0;
   document.getElementById('tutBubble').classList.add('hidden');
   generateLevel(1);
+  invalidateRoomDecorCache();
 }
 
 function advanceTutStep() {
@@ -1257,12 +1260,12 @@ document.getElementById('menuBtnHud').addEventListener('click', () => { playSoun
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('hintBtn').addEventListener('click', showHintAction);
 document.getElementById('resetBtn').addEventListener('click', () =>
-  G.tutorial ? startTutorial() : generateLevel(LEVEL.current)
+  G.tutorial ? startTutorial() : (generateLevel(LEVEL.current), invalidateRoomDecorCache())
 );
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
   playSound('click');
   hideOverlay();
-  processPendingUnlocks(() => generateLevel(LEVEL.current + 1));
+  processPendingUnlocks(() => { generateLevel(LEVEL.current + 1); invalidateRoomDecorCache(); });
 });
 document.getElementById('menuBtn').addEventListener('click', () => {
   playSound('click');
@@ -1287,6 +1290,7 @@ document.getElementById('playBtn').addEventListener('click', () => {
   playSound('click');
   closeLevelSelect();
   generateLevel(maxUnlockedLevel());
+  invalidateRoomDecorCache();
 });
 
 document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
@@ -1300,6 +1304,7 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
   hideSplash();
   G.isDailyChallenge = true;
   generateLevel(dailyLevelNum());
+  invalidateRoomDecorCache();
 });
 
 document.getElementById('statsBtn').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
@@ -1317,6 +1322,7 @@ document.getElementById('blitzStartBtn').addEventListener('click', () => {
 document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   document.getElementById('timeoutOverlay').classList.remove('show');
   generateLevel(LEVEL.current);
+  invalidateRoomDecorCache();
 });
 
 window.addEventListener('resize', resizeCanvas);
