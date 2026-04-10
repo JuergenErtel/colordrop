@@ -29,14 +29,14 @@ const MOTES = Array.from({ length: MOTE_COUNT }, (_, i) => ({
 }));
 
 // ── Geometry constants ───────────────────────────────────────────────────
-const FLOOR_Y      = CH * 0.73;          // wall/floor boundary
-const TABLE_CX     = CW * 0.5;           // table centre X
-const TABLE_CY     = (TUBE_BOT + CH) / 2 + 8; // table centre Y (below tubes)
-const TABLE_RX     = CW * 0.48;          // table ellipse semi-width
-const TABLE_RY     = CH * 0.10;          // table ellipse semi-height
+export const FLOOR_Y      = CH * 0.73;          // wall/floor boundary
+export const TABLE_CX     = CW * 0.5;           // table centre X
+export const TABLE_CY     = (TUBE_BOT + CH) / 2 + 8; // table centre Y (below tubes)
+export const TABLE_RX     = CW * 0.48;          // table ellipse semi-width
+export const TABLE_RY     = CH * 0.10;          // table ellipse semi-height
 
 // ── Interpolation helpers ─────────────────────────────────────────────────
-function lerpHSL(h0, s0, b0, h1, s1, b1, t) {
+export function lerpHSL(h0, s0, b0, h1, s1, b1, t) {
   let dh = ((h1 - h0 + 540) % 360) - 180;
   return {
     h: (h0 + dh * t + 360) % 360,
@@ -45,7 +45,7 @@ function lerpHSL(h0, s0, b0, h1, s1, b1, t) {
   };
 }
 
-function themeCenter(theme, ts) {
+export function themeCenter(theme, ts) {
   const angle = ts * 0.00015;
   const base  = theme.hues[0];
   const drift = Math.sin(angle) * theme.hueDelta * 0.5;
