@@ -58,13 +58,12 @@
                 <button id="playBtn" class="ls-action-btn ls-action-btn--play" type="button">▶ Spiel starten</button>
                 <div class="ls-actions-modes">
                     <button id="dailyChallengeBtn" class="ls-action-btn ls-action-btn--daily" type="button">📅 Tages-Challenge</button>
-                    <button id="endlessBtn" class="ls-action-btn ls-action-btn--endless" type="button">♾️ Endlos-Modus</button>
                 </div>
                 <div class="ls-actions-secondary">
                     <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
                     <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>
                     <button id="albumBtn" class="ls-action-btn ls-action-btn--secondary ls-action-btn--album" type="button">🐱 Katzen-Album</button>
-                    <button id="streakBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📅 Streak-Kalender</button>
+                    <div id="serieDisplay" class="ls-serie-display">🔥 <span id="serieCount">0</span> Tage</div>
                 </div>
                 <div class="ls-next-goal" id="nextGoalWidget">
                     <span class="ls-next-goal-icon" id="nextGoalIcon">🐾</span>
@@ -120,13 +119,17 @@
         </div>
     </div>
 
-    <!-- Daily Challenge Interstitial -->
-    <div id="dailyOverlay" class="blitz-overlay">
-        <div class="blitz-inner">
-            <h2 class="blitz-title">📅 TAGES-CHALLENGE</h2>
-            <p class="blitz-level" id="dailyDate"></p>
-            <p class="blitz-time" id="dailyLevelLabel"></p>
-            <button id="dailyStartBtn" class="blitz-btn" type="button">SPIELEN</button>
+    <!-- Daily Mission Overlay -->
+    <div id="dailyOverlay" class="blitz-overlay daily-mission-overlay">
+        <div class="blitz-inner daily-mission-inner">
+            <div class="daily-mission-badge" id="dailyModBadge">🎯 MINIMALIST</div>
+            <div class="daily-mission-cat">
+                <canvas id="dailyCatPortrait" width="80" height="80"></canvas>
+            </div>
+            <p class="daily-mission-text" id="dailyMissionText"></p>
+            <p class="daily-mission-desc" id="dailyModDesc"></p>
+            <p class="daily-mission-date" id="dailyDate"></p>
+            <button id="dailyStartBtn" class="blitz-btn" type="button">LOS!</button>
         </div>
     </div>
 
@@ -203,39 +206,6 @@
       </div>
     </div>
 
-    <!-- Streak Calendar -->
-    <div id="streakScreen" class="screen-overlay sheet-panel hidden">
-      <div class="stats-card">
-        <h2 class="stats-title">TAGES-STREAK</h2>
-        <p class="streak-info" id="streakInfo">🐾 0 Tage in Folge</p>
-        <div class="streak-calendar" id="streakCalendar"></div>
-        <button class="win-btn" id="streakBackBtn" type="button">← Zurück</button>
-      </div>
-    </div>
-
-    <!-- Endless Mode Overlay -->
-    <div id="endlessOverlay" class="blitz-overlay">
-      <div class="blitz-inner">
-        <h2 class="blitz-title">♾️ ENDLOS-MODUS</h2>
-        <p class="blitz-level" id="endlessRound">RUNDE 1</p>
-        <p class="blitz-time" id="endlessBest">Rekord: 0</p>
-        <button id="endlessStartBtn" class="blitz-btn" type="button">LOS!</button>
-      </div>
-    </div>
-
-    <!-- Endless Game Over Overlay -->
-    <div id="endlessGameOverOverlay" class="overlay">
-      <div class="win-card">
-        <div class="win-icon">😿</div>
-        <h2 class="win-title">GAME OVER</h2>
-        <p class="win-sub">Runde <b id="endlessFinalRound">0</b></p>
-        <p class="win-par" id="endlessBestDisplay">Rekord: 0</p>
-        <div class="win-actions">
-          <button class="win-btn" id="endlessRetryBtn" type="button">Nochmal</button>
-          <button class="win-btn win-btn--secondary" id="endlessMenuBtn" type="button">Menü</button>
-        </div>
-      </div>
-    </div>
 
     <!-- Premium Banner -->
     <div class="premium-banner" id="premiumBanner">

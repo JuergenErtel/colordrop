@@ -360,3 +360,50 @@
     0%, 100% { transform: translateY(0) rotate(0); opacity: .25; }
     50%      { transform: translateY(-12px) rotate(15deg); opacity: .5; }
 }
+
+/* ── Daily Mission Overlay ─────────────────────────────────── */
+.daily-mission-inner {
+    text-align: center;
+}
+.daily-mission-badge {
+    display: inline-block;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: .4rem 1.2rem;
+    border-radius: 100px;
+    background: linear-gradient(135deg, rgba(255,215,0,.2), rgba(255,140,0,.2));
+    border: 1px solid rgba(255,215,0,.3);
+    color: var(--gold, #FFD700);
+    margin-bottom: .8rem;
+}
+.daily-mission-cat {
+    margin: .6rem auto;
+}
+.daily-mission-cat canvas {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,215,0,.3);
+    box-shadow: 0 0 20px rgba(255,215,0,.15);
+}
+.daily-mission-text {
+    font-size: 1rem;
+    font-style: italic;
+    color: rgba(255,255,255,.85);
+    margin: .6rem 1rem;
+    line-height: 1.4;
+}
+.daily-mission-desc {
+    font-size: .85rem;
+    color: rgba(255,255,255,.5);
+    margin: .3rem 1rem .8rem;
+}
+.daily-mission-date {
+    font-size: .75rem;
+    color: rgba(255,255,255,.35);
+    letter-spacing: 1px;
+    margin-bottom: .8rem;
+}
