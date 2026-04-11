@@ -417,7 +417,7 @@ function drawTubes(ctx, ts, G) {
       const _color = tube[bi];
       const _drawBall = (G.dailyModifier === 'symbols')
         ? (cx2, cy2) => drawBallSymbol(ctx, cx2, cy2, _color, COLOR_SYMBOLS[_color] || '?', false, ts)
-        : (G.dailyModifier === 'memory' && G.memoryRevealed === false && !sel)
+        : (G.dailyModifier === 'memory' && G.memoryRevealed === false && !sel && !isTop)
         ? (cx2, cy2) => drawBallHidden(ctx, cx2, cy2, false, ts)
         : (cx2, cy2) => drawBall(ctx, cx2, cy2, _color, false, ts);
 
