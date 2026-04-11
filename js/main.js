@@ -1169,10 +1169,7 @@ function openLevelSelect() {
   const playBtn = document.getElementById('playBtn');
   playBtn.textContent = nextLevel <= 1 ? '▶ Spiel starten' : '▶ Level ' + nextLevel;
   document.getElementById('levelSelect').classList.add('show');
-  requestAnimationFrame(() => {
-    const first = document.querySelector('#lsTiers .ls-card:not(.solved):not(.locked)');
-    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
+  // Don't auto-scroll — let the player scroll manually
 }
 
 function closeLevelSelect() {
