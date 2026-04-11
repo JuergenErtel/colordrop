@@ -760,7 +760,7 @@ function drawRipple(ctx, ts) {
  *   G   — game state object
  */
 function drawTetrisBall(ctx, ts, G) {
-  if (!TETRIS.active || !TETRIS.current) return;
+  if (!TETRIS.active || !TETRIS.current || TETRIS.landing) return;
 
   const tubeCount = TETRIS.numTubes;
   const cx = tubeCX(TETRIS.column, tubeCount);
