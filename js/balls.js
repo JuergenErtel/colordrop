@@ -140,3 +140,135 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
 
   ctx.restore();
 }
+
+// ── Farbformen mode: grey ball with symbol ────────────────────────────────
+/**
+ * drawBallSymbol(ctx, cx, cy, colorId, symbol, floating, ts)
+ *   Renders a neutral grey ball with a prominent symbol character.
+ *   Used in "Farbformen" mode where shape/symbol matters, not color.
+ */
+export function drawBallSymbol(ctx, cx, cy, colorId, symbol, floating, ts) {
+  const R = BALL_R;
+
+  ctx.save();
+
+  // ── Layer 1: Shadow or glow halo ──────────────────────────────────────────
+  if (floating) {
+    ctx.shadowColor = 'rgba(200,200,200,0.45)';
+    ctx.shadowBlur  = 22;
+  } else {
+    ctx.save();
+    const shGrad = ctx.createRadialGradient(cx + 2, cy + 5, 0, cx + 2, cy + 5, R * 0.95);
+    shGrad.addColorStop(0, 'rgba(40,20,5,0.38)');
+    shGrad.addColorStop(1, 'rgba(40,20,5,0)');
+    ctx.fillStyle = shGrad;
+    ctx.beginPath();
+    ctx.ellipse(cx + 2, cy + 5, R * 0.92, R * 0.42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Layer 2: Base — neutral grey radial gradient ──────────────────────────
+  const grad = ctx.createRadialGradient(
+    cx - R * 0.30, cy - R * 0.32, R * 0.05,
+    cx + R * 0.05, cy + R * 0.06, R,
+  );
+  grad.addColorStop(0,    '#C8C0B8');
+  grad.addColorStop(0.45, '#A89888');
+  grad.addColorStop(0.85, '#887868');
+  grad.addColorStop(1,    '#887868');
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Clear shadow so it doesn't bleed into text layer
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur  = 0;
+
+  // ── Layer 3: Symbol — centered, bold, white ───────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.font         = `bold ${R * 1.1}px sans-serif`;
+  ctx.fillStyle    = 'white';
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(symbol, cx, cy);
+  ctx.restore();
+
+  // ── Layer 4: Specular highlight ───────────────────────────────────────────
+  const specGrad = ctx.createRadialGradient(
+    cx - R * 0.28, cy - R * 0.30, 0,
+    cx - R * 0.28, cy - R * 0.30, R * 0.32,
+  );
+  specGrad.addColorStop(0,   'rgba(255,255,255,0.55)');
+  specGrad.addColorStop(0.5, 'rgba(255,255,255,0.18)');
+  specGrad.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.arc(cx - R * 0.28, cy - R * 0.30, R * 0.32, 0, Math.PI * 2);
+  ctx.fillStyle = specGrad;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ── Gedächtnis mode: dark hidden ball with "?" ────────────────────────────
+/**
+ * drawBallHidden(ctx, cx, cy, floating, ts)
+ *   Renders a dark mysterious ball with a faint "?" mark.
+ *   Used in "Gedächtnis" mode where the ball's identity is concealed.
+ */
+export function drawBallHidden(ctx, cx, cy, floating, ts) {
+  const R = BALL_R;
+
+  ctx.save();
+
+  // ── Layer 1: Drop shadow (no glow — keeps it mysterious) ─────────────────
+  ctx.save();
+  const shGrad = ctx.createRadialGradient(cx + 2, cy + 5, 0, cx + 2, cy + 5, R * 0.95);
+  shGrad.addColorStop(0, 'rgba(40,20,5,0.38)');
+  shGrad.addColorStop(1, 'rgba(40,20,5,0)');
+  ctx.fillStyle = shGrad;
+  ctx.beginPath();
+  ctx.ellipse(cx + 2, cy + 5, R * 0.92, R * 0.42, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // ── Layer 2: Base — dark brown radial gradient ────────────────────────────
+  const grad = ctx.createRadialGradient(
+    cx - R * 0.30, cy - R * 0.32, R * 0.05,
+    cx + R * 0.05, cy + R * 0.06, R,
+  );
+  grad.addColorStop(0,    '#5A4A3A');
+  grad.addColorStop(0.45, '#4A3A2A');
+  grad.addColorStop(0.85, '#3A2A1A');
+  grad.addColorStop(1,    '#3A2A1A');
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Clear shadow
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur  = 0;
+
+  // ── Layer 3: Question mark — faint, centered ──────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.font         = `bold ${R * 1.0}px sans-serif`;
+  ctx.fillStyle    = 'rgba(255,255,255,0.35)';
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('?', cx, cy);
+  ctx.restore();
+
+  // No specular highlight — keeps it mysterious
+
+  ctx.restore();
+}
