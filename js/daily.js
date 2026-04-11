@@ -8,8 +8,8 @@ export const DAILY_MODIFIERS = {
   minimalist: {
     key:  'minimalist',
     name: 'Minimalist',
-    icon: '🪶',
-    desc: 'Weniger Farben, mehr Fokus – wie eine schlafende Katze.',
+    icon: '🎯',
+    desc: 'Jeder Zug zählt — nur wenige Züge für 3 Sterne!',
   },
   giant: {
     key:  'giant',
@@ -25,15 +25,15 @@ export const DAILY_MODIFIERS = {
   },
   noundo: {
     key:  'noundo',
-    name: 'Kein Rückgängig',
-    icon: '🚫',
-    desc: 'Jeder Zug zählt – wie ein Katzensprung ohne Netz.',
+    name: 'Kein Undo',
+    icon: '🔒',
+    desc: 'Kein Zurück — überlege gut!',
   },
   symbols: {
     key:  'symbols',
-    name: 'Symbole',
-    icon: '🔣',
-    desc: 'Farben tragen Symbole – für scharfe Katzenaugen!',
+    name: 'Farbformen',
+    icon: '🔷',
+    desc: 'Vergiss die Farben — nur Symbole zählen!',
   },
   memory: {
     key:  'memory',
@@ -43,9 +43,9 @@ export const DAILY_MODIFIERS = {
   },
   master: {
     key:  'master',
-    name: 'Meister',
+    name: 'Meisterstück',
     icon: '👑',
-    desc: 'Maximale Schwierigkeit für echte Katzenprofis.',
+    desc: 'Ein Puzzle für wahre Meister!',
   },
 };
 
@@ -149,13 +149,15 @@ export function getDailyGenerationOverride(modifierKey) {
   const rng = mulberry32(dailySeed() ^ 0xF00DCAFE);
 
   if (modifierKey === 'giant') {
-    const colors = 5 + Math.floor(rng() * 3); // 5, 6 or 7
-    return { colors, tubes: colors + 2, empty: 2 };
+    const numColors = 5 + Math.floor(rng() * 3); // 5, 6 or 7
+    const colors = COLOR_KEYS.slice(0, numColors);
+    return { colors, tubes: numColors + 2, empty: 2 };
   }
 
   if (modifierKey === 'master') {
-    const colors = 7 + Math.floor(rng() * 3); // 7, 8 or 9
-    return { colors, tubes: colors + 2, empty: 2 };
+    const numColors = 7 + Math.floor(rng() * 3); // 7, 8 or 9
+    const colors = COLOR_KEYS.slice(0, numColors);
+    return { colors, tubes: numColors + 2, empty: 2 };
   }
 
   return null;
