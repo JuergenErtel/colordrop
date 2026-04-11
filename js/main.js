@@ -639,8 +639,9 @@ function showWin() {
 
   const stats    = updateStatsData(LEVEL.current, stars, G.moves, isBlitz, blitzWon);
   const progress = loadProgress();
+  const actualLevel = G.isDailyChallenge ? maxUnlockedLevel() : LEVEL.current;
   const newAchs  = checkAchievements({
-    levelNum: LEVEL.current, stars, stats, progress,
+    levelNum: actualLevel, stars, stats, progress,
     isDaily: G.isDailyChallenge, isBlitz,
   });
 
@@ -652,7 +653,7 @@ function showWin() {
 
   // ── Cat unlocks (store for after win overlay) ──
   const owned = new Set(loadCollection());
-  const maxLvl = Math.max(LEVEL.current, ...Object.keys(progress).map(Number));
+  const maxLvl = Math.max(actualLevel, ...Object.keys(progress).map(Number));
   const newCats = checkCatUnlocks(owned, {
     maxLevel: maxLvl,
     achievements: loadAchievements(),
