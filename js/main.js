@@ -13,7 +13,7 @@ import {
   getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
   shouldShowAd, markAdShown, tickAdLevel,
   canUndo, trackUndo, resetUndos,
-  canUseHint, spendHint, canPlayEndless, trackEndlessPlay,
+  canUseHint, spendHint,
 } from './economy.js';
 
 import {
@@ -23,7 +23,7 @@ import {
   loadAchievements, saveAchievements,
   isTutorialDone, markTutorialDone,
   migrateIfNeeded,
-  loadSettings, saveSettings, loadEndlessBest,
+  loadSettings, saveSettings,
   loadCollection, saveCollection,
   loadStreak, saveStreak,
   loadMascot, saveMascot,
@@ -33,8 +33,10 @@ import {
   levelConfig, parForLevel, isTimedLevel, timerDuration,
   calcStars, checkWinState, isSolved, canMove,
   generateTubes, generateTutorialTubes, solveHint,
-  dailyLevelNum,
+  dailyLevelNum, generateDailyTubes,
 } from './engine.js';
+
+import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 
 import { ANIM, resetAnim } from './animations.js';
 import { spawnFireflies } from './particles.js';
@@ -42,7 +44,6 @@ import { playSound } from './audio.js';
 import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
 import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
-import { ENDLESS, endlessConfig, generateEndlessTubes, endlessParForRound, startEndless, endlessNextRound, endEndless } from './endless.js';
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
@@ -67,6 +68,9 @@ const G = {
   themeFade:      1,
   timer:          null,
   isDailyChallenge: false,
+  dailyModifier:    null,
+  memoryRevealed:   true,
+  memoryRevealEnd:  0,
   flashTube:      -1,
   flashUntil:     0,
   hintFrom:       -1,
@@ -383,6 +387,7 @@ function doMove(from, to) {
 }
 
 function undo() {
+  if (G.dailyModifier === 'noundo') return;
   if (!canUndo(G.history.length) || ANIM.busy) return;
   trackUndo();
   playSound('undo');
@@ -562,14 +567,15 @@ function updateHUD() {
     mc.classList.add(cls);
     mcNew.classList.add(cls);
   }
-  if (ENDLESS.active) {
-    document.getElementById('levelLabel').textContent = 'ENDLOS \u00B7 RUNDE ' + ENDLESS.round;
+  if (G.isDailyChallenge && G.dailyModifier) {
+    const mod = getDailyModifier();
+    document.getElementById('levelLabel').textContent = mod.icon + ' ' + mod.name.toUpperCase();
   } else {
     const timedMark = isTimedLevel(LEVEL.current) ? ' \u26A1' : '';
     document.getElementById('levelLabel').textContent =
       'LEVEL ' + LEVEL.current + ' \u00B7 ' + levelConfig(LEVEL.current).tier + timedMark;
   }
-  document.getElementById('undoBtn').disabled    = G.tutorial || G.history.length === 0 || ANIM.busy || G.won;
+  document.getElementById('undoBtn').disabled    = G.tutorial || G.dailyModifier === 'noundo' || G.history.length === 0 || ANIM.busy || G.won;
   document.getElementById('hintBtn').disabled    = G.tutorial || ANIM.busy || G.won || G.hintCooldown;
   document.getElementById('resetBtn').disabled   = G.won;
   document.getElementById('menuBtnHud').disabled = ANIM.busy || G.won;
@@ -579,8 +585,16 @@ function showWin() {
   triggerCatWinJump();
   if (!G.won) return;
   G.won = false; // prevent re-entry
-  const par   = parForLevel(LEVEL.current);
-  const stars = calcStars(G.moves, par);
+  const par = parForLevel(LEVEL.current);
+  let stars;
+  if (G.dailyModifier === 'minimalist') {
+    if (G.moves <= par)          stars = 3;
+    else if (G.moves <= par + 1) stars = 2;
+    else if (G.moves <= par + 2) stars = 1;
+    else                         stars = 1;
+  } else {
+    stars = calcStars(G.moves, par);
+  }
   const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
   const blitzWon = isBlitz && G.timer !== null;
 
@@ -602,7 +616,7 @@ function showWin() {
   });
 
   // ── Economy: award fish bones ──
-  const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz, ENDLESS.active, ENDLESS.active ? ENDLESS.round : 0);
+  const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz, false, 0);
   earn(reward);
   updateBonesDisplay();
   tickAdLevel();
@@ -614,7 +628,7 @@ function showWin() {
     maxLevel: maxLvl,
     achievements: loadAchievements(),
     streak: loadStreak().current,
-    endlessBest: loadEndlessBest(),
+    endlessBest: 0,
     isPremium: isPremium(),
   });
   if (newCats.length) {
@@ -625,22 +639,6 @@ function showWin() {
   _pendingAchs = newAchs;
   _pendingCats = newCats;
   updateDailyStreak();
-
-  if (ENDLESS.active) {
-    // Show achievements even in endless mode before continuing
-    if (_pendingAchs.length) {
-      showAchievementOverlays(_pendingAchs, () => {
-        _pendingAchs = [];
-        _pendingCats = [];
-        endlessNextRound();
-        setTimeout(() => loadEndlessRound(), 800);
-      });
-    } else {
-      endlessNextRound();
-      setTimeout(() => loadEndlessRound(), 800);
-    }
-    return;
-  }
 
   // ── Ad interstitial check ──
   if (shouldShowAd()) {
@@ -1000,15 +998,29 @@ function showBlitzOverlay(n) {
 }
 
 function showDailyOverlay() {
-  const n         = dailyLevelNum();
-  const cfg       = levelConfig(n);
+  const mod = getDailyModifier();
+  const owned = [...new Set(loadCollection())];
+  const cat = getDailyCat(owned);
+  const text = getDailyMissionText(mod.key, cat.name);
+
   const dateLabel = new Date().toLocaleDateString('de-DE', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
-  document.getElementById('dailyDate').textContent       = dateLabel;
-  document.getElementById('dailyLevelLabel').textContent = 'Level ' + n + ' \u00B7 ' + cfg.tier;
-  const theme = THEMES[cfg.tier] || THEMES.EASY;
-  document.getElementById('dailyOverlay').style.setProperty('--blitz-color', theme.accentColor);
+
+  document.getElementById('dailyModBadge').textContent = mod.icon + ' ' + mod.name;
+  document.getElementById('dailyMissionText').textContent = text;
+  document.getElementById('dailyModDesc').textContent = mod.desc;
+  document.getElementById('dailyDate').textContent = dateLabel;
+
+  // Draw cat portrait on canvas
+  const canvas = document.getElementById('dailyCatPortrait');
+  const catCtx = canvas.getContext('2d');
+  catCtx.clearRect(0, 0, 80, 80);
+  const params = CAT_PARAMS.find(p => p.id === cat.id);
+  if (params) {
+    drawCatPortrait(catCtx, 40, 42, 30, params);
+  }
+
   document.getElementById('dailyOverlay').classList.add('show');
 }
 
@@ -1096,12 +1108,15 @@ function buildLevelSelect() {
 }
 
 function openLevelSelect() {
-  if (ENDLESS.active) { endEndless(); stopMusic(); }
   G.isDailyChallenge = false;
+  G.dailyModifier = null;
+  G.memoryRevealed = true;
+  G.memoryRevealEnd = 0;
   buildLevelSelect();
   updateNextGoalWidget();
   buildRoomPanel('roomPanel');
   updateDailyBtn();
+  updateSerieDisplay();
   hideOverlay();
   if (G.timer) { G.timer = null; }
   ANIM.busy = false;
@@ -1302,8 +1317,72 @@ document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
 document.getElementById('dailyStartBtn').addEventListener('click', () => {
   document.getElementById('dailyOverlay').classList.remove('show');
   hideSplash();
+
+  const mod = getDailyModifier();
   G.isDailyChallenge = true;
-  generateLevel(dailyLevelNum());
+  G.dailyModifier = mod.key;
+
+  // Generate puzzle with modifier overrides
+  const override = getDailyGenerationOverride(mod.key);
+  const n = dailyLevelNum();
+
+  resetUndos();
+  LEVEL.current = n;
+
+  // Theme based on actual difficulty
+  const tier = override
+    ? (mod.key === 'master' ? 'EXPERT' : 'HARD')
+    : levelConfig(n).tier;
+  if (G.theme !== tier) {
+    G.themePrev = G.theme;
+    G.theme     = tier;
+    G.themeFade = G.themePrev ? 0 : 1;
+  }
+
+  G.tubes        = generateDailyTubes(override);
+  G.selected     = -1;
+  G.selectedTime = -1;
+  G.moves        = 0;
+  G.history      = [];
+  G.won          = false;
+  G.flashTube    = -1;
+  G.flashUntil   = 0;
+  G.hintFrom     = -1;
+  G.hintTo       = -1;
+  G.hintUntil    = 0;
+  G.hintCooldown = false;
+  G.solvedTubes  = new Set();
+  G.memoryRevealed = true;
+  G.memoryRevealEnd = 0;
+  resetAnim();
+
+  // Staggered tube drop-in
+  const introNow = performance.now();
+  ANIM.tubeIntro = G.tubes.map((_, i) => ({
+    startTime: introNow + i * 50,
+    duration: 400,
+  }));
+
+  // Apply modifier-specific setup
+  if (mod.key === 'blitz') {
+    G.timer = { active: true, endTime: performance.now() + 60000, duration: 60000, _lastTick: -1 };
+    document.getElementById('timerBar').classList.add('visible');
+  } else {
+    G.timer = null;
+    document.getElementById('timerBar').classList.remove('visible', 'pulse');
+  }
+
+  if (mod.key === 'memory') {
+    G.memoryRevealed = true;
+    G.memoryRevealEnd = performance.now() + 5000;
+  }
+
+  document.getElementById('timeoutOverlay').classList.remove('show');
+  document.getElementById('blitzOverlay').classList.remove('show');
+
+  updateHUD();
+  hideOverlay();
+  startMusic(tier);
   invalidateRoomDecorCache();
 });
 
@@ -1361,7 +1440,7 @@ document.getElementById('musicToggle').addEventListener('click', () => {
   const on = !isMusicEnabled();
   setMusicEnabled(on);
   document.getElementById('musicToggle').textContent = on ? '🔊' : '🔇';
-  if (on && !ENDLESS.active) startMusic(levelConfig(LEVEL.current).tier);
+  if (on) startMusic(levelConfig(LEVEL.current).tier);
   const s = loadSettings(); s.musicEnabled = on; saveSettings(s);
 });
 document.getElementById('sfxToggle').addEventListener('click', () => {
@@ -1369,30 +1448,6 @@ document.getElementById('sfxToggle').addEventListener('click', () => {
   setSfxEnabled(on);
   document.getElementById('sfxToggle').textContent = on ? '🔊' : '🔇';
   const s = loadSettings(); s.sfxEnabled = on; saveSettings(s);
-});
-
-// ── Endless Mode ──────────────────────────────────────────
-document.getElementById('endlessBtn').addEventListener('click', () => {
-  playSound('click');
-  closeLevelSelect();
-  document.getElementById('endlessRound').textContent = 'RUNDE 1';
-  document.getElementById('endlessBest').textContent = 'Rekord: ' + loadEndlessBest();
-  document.getElementById('endlessOverlay').classList.add('show');
-});
-document.getElementById('endlessStartBtn').addEventListener('click', () => {
-  playSound('click');
-  document.getElementById('endlessOverlay').classList.remove('show');
-  startEndless();
-  loadEndlessRound();
-});
-document.getElementById('endlessRetryBtn').addEventListener('click', () => {
-  document.getElementById('endlessGameOverOverlay').classList.remove('show');
-  startEndless();
-  loadEndlessRound();
-});
-document.getElementById('endlessMenuBtn').addEventListener('click', () => {
-  document.getElementById('endlessGameOverOverlay').classList.remove('show');
-  openLevelSelect();
 });
 
 // ── Cat Album ────────────────────────────────────────────────
@@ -1490,38 +1545,11 @@ function showCatDetail(cat) {
   document.getElementById('catDetailOverlay').classList.remove('hidden');
 }
 
-// ── Streak Calendar ──────────────────────────────────────────
-document.getElementById('streakBtn').addEventListener('click', () => {
-  buildStreakScreen();
-  document.getElementById('streakScreen').classList.remove('hidden');
-});
-document.getElementById('streakBackBtn').addEventListener('click', () => {
-  document.getElementById('streakScreen').classList.add('hidden');
-});
-
-function buildStreakScreen() {
+// ── Serie Display ────────────────────────────────────────────
+function updateSerieDisplay() {
   const streak = loadStreak();
-  document.getElementById('streakInfo').textContent = '\uD83D\uDC3E ' + streak.current + ' Tage in Folge (Rekord: ' + streak.best + ')';
-  const cal = document.getElementById('streakCalendar');
-  cal.innerHTML = '';
-  const now = new Date();
-  const year = now.getFullYear(), month = now.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = now.toISOString().slice(0, 10);
-  const startOffset = (firstDay + 6) % 7; // Monday-first
-  for (let i = 0; i < startOffset; i++) {
-    const empty = document.createElement('div');
-    empty.className = 'streak-day';
-    cal.appendChild(empty);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-    const cell = document.createElement('div');
-    cell.className = 'streak-day' + (streak.calendar && streak.calendar[dateStr] ? ' played' : '') + (dateStr === today ? ' today' : '');
-    cell.textContent = d;
-    cal.appendChild(cell);
-  }
+  const el = document.getElementById('serieCount');
+  if (el) el.textContent = streak.current || 0;
 }
 
 // ── Premium ──────────────────────────────────────────────────
@@ -1541,53 +1569,15 @@ document.getElementById('adSkipBtn').addEventListener('click', () => {
   document.getElementById('overlay').classList.add('show');
 });
 
-function loadEndlessRound() {
-  resetUndos();
-  const cfg = endlessConfig(ENDLESS.round);
-  const newTheme = THEMES[cfg.tier];
-  if (G.theme !== newTheme) {
-    G.themePrev = G.theme;
-    G.theme     = newTheme;
-    G.themeFade = G.themePrev ? 0 : 1;
-  }
-  G.tubes        = generateEndlessTubes(ENDLESS.round);
-  G.selected     = -1;
-  G.selectedTime = -1;
-  G.moves        = 0;
-  G.history      = [];
-  G.won          = false;
-  G.flashTube    = -1;
-  G.flashUntil   = 0;
-  G.hintFrom     = -1;
-  G.hintTo       = -1;
-  G.hintUntil    = 0;
-  G.hintCooldown = false;
-  G.solvedTubes  = new Set();
-  G.timer        = null;
-  G.isDailyChallenge = false;
-  resetAnim();
-
-  // Staggered tube drop-in animation
-  const introNow = performance.now();
-  ANIM.tubeIntro = G.tubes.map((_, i) => ({
-    startTime: introNow + i * 50,
-    duration: 400,
-  }));
-
-  LEVEL.current = ENDLESS.round;
-  document.getElementById('timerBar').classList.remove('visible', 'pulse');
-  document.getElementById('blitzOverlay').classList.remove('show');
-  document.getElementById('timeoutOverlay').classList.remove('show');
-  startMusic(cfg.tier);
-  updateHUD();
-  hideOverlay();
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 //  RENDER LOOP
 // ══════════════════════════════════════════════════════════════════════════
 
 function loop(ts) {
+  if (G.dailyModifier === 'memory' && G.memoryRevealed && G.memoryRevealEnd > 0 && ts >= G.memoryRevealEnd) {
+    G.memoryRevealed = false;
+  }
   renderFrame(ctx, ts, G);
   requestAnimationFrame(loop);
 }
