@@ -616,7 +616,7 @@ function showWin() {
   });
 
   // ── Economy: award fish bones ──
-  const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz, false, 0);
+  const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz);
   earn(reward);
   updateBonesDisplay();
   tickAdLevel();

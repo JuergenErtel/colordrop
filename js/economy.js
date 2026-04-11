@@ -41,13 +41,10 @@ export function setPremium(val) {
  * Calculate reward for completing a level.
  * Premium players earn double.
  */
-export function calcWinReward(stars, isDaily, isBlitz, isEndless, endlessRound) {
+export function calcWinReward(stars, isDaily, isBlitz) {
   let reward = 0;
 
-  if (isEndless) {
-    reward += REWARDS.endlessRound;
-    if (endlessRound > 0 && endlessRound % 5 === 0) reward += REWARDS.endlessBonus;
-  } else if (isDaily) {
+  if (isDaily) {
     reward += REWARDS.dailyWin;
   } else if (isBlitz) {
     reward += REWARDS.blitzWin;
