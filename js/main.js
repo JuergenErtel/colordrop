@@ -625,7 +625,9 @@ function showWin() {
   const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
   const blitzWon = isBlitz && G.timer !== null;
 
-  saveStars(LEVEL.current, stars);
+  if (!G.isDailyChallenge) {
+    saveStars(LEVEL.current, stars);
+  }
 
   if (G.isDailyChallenge) {
     const dt = new Date();
