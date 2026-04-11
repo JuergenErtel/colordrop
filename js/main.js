@@ -1668,9 +1668,8 @@ function loop(ts) {
         // Wrong color — game over!
         playSound('invalid');
         triggerCatShake();
-        TETRIS.landing = { tube: col, startTime: ts };
+        TETRIS.current = null; // stop the loop immediately
         setTimeout(() => {
-          TETRIS.landing = null;
           document.getElementById('tetrisPlaced').textContent = TETRIS.placed;
           document.getElementById('tetrisTotal').textContent = TETRIS.total;
           document.getElementById('tetrisGameOverOverlay').classList.add('show');
