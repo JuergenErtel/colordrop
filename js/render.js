@@ -374,7 +374,7 @@ function drawTubes(ctx, ts, G) {
     drawContainer(ctx, cx, theme.containerStyle, state, ts);
 
     // Balls inside tube
-    const renderCount = arcDest ? tube.length - 1 : tube.length;
+    const renderCount = (arcDest || sel) ? tube.length - 1 : tube.length;
     for (let bi = 0; bi < renderCount; bi++) {
       const bounceKey = `${i}-${bi}`;
       const bounce    = ANIM.bounceMap.get(bounceKey);
@@ -815,9 +815,7 @@ export function renderFrame(ctx, ts, G) {
       const arcEasedT = easeOutQuart(arcRawT);
       lookAt = bezier2(arcEasedT, ANIM.arc.p0, ANIM.arc.p1, ANIM.arc.p2);
     }
-    if (G.selected === -1 && !ANIM.busy || ANIM.arc) {
-      drawMascotCat(ctx, CW - 55, CH - 45, 40, ts, G.mascotParams, lookAt);
-    }
+    drawMascotCat(ctx, CW - 55, CH - 45, 40, ts, G.mascotParams, lookAt);
   }
 
   drawBoardFrame(ctx, ts, G);
