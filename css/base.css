@@ -52,6 +52,9 @@ body {
 
 /* ── Header ─────────────────────────────────────────── */
 .header { text-align: center; }
+@media (max-height: 700px), (max-width: 500px) {
+  .header { display: none; }
+}
 
 .title {
     font-family: var(--f-head);
