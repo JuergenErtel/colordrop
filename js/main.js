@@ -37,6 +37,7 @@ import {
 } from './engine.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
+import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
 import { spawnFireflies } from './particles.js';
@@ -339,6 +340,21 @@ function generateLevel(n) {
     ANIM.busy = true;
     document.getElementById('timeoutOverlay').classList.remove('show');
     showBlitzOverlay(n);
+  } else if (isTetrisLevel(n) && !G.isDailyChallenge) {
+    // Tetris round: replace normal puzzle with drop mode
+    G.timer = null;
+    const cfg = levelConfig(n);
+    G.tubes = [];
+    for (let i = 0; i < cfg.colors.length; i++) G.tubes.push([]);
+    // No empty tubes in tetris — player fills them all
+    ANIM.busy = true;
+    ANIM.tubeIntro = G.tubes.map((_, i) => ({
+      startTime: performance.now() + i * 50,
+      duration: 400,
+    }));
+    document.getElementById('timerBar').classList.remove('visible', 'pulse');
+    document.getElementById('tetrisGameOverOverlay').classList.remove('show');
+    showTetrisOverlay(n);
   } else {
     G.timer = null;
     document.getElementById('timerBar').classList.remove('visible', 'pulse');
@@ -481,6 +497,15 @@ function triggerFlash(idx) {
 }
 
 function handleInput(lx, ly) {
+  // Tetris mode: tap a tube to redirect the falling ball
+  if (TETRIS.active && TETRIS.current) {
+    const idx = tubeAt(lx, ly, TETRIS.numTubes);
+    if (idx >= 0) {
+      playSound('select');
+      tetrisMoveTo(idx);
+    }
+    return;
+  }
   if (G.won)     return;
   if (ANIM.busy) return;
 
@@ -567,7 +592,9 @@ function updateHUD() {
     mc.classList.add(cls);
     mcNew.classList.add(cls);
   }
-  if (G.isDailyChallenge && G.dailyModifier) {
+  if (TETRIS.active) {
+    document.getElementById('levelLabel').textContent = '\uD83E\uDDF6 SORTIER-REGEN';
+  } else if (G.isDailyChallenge && G.dailyModifier) {
     const mod = getDailyModifier();
     document.getElementById('levelLabel').textContent = mod.icon + ' ' + mod.name.toUpperCase();
   } else {
@@ -575,8 +602,8 @@ function updateHUD() {
     document.getElementById('levelLabel').textContent =
       'LEVEL ' + LEVEL.current + ' \u00B7 ' + levelConfig(LEVEL.current).tier + timedMark;
   }
-  document.getElementById('undoBtn').disabled    = G.tutorial || G.dailyModifier === 'noundo' || G.history.length === 0 || ANIM.busy || G.won;
-  document.getElementById('hintBtn').disabled    = G.tutorial || ANIM.busy || G.won || G.hintCooldown;
+  document.getElementById('undoBtn').disabled    = TETRIS.active || G.tutorial || G.dailyModifier === 'noundo' || G.history.length === 0 || ANIM.busy || G.won;
+  document.getElementById('hintBtn').disabled    = TETRIS.active || G.tutorial || ANIM.busy || G.won || G.hintCooldown;
   document.getElementById('resetBtn').disabled   = G.won;
   document.getElementById('menuBtnHud').disabled = ANIM.busy || G.won;
 }
@@ -997,6 +1024,14 @@ function showBlitzOverlay(n) {
   document.getElementById('blitzOverlay').classList.add('show');
 }
 
+function showTetrisOverlay(n) {
+  const cfg = levelConfig(n);
+  document.getElementById('tetrisLevel').textContent = 'LEVEL ' + n + ' \u00B7 ' + cfg.tier;
+  const theme = THEMES[cfg.tier] || THEMES.EASY;
+  document.getElementById('tetrisOverlay').style.setProperty('--blitz-color', theme.accentColor);
+  document.getElementById('tetrisOverlay').classList.add('show');
+}
+
 function showDailyOverlay() {
   const mod = getDailyModifier();
   const owned = [...new Set(loadCollection())];
@@ -1112,6 +1147,7 @@ function openLevelSelect() {
   G.dailyModifier = null;
   G.memoryRevealed = true;
   G.memoryRevealEnd = 0;
+  if (TETRIS.active) endTetris();
   buildLevelSelect();
   updateNextGoalWidget();
   buildRoomPanel('roomPanel');
@@ -1404,6 +1440,29 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   invalidateRoomDecorCache();
 });
 
+// ── Tetris handlers ─────────────────────────────────────────
+document.getElementById('tetrisStartBtn').addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('tetrisOverlay').classList.remove('show');
+  startTetris(LEVEL.current);
+  TETRIS.dropStart = performance.now(); // reset so ball starts falling NOW
+  ANIM.busy = false;
+});
+document.getElementById('tetrisRetryBtn').addEventListener('click', () => {
+  document.getElementById('tetrisGameOverOverlay').classList.remove('show');
+  endTetris();
+  generateLevel(LEVEL.current);
+  invalidateRoomDecorCache();
+});
+document.getElementById('tetrisSkipBtn').addEventListener('click', () => {
+  document.getElementById('tetrisGameOverOverlay').classList.remove('show');
+  endTetris();
+  // Skip to next level
+  const next = LEVEL.current + 1;
+  generateLevel(next);
+  invalidateRoomDecorCache();
+});
+
 window.addEventListener('resize', resizeCanvas);
 
 // ── Settings ───────────────────────────────────────────────
@@ -1578,6 +1637,48 @@ function loop(ts) {
   if (G.dailyModifier === 'memory' && G.memoryRevealed && G.memoryRevealEnd > 0 && ts >= G.memoryRevealEnd) {
     G.memoryRevealed = false;
   }
+
+  // Tetris: check if falling ball has landed
+  if (TETRIS.active && TETRIS.current && !TETRIS.landing) {
+    const progress = tetrisBallProgress(ts);
+    if (progress >= 1) {
+      // Ball reached the tube — place it
+      const col = TETRIS.column;
+      const color = TETRIS.current;
+      if (canPlaceTetris(G.tubes, col, color)) {
+        G.tubes[col].push(color);
+        TETRIS.placed++;
+        TETRIS.landing = { tube: col, startTime: ts };
+        playSound('drop');
+
+        // Check win
+        if (isTetrisWon(G.tubes, TETRIS.numTubes)) {
+          G.won = true;
+          TETRIS.landing = null;
+          endTetris();
+          setTimeout(() => showWin(), 400);
+        } else {
+          // Next ball after brief pause
+          setTimeout(() => {
+            TETRIS.landing = null;
+            tetrisNextBall();
+          }, 350);
+        }
+      } else {
+        // Wrong color — game over!
+        playSound('invalid');
+        triggerCatShake();
+        TETRIS.landing = { tube: col, startTime: ts };
+        setTimeout(() => {
+          TETRIS.landing = null;
+          document.getElementById('tetrisPlaced').textContent = TETRIS.placed;
+          document.getElementById('tetrisTotal').textContent = TETRIS.total;
+          document.getElementById('tetrisGameOverOverlay').classList.add('show');
+        }, 500);
+      }
+    }
+  }
+
   renderFrame(ctx, ts, G);
   requestAnimationFrame(loop);
 }

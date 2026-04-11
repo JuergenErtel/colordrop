@@ -16,6 +16,7 @@ import { drawContainer } from './containers.js';
 import { drawBall, drawBallSymbol, drawBallHidden } from './balls.js';
 import { COLOR_SYMBOLS } from './daily.js';
 import { drawMascotCat } from './cat-renderer.js';
+import { TETRIS, tetrisBallProgress } from './tetris.js';
 import { playSound } from './audio.js';
 import { checkWinState, isSolved } from './engine.js';
 import { updateTimer, drawTimerBar } from './timer.js';
@@ -758,6 +759,60 @@ function drawRipple(ctx, ts) {
  *   ts  — rAF timestamp
  *   G   — game state object
  */
+function drawTetrisBall(ctx, ts, G) {
+  if (!TETRIS.active || !TETRIS.current) return;
+
+  const tubeCount = TETRIS.numTubes;
+  const cx = tubeCX(TETRIS.column, tubeCount);
+  const progress = tetrisBallProgress(ts);
+
+  // Ball falls from above the board to the tube landing position
+  const startY = TUBE_TOP - 80;
+  const tube = G.tubes[TETRIS.column];
+  const landSlot = tube ? tube.length : 0;
+  const endY = ballCY(landSlot);
+  const y = startY + (endY - startY) * easeInOut(Math.min(progress, 1));
+
+  // Wobble as it falls
+  const wobble = Math.sin(ts * 0.008 + progress * 10) * 3 * (1 - progress);
+
+  ctx.save();
+  ctx.translate(wobble, 0);
+  drawBall(ctx, cx, y, TETRIS.current, true, ts);
+  ctx.restore();
+
+  // Draw upcoming ball preview (next 2)
+  const preview = TETRIS.queue.slice(0, 2);
+  for (let i = 0; i < preview.length; i++) {
+    ctx.save();
+    ctx.globalAlpha = 0.5 - i * 0.15;
+    const previewR = BALL_R * 0.55;
+    const px = CW - 30;
+    const py = TUBE_TOP - 60 + i * (previewR * 2 + 6);
+    // Draw a mini ball
+    const pal = PALETTE[preview[i]];
+    if (pal) {
+      const grad = ctx.createRadialGradient(px - previewR * 0.2, py - previewR * 0.2, 0, px, py, previewR);
+      grad.addColorStop(0, pal.bright);
+      grad.addColorStop(0.7, pal.base);
+      grad.addColorStop(1, pal.dark);
+      ctx.beginPath();
+      ctx.arc(px, py, previewR, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Progress indicator text
+  ctx.save();
+  ctx.font = 'bold 11px Fredoka, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillText(TETRIS.placed + ' / ' + TETRIS.total, CW / 2, TUBE_TOP - 10);
+  ctx.restore();
+}
+
 export function renderFrame(ctx, ts, G) {
   // Delta time (capped at 50ms)
   const dt = G.lastTime < 0
@@ -824,6 +879,7 @@ export function renderFrame(ctx, ts, G) {
 
   if (ANIM.arc)                        drawArcBall(ctx, ts, dt / 1000, G);
   if (G.selected !== -1 && !ANIM.busy) drawFloatingBall(ctx, ts, G);
+  drawTetrisBall(ctx, ts, G);
 
   drawParticles(ctx);
   drawImpactRing(ctx, ts);

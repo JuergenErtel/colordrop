@@ -119,6 +119,30 @@
         </div>
     </div>
 
+    <!-- Tetris Round Announcement -->
+    <div id="tetrisOverlay" class="blitz-overlay">
+        <div class="blitz-inner">
+            <h2 class="blitz-title">🧶 SORTIER-REGEN 🧶</h2>
+            <p class="blitz-level" id="tetrisLevel">LEVEL 10 · MEDIUM</p>
+            <p class="blitz-time">Fang die Knäuel und sortiere sie!</p>
+            <p class="blitz-sub">Falsche Farbe = Game Over</p>
+            <button id="tetrisStartBtn" class="blitz-btn" type="button">BEREIT!</button>
+        </div>
+    </div>
+
+    <!-- Tetris Game Over -->
+    <div id="tetrisGameOverOverlay" class="overlay">
+        <div class="win-card">
+            <div class="win-icon">😿</div>
+            <h2 class="win-title">FALSCHE RÖHRE!</h2>
+            <p class="win-sub">Du hast <b id="tetrisPlaced">0</b> von <b id="tetrisTotal">0</b> Knäuel sortiert</p>
+            <div class="win-actions">
+                <button class="win-btn" id="tetrisRetryBtn" type="button">Nochmal ↺</button>
+                <button class="win-btn win-btn--secondary" id="tetrisSkipBtn" type="button">Überspringen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Daily Mission Overlay -->
     <div id="dailyOverlay" class="blitz-overlay daily-mission-overlay">
         <div class="blitz-inner daily-mission-inner">
