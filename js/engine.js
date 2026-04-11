@@ -201,6 +201,61 @@ export function generateTutorialTubes() {
   return TUTORIAL_TUBES.map(t => [...t]);
 }
 
+/**
+ * Generate tubes for daily mission with optional config override.
+ * @param {object|null} override - { colors: string[], tubes: number, empty: number } or null
+ */
+export function generateDailyTubes(override) {
+  const now = new Date();
+  const daySeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+
+  const cfg = override || (() => {
+    const n = dailyLevelNum();
+    const lc = levelConfig(n);
+    return { colors: lc.colors, tubes: lc.tubes, empty: lc.empty };
+  })();
+
+  let seed = daySeed * 1234567 + 42;
+
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const rng = mulberry32(seed + attempt * 9999991);
+    const pool = [];
+    for (const c of cfg.colors) {
+      for (let i = 0; i < CAPACITY; i++) pool.push(c);
+    }
+    const rounds = 6;
+    for (let r = 0; r < rounds; r++) {
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+    }
+    const result = [];
+    for (let t = 0; t < cfg.colors.length; t++) {
+      result.push(pool.slice(t * CAPACITY, (t + 1) * CAPACITY));
+    }
+    for (let e = 0; e < cfg.empty; e++) result.push([]);
+    if (cfg.empty >= 2 || isSolvable(result) >= 0) return result;
+  }
+
+  // Fallback
+  const rng = mulberry32(seed);
+  const pool = [];
+  for (const c of cfg.colors) {
+    for (let i = 0; i < CAPACITY; i++) pool.push(c);
+  }
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const result = [];
+  for (let t = 0; t < cfg.colors.length; t++) {
+    result.push(pool.slice(t * CAPACITY, (t + 1) * CAPACITY));
+  }
+  for (let e = 0; e < cfg.empty; e++) result.push([]);
+  return result;
+}
+
 // ── Smart hint solver (A* with heuristic) ────────────────────────────────
 
 function hintHeuristic(tubes) {

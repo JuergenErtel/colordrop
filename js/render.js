@@ -13,7 +13,8 @@ import { spawnParticle, updateParticles, drawParticles, drawConfetti, triggerTub
 import { drawBackground } from './background.js';
 import { drawRoomDecor } from './room-decor.js';
 import { drawContainer } from './containers.js';
-import { drawBall } from './balls.js';
+import { drawBall, drawBallSymbol, drawBallHidden } from './balls.js';
+import { COLOR_SYMBOLS } from './daily.js';
 import { drawMascotCat } from './cat-renderer.js';
 import { playSound } from './audio.js';
 import { checkWinState, isSolved } from './engine.js';
@@ -412,14 +413,22 @@ function drawTubes(ctx, ts, G) {
 
       const bx = cx;
       const by = ballCY(bi) + yOff;
+      // Choose ball renderer based on daily modifier
+      const _color = tube[bi];
+      const _drawBall = (G.dailyModifier === 'symbols')
+        ? (cx2, cy2) => drawBallSymbol(ctx, cx2, cy2, _color, COLOR_SYMBOLS[_color] || '?', false, ts)
+        : (G.dailyModifier === 'memory' && G.memoryRevealed === false && !sel)
+        ? (cx2, cy2) => drawBallHidden(ctx, cx2, cy2, false, ts)
+        : (cx2, cy2) => drawBall(ctx, cx2, cy2, _color, false, ts);
+
       if (jSx !== 1) {
         ctx.save();
         ctx.translate(bx, by);
         ctx.scale(jSx, jSy);
-        drawBall(ctx, 0, 0, tube[bi], false, ts);
+        _drawBall(0, 0);
         ctx.restore();
       } else {
-        drawBall(ctx, bx, by, tube[bi], false, ts);
+        _drawBall(bx, by);
       }
     }
 
@@ -476,7 +485,13 @@ function drawArcBall(ctx, ts, dt, G) {
   ctx.translate(pos.x, pos.y);
   ctx.rotate(angle);
   ctx.scale(sx, sy);
-  drawBall(ctx, 0, 0, a.color, true, ts);
+  if (G.dailyModifier === 'symbols') {
+    drawBallSymbol(ctx, 0, 0, a.color, COLOR_SYMBOLS[a.color] || '?', true, ts);
+  } else if (G.dailyModifier === 'memory' && G.memoryRevealed === false) {
+    drawBallHidden(ctx, 0, 0, true, ts);
+  } else {
+    drawBall(ctx, 0, 0, a.color, true, ts);
+  }
   ctx.restore();
 }
 
@@ -533,7 +548,13 @@ function drawFloatingBall(ctx, ts, G) {
   ctx.save();
   ctx.translate(cx, bY);
   ctx.scale(sx * pulse, sy * pulse);
-  drawBall(ctx, 0, 0, color, true, ts);
+  if (G.dailyModifier === 'symbols') {
+    drawBallSymbol(ctx, 0, 0, color, COLOR_SYMBOLS[color] || '?', true, ts);
+  } else if (G.dailyModifier === 'memory' && G.memoryRevealed === false) {
+    drawBallHidden(ctx, 0, 0, true, ts);
+  } else {
+    drawBall(ctx, 0, 0, color, true, ts);
+  }
   ctx.restore();
 }
 
