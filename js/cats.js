@@ -89,7 +89,7 @@ export const CATS = [
     breed: 'Ragdoll',
     emoji: '🌌',
     fact: 'Ragdolls werden nach einem Griff hochgenommen schlaff wie eine Puppe – daher ihr Name. Sie gelten als "Hunde unter den Katzen".',
-    unlock: { type: 'endless', value: 1 },
+    unlock: { type: 'level', value: 25 },
     premium: false,
   },
 
