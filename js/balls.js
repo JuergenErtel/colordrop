@@ -12,7 +12,7 @@ import { drawMiniCatFace } from './cat-renderer.js';
  *   floating — true → warm glow halo; false → soft drop shadow
  *   ts      — timestamp in ms (unused here, kept for API consistency)
  */
-export function drawBall(ctx, cx, cy, colorId, floating, ts) {
+export function drawBall(ctx, cx, cy, colorId, floating, ts, frozen = false) {
   const pal = PALETTE[colorId] ?? PALETTE.coral;
   const R   = BALL_R;
 
@@ -162,6 +162,38 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+
+  // Ice overlay (frozen ball)
+  if (frozen) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.clip();
+    // Blue ice tint
+    ctx.fillStyle = 'rgba(180, 220, 255, 0.35)';
+    ctx.fill();
+    // Frost crack lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - R * 0.3, cy - R * 0.5);
+    ctx.lineTo(cx + R * 0.1, cy);
+    ctx.lineTo(cx - R * 0.2, cy + R * 0.4);
+    ctx.moveTo(cx + R * 0.1, cy);
+    ctx.lineTo(cx + R * 0.5, cy - R * 0.2);
+    ctx.moveTo(cx + R * 0.1, cy);
+    ctx.lineTo(cx + R * 0.4, cy + R * 0.3);
+    ctx.stroke();
+    // Shimmer highlight
+    ctx.globalAlpha = 0.3 + 0.1 * Math.sin(ts * 0.004);
+    const shimmer = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    shimmer.addColorStop(0, 'rgba(255,255,255,0)');
+    shimmer.addColorStop(0.5, 'rgba(255,255,255,0.4)');
+    shimmer.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shimmer;
+    ctx.fill();
+    ctx.restore();
+  }
 
   ctx.restore();
 }

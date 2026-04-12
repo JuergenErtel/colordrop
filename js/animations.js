@@ -78,6 +78,7 @@ export const ANIM = {
   goldFlash:  null,
   canvasDim:  0,
   tubeClear:  new Map(), // tubeIdx → { startTime, duration, color }
+  iceThaw:    new Map(),
 };
 
 export function resetAnim() {
@@ -95,4 +96,5 @@ export function resetAnim() {
   ANIM.goldFlash  = null;
   ANIM.canvasDim  = 0;
   ANIM.tubeClear  = new Map();
+  ANIM.iceThaw    = new Map();
 }
