@@ -1204,7 +1204,7 @@ function openLevelSelect() {
   endDog();
   stopMusic();
   // Play calm menu music after a short pause
-  setTimeout(() => startMusic('EASY'), 300);
+  setTimeout(() => startMusic('MENU'), 300);
   buildLevelSelect();
   updateNextGoalWidget();
   buildRoomPanel('roomPanel');
