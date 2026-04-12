@@ -1300,29 +1300,29 @@ function scheduleRiser(config, barStart) {
 }
 
 // ── Cat Choir — sings "Kit-ty-sort!" ─────────────────────────────────────
-// Formant-synthesized cat voices singing the game name.
-// 3-4 cat voices with slight pitch/timing offsets for choir effect.
+// Child-like cat voices singing the game name.
+// 4 bright voices with slight pitch/timing offsets for choir effect.
 
 // Syllable definitions with formant TRANSITIONS (start → end)
-// Moving formants = much more speech-like than static ones
+// Child formants are higher than adult formants
 const CHOIR_SYLLABLES = [
-  { // "KI" — hard /k/ burst + front /ɪ/
-    f1s: 500, f1e: 350,   // F1 drops (mouth closing for /ɪ/)
-    f2s: 1800, f2e: 2300,  // F2 rises (tongue moving forward)
-    dur: 0.25,
-    noiseDur: 0.05, noiseFreq: 3000, noiseVol: 2.0,
+  { // "KI" — crisp /k/ + bright /ɪ/
+    f1s: 550, f1e: 400,
+    f2s: 2400, f2e: 3000,   // higher F2 = child voice
+    dur: 0.20,
+    noiseDur: 0.03, noiseFreq: 4000, noiseVol: 1.5,
   },
-  { // "TI" — sharp /t/ + high /i/
-    f1s: 400, f1e: 280,   // F1 very low = closed vowel
-    f2s: 2000, f2e: 2700,  // F2 very high = front vowel
-    dur: 0.22,
-    noiseDur: 0.04, noiseFreq: 5500, noiseVol: 2.5,
+  { // "TI" — crisp /t/ + bright /i/
+    f1s: 450, f1e: 320,
+    f2s: 2800, f2e: 3400,   // very high F2 = childlike /i/
+    dur: 0.18,
+    noiseDur: 0.025, noiseFreq: 6000, noiseVol: 1.8,
   },
-  { // "SORT" — long /s/ + open /ɔː/ + /t/ ending
-    f1s: 500, f1e: 650,   // F1 high = open vowel
-    f2s: 1100, f2e: 850,   // F2 low = back/round vowel (opposite of /i/!)
-    dur: 0.50,
-    noiseDur: 0.10, noiseFreq: 7500, noiseVol: 1.8,
+  { // "SORT" — /s/ + round /ɔː/ + /t/
+    f1s: 600, f1e: 750,
+    f2s: 1300, f2e: 1000,
+    dur: 0.45,
+    noiseDur: 0.06, noiseFreq: 8000, noiseVol: 1.5,
   },
 ];
 
@@ -1349,20 +1349,20 @@ function scheduleCatChoir(config, barStart) {
   const choirStart = barStart + barDur * 0.45;
   const duckStart = choirStart - 0.1;
   _masterGain.gain.setValueAtTime(_volume, duckStart);
-  _masterGain.gain.linearRampToValueAtTime(_volume * 0.35, duckStart + 0.08);
-  _masterGain.gain.setValueAtTime(_volume * 0.35, duckStart + totalChoirDur);
+  _masterGain.gain.linearRampToValueAtTime(_volume * 0.2, duckStart + 0.08);
+  _masterGain.gain.setValueAtTime(_volume * 0.2, duckStart + totalChoirDur);
   _masterGain.gain.linearRampToValueAtTime(_volume, duckStart + totalChoirDur + 0.3);
 
   // ── Choir output — bypasses masterGain (not ducked) ──
   const choirBus = ctx.createGain();
-  choirBus.gain.value = 0.40;
+  choirBus.gain.value = 0.55; // louder choir — must cut through clearly
   choirBus.connect(ctx.destination);
 
   const melodyIdx = Math.floor(_barIndex / 12) % CHOIR_MELODIES.length;
   const choirMelody = CHOIR_MELODIES[melodyIdx];
 
-  const numVoices = 3;
-  const voiceDetune = [6, -6, 0];
+  const numVoices = 4;
+  const voiceDetune = [8, -8, 3, -3];  // slight spread for choir width
 
   for (let voice = 0; voice < numVoices; voice++) {
     const timeJitter = (Math.random() - 0.5) * 0.02;
@@ -1373,10 +1373,10 @@ function scheduleCatChoir(config, barStart) {
       const melDegree = choirMelody[s];
 
       const semi = scaleNoteToSemi(melDegree, config.scale);
-      // Kitten register: ~500-800 Hz
+      // Child register: ~600-1100 Hz (bright and clear)
       let baseFreq = semiToFreq(config.root, semi + 12);
-      while (baseFreq < 400) baseFreq *= 2;
-      while (baseFreq > 850) baseFreq /= 2;
+      while (baseFreq < 550) baseFreq *= 2;
+      while (baseFreq > 1100) baseFreq /= 2;
 
       const t = syllableTime;
       const dur = syl.dur;
@@ -1418,54 +1418,65 @@ function scheduleCatChoir(config, barStart) {
       const vowelDur = dur - nDur * 0.2;
       const isLast = s === CHOIR_SYLLABLES.length - 1;
 
-      // Sawtooth = full harmonic series = formants can shape it fully
+      // Triangle + square mix = child-like brightness without harshness
       const saw = ctx.createOscillator();
-      saw.type = 'sawtooth';
+      saw.type = 'triangle';
       saw.detune.value = voiceDetune[voice];
 
-      // Cute pitch scoop
-      saw.frequency.setValueAtTime(baseFreq * 0.92, vowelStart);
-      saw.frequency.exponentialRampToValueAtTime(baseFreq, vowelStart + 0.04);
-      saw.frequency.setValueAtTime(baseFreq, vowelStart + 0.04);
+      // Add a quiet square wave for harmonics (children have bright overtones)
+      const sq = ctx.createOscillator();
+      sq.type = 'square';
+      sq.frequency.value = baseFreq;
+      sq.detune.value = voiceDetune[voice];
+      const sqGain = ctx.createGain();
+      sqGain.gain.value = 0.15; // very quiet — just adds brightness
+      sq.connect(sqGain);
 
-      // Vibrato
+      // Quick pitch scoop (child-like eager attack)
+      saw.frequency.setValueAtTime(baseFreq * 0.94, vowelStart);
+      saw.frequency.exponentialRampToValueAtTime(baseFreq, vowelStart + 0.03);
+      sq.frequency.setValueAtTime(baseFreq * 0.94, vowelStart);
+      sq.frequency.exponentialRampToValueAtTime(baseFreq, vowelStart + 0.03);
+
+      // Very subtle vibrato (children sing straighter)
       const vib = ctx.createOscillator();
       const vibG = ctx.createGain();
-      vib.frequency.value = 5.5 + Math.random() * 2;
-      vibG.gain.value = baseFreq * 0.012;
+      vib.frequency.value = 4 + Math.random();
+      vibG.gain.value = baseFreq * 0.005; // much less vibrato
       vib.connect(vibG);
       vibG.connect(saw.frequency);
       vib.start(vowelStart);
       vib.stop(vowelStart + vowelDur + 0.1);
 
-      // Softening lowpass — removes harshness but keeps harmonics for formants
+      // Brighter lowpass — children have more high-frequency energy
       const soft = ctx.createBiquadFilter();
       soft.type = 'lowpass';
-      soft.frequency.value = 3500;
-      soft.Q.value = 0.5;
+      soft.frequency.value = 5000;
+      soft.Q.value = 0.3;
 
-      // FORMANT 1 — MOVING (this is the key to intelligibility!)
+      // FORMANT 1 — wider Q = more natural, less nasal
       const f1 = ctx.createBiquadFilter();
       f1.type = 'bandpass';
       f1.frequency.setValueAtTime(syl.f1s, vowelStart);
       f1.frequency.linearRampToValueAtTime(syl.f1e, vowelStart + vowelDur * 0.3);
-      f1.Q.value = 5;
+      f1.Q.value = 2.5;  // wider = warmer, less ghostly
 
-      // FORMANT 2 — MOVING
+      // FORMANT 2 — wider for child-like brightness
       const f2 = ctx.createBiquadFilter();
       f2.type = 'bandpass';
       f2.frequency.setValueAtTime(syl.f2s, vowelStart);
       f2.frequency.linearRampToValueAtTime(syl.f2e, vowelStart + vowelDur * 0.3);
-      f2.Q.value = 4;
+      f2.Q.value = 2;
 
-      // Formant gains — F1 louder (body), F2 for color
+      // Formant gains — balanced for clarity
       const f1g = ctx.createGain();
-      f1g.gain.value = 2.0;
+      f1g.gain.value = 2.5;
       const f2g = ctx.createGain();
-      f2g.gain.value = 1.5;
+      f2g.gain.value = 2.0;
 
-      // Route: saw → soft → (f1, f2) → envelope
+      // Route: saw+sq → soft → (f1, f2) → envelope
       saw.connect(soft);
+      sqGain.connect(soft);
       soft.connect(f1);
       soft.connect(f2);
       f1.connect(f1g);
@@ -1473,13 +1484,13 @@ function scheduleCatChoir(config, barStart) {
 
       const vowelEnv = ctx.createGain();
       vowelEnv.gain.setValueAtTime(0, vowelStart);
-      vowelEnv.gain.linearRampToValueAtTime(0.7, vowelStart + 0.015);
+      vowelEnv.gain.linearRampToValueAtTime(0.85, vowelStart + 0.01); // fast attack = child energy
       if (isLast) {
         // "SORT" — sustain and fade
-        vowelEnv.gain.setValueAtTime(0.6, vowelStart + vowelDur * 0.4);
+        vowelEnv.gain.setValueAtTime(0.75, vowelStart + vowelDur * 0.4);
         vowelEnv.gain.linearRampToValueAtTime(0, vowelStart + vowelDur);
       } else {
-        vowelEnv.gain.setValueAtTime(0.55, vowelStart + vowelDur * 0.3);
+        vowelEnv.gain.setValueAtTime(0.7, vowelStart + vowelDur * 0.3);
         vowelEnv.gain.exponentialRampToValueAtTime(0.001, vowelStart + vowelDur * 0.85);
       }
 
@@ -1488,6 +1499,8 @@ function scheduleCatChoir(config, barStart) {
       vowelEnv.connect(choirBus);
       saw.start(vowelStart);
       saw.stop(vowelStart + vowelDur + 0.05);
+      sq.start(vowelStart);
+      sq.stop(vowelStart + vowelDur + 0.05);
       trackNode(saw, vowelEnv);
 
       // Pitch clarity: quiet sine following the same pitch
@@ -1504,7 +1517,7 @@ function scheduleCatChoir(config, barStart) {
 
       const sineEnv = ctx.createGain();
       sineEnv.gain.setValueAtTime(0, vowelStart);
-      sineEnv.gain.linearRampToValueAtTime(0.15, vowelStart + 0.02);
+      sineEnv.gain.linearRampToValueAtTime(0.25, vowelStart + 0.015); // stronger sine = clearer pitch
       if (isLast) {
         sineEnv.gain.linearRampToValueAtTime(0, vowelStart + vowelDur);
       } else {
