@@ -2,6 +2,7 @@
 
 import { BALL_R, PALETTE } from './constants.js';
 import { drawMiniCatFace } from './cat-renderer.js';
+import { getActiveSkin } from './skins.js';
 
 // ── Main export ───────────────────────────────────────────────────────────
 /**
@@ -102,6 +103,61 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts, frozen = false) {
 
   ctx.globalAlpha = 1;
   ctx.restore();
+
+  // ── Layer 2b: Skin overlay ────────────────────────────────────────────────
+    const skin = getActiveSkin();
+    if (skin === 'glitter' && colorId !== 'joker') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.9, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      for (let s = 0; s < 6; s++) {
+        const angle = (ts * 0.002 + s * 1.05) % (Math.PI * 2);
+        const sr = R * 0.5 + Math.sin(ts * 0.003 + s) * R * 0.3;
+        const sx = cx + Math.cos(angle) * sr;
+        const sy = cy + Math.sin(angle) * sr;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    } else if (skin === 'crystal' && colorId !== 'joker') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.9, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.globalAlpha = 0.15;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      for (let f = 0; f < 5; f++) {
+        const a1 = f * 1.26;
+        const a2 = a1 + 0.8;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a1) * R, cy + Math.sin(a1) * R);
+        ctx.lineTo(cx + Math.cos(a2) * R, cy + Math.sin(a2) * R);
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.restore();
+    } else if (skin === 'gold' && colorId !== 'joker') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.9, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 1.5;
+      for (let g = 0; g < 4; g++) {
+        const gy = cy - R * 0.6 + g * R * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(cx - R, gy);
+        ctx.quadraticCurveTo(cx, gy + 8 * Math.sin(ts * 0.003 + g), cx + R, gy);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
 
   // ── Layer 3: Cat face (or joker shimmer) ─────────────────────────────────
   if (colorId === 'joker') {

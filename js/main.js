@@ -50,6 +50,7 @@ import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
+import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS } from './skins.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -1593,7 +1594,28 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('sfxVolume').value = Math.round(s.sfxVolume * 100);
   document.getElementById('musicToggle').textContent = s.musicEnabled ? '🔊' : '🔇';
   document.getElementById('sfxToggle').textContent = s.sfxEnabled ? '🔊' : '🔇';
+  document.getElementById('skinSelector').value = getActiveSkin();
   document.getElementById('settingsScreen').classList.remove('hidden');
+});
+
+document.getElementById('skinSelector').addEventListener('change', e => {
+  const id = e.target.value;
+  if (id === 'default' || ownsSkin(id)) {
+    setActiveSkin(id);
+    playSound('click');
+  } else {
+    const cost = SKIN_DEFS[id]?.cost || 0;
+    if (getBalance() >= cost) {
+      setBalance(getBalance() - cost);
+      unlockSkin(id);
+      setActiveSkin(id);
+      updateBonesDisplay();
+      playSound('cat_unlock');
+    } else {
+      e.target.value = getActiveSkin();
+      playSound('invalid');
+    }
+  }
 });
 document.getElementById('settingsBackBtn').addEventListener('click', () => {
   document.getElementById('settingsScreen').classList.add('hidden');
@@ -1828,6 +1850,7 @@ function loop(ts) {
 // ══════════════════════════════════════════════════════════════════════════
 
 migrateIfNeeded();
+initSkins();
 updateMascotParams();
 updateSplashMascot(loadMascot());
 const savedSettings = loadSettings();
