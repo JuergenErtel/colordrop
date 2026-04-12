@@ -256,48 +256,48 @@ const TIER_CONFIG = {
     ],
   },
   MENU: {
-    root: 261.63,  // C4 — warm, centered
-    scale: [0, 2, 4, 7, 9, 11],  // major pentatonic + maj7 — dreamy, no tension
-    bpm: 78,       // very slow, relaxed
+    root: 392.00,  // G4 — bright, cheerful
+    scale: [0, 2, 4, 7, 9],  // major pentatonic — pure happy, no tension
+    bpm: 110,      // upbeat but not rushed — bouncy cafe vibe
     beatsPerBar: 4,
-    swing: 0.08,
-    melodyOsc: 'sine',
-    melodyVol: 0.14,
-    melodyAttack: 0.08,    // soft attack — no pluck
-    melodyDecay: 0.8,      // long sustain — floaty
+    swing: 0.15,   // gentle shuffle — playful feel
+    melodyOsc: 'triangle',
+    melodyVol: 0.18,
+    melodyAttack: 0.005,   // snappy — cheerful plucks
+    melodyDecay: 0.4,      // medium sustain — bouncy
     padOsc: 'sine',
-    padVol: 0.08,
-    padVoices: 5,
-    padDetune: 6,          // subtle chorus — warm not wide
-    bassOsc: 'sine',
-    bassVol: 0.06,         // very subtle bass
-    hatVol: 0.0,           // no hi-hat
-    kickVol: 0.0,          // no kick
-    clapVol: 0.0,          // no clap
+    padVol: 0.06,
+    padVoices: 4,
+    padDetune: 8,
+    bassOsc: 'triangle',
+    bassVol: 0.07,
+    hatVol: 0.03,          // soft hi-hat — light groove
+    kickVol: 0.06,         // gentle kick — just a pulse
+    clapVol: 0.0,          // no clap — keep it gentle
     snareVol: 0.0,         // no snare
-    tambVol: 0.0,          // no tambourine — pure ambient
-    arpVol: 0.10,
-    arpSpeed: 4,           // slow arpeggios — twinkling
-    counterVol: 0.06,
-    stabVol: 0.0,          // no stabs
-    hatPattern:  [0, 0, 0, 0, 0, 0, 0, 0],
-    kickPattern: [0, 0, 0, 0, 0, 0, 0, 0],
+    tambVol: 0.025,        // soft tambourine — sparkle
+    arpVol: 0.12,
+    arpSpeed: 6,           // lively arpeggios — twinkling
+    counterVol: 0.08,
+    stabVol: 0.0,          // no stabs — keep it soft
+    hatPattern:  [0.3, 0, 0.2, 0, 0.3, 0, 0.2, 0],
+    kickPattern: [0.5, 0, 0, 0, 0.3, 0, 0, 0],
     clapPattern: [0, 0, 0, 0, 0, 0, 0, 0],
     snarePattern:[0, 0, 0, 0, 0, 0, 0, 0],
-    tambPattern: [0, 0, 0, 0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0, 0, 0, 0],
-    melodyNoteDivision: 4,   // whole/half notes — spacious
-    melodyRestChance: 0.4,   // lots of silence — breathing room
-    melodySkipChance: 0.05,
+    tambPattern: [0.2, 0.1, 0.15, 0.1, 0.2, 0.1, 0.15, 0.1,
+                  0.2, 0.1, 0.15, 0.1, 0.2, 0.1, 0.15, 0.1],
+    melodyNoteDivision: 8,   // eighth notes — bouncy melody
+    melodyRestChance: 0.15,  // some breathing room
+    melodySkipChance: 0.12,
     chords: [
-      [0, 4, 7, 11],    // Cmaj7
-      [5, 9, 12, 16],   // Fmaj7
-      [7, 11, 14, 17],  // G7
-      [4, 7, 11, 14],   // Em7
-      [0, 4, 7, 11],    // Cmaj7
-      [9, 12, 16, 19],  // Am7
-      [5, 9, 12, 16],   // Fmaj7
-      [7, 11, 14, 17],  // G7
+      [0, 4, 7],     // I   (G)  — happy home
+      [5, 9, 12],    // IV  (C)  — bright lift
+      [0, 4, 7],     // I   (G)
+      [7, 11, 14],   // V   (D)  — cheerful push
+      [0, 4, 7],     // I   (G)
+      [2, 5, 9],     // vi  (Em) — brief gentle turn
+      [5, 9, 12],    // IV  (C)
+      [7, 11, 14],   // V   (D)
     ],
   },
 };
@@ -330,7 +330,7 @@ const HOOK_RIFFS = {
   HARD:   [[0,0.5], [0,0.5], [3,1], [5,0.5], [3,0.5], [0,1], [7,1]], // punchy riff
   EXPERT: [[0,0.5], [4,0.5], [7,0.5], [4,0.5], [0,0.5], [4,0.5], [7,0.5], [11,0.5]], // arpeggio run
   MASTER: [[0,1], [3,0.5], [5,0.5], [7,1], [5,0.5], [3,0.5], [0,2]], // epic motif
-  MENU:   [[0,2], [4,2], [7,2], [4,2]],                              // slow, dreamy arpeggio
+  MENU:   [[0,1], [2,0.5], [4,0.5], [7,1], [4,0.5], [2,0.5], [0,1], [4,1]], // bouncy, catchy hook
 };
 
 // ── Arpeggio patterns (intervals within chord) ──────────────────────────
