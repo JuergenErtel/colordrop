@@ -39,7 +39,6 @@ import {
 import { DOG, startDog, endDog, updateDog } from './dog.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
-import { getWeeklyState, generateWeeklyTubes, getWeeklyConfig, completeWeeklyRound, nextWeeklyRound, isWeeklyDone } from './weekly.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -47,12 +46,13 @@ import { spawnFireflies, spawnConfetti, scheduleWinFireworks, triggerTubeExplosi
 import { playSound } from './audio.js';
 import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
+import { drawBall } from './balls.js';
 import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
-import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg } from './skins.js';
+import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -75,8 +75,6 @@ const G = {
   timer:          null,
   isDailyChallenge: false,
   dailyModifier:    null,
-  isWeeklyChallenge: false,
-  weeklyRound: 0,
   memoryRevealed:   true,
   memoryRevealEnd:  0,
   flashTube:      -1,
@@ -651,15 +649,6 @@ function showWin() {
   }
   const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
   const blitzWon = isBlitz && G.timer !== null;
-
-  if (G.isWeeklyChallenge) {
-    const allDone = completeWeeklyRound(G.weeklyRound);
-    if (allDone) {
-      earn(50);
-      updateBonesDisplay();
-    }
-    G.isWeeklyChallenge = false;
-  }
 
   if (!G.isDailyChallenge) {
     saveStars(LEVEL.current, stars);
@@ -1479,52 +1468,6 @@ document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
   showDailyOverlay();
 });
 
-document.getElementById('weeklyBtn').addEventListener('click', () => {
-  playSound('click');
-  if (isWeeklyDone()) {
-    document.getElementById('weeklyDesc').textContent = 'Diese Woche bereits abgeschlossen! \u2705';
-    document.getElementById('weeklyStartBtn').style.display = 'none';
-  } else {
-    const round = nextWeeklyRound();
-    document.getElementById('weeklyDesc').textContent =
-      'Runde ' + (round + 1) + ' von 3 \u2014 ' + ['MEDIUM', 'HARD', 'EXPERT'][round];
-    document.getElementById('weeklyStartBtn').style.display = '';
-  }
-  const state = getWeeklyState();
-  const prog = document.getElementById('weeklyProgress');
-  prog.innerHTML = state.completed.map(done =>
-    '<div class="weekly-dot ' + (done ? 'done' : '') + '"></div>'
-  ).join('');
-  closeLevelSelect();
-  document.getElementById('weeklyOverlay').classList.add('show');
-});
-
-document.getElementById('weeklyStartBtn').addEventListener('click', () => {
-  playSound('click');
-  document.getElementById('weeklyOverlay').classList.remove('show');
-  const round = nextWeeklyRound();
-  if (round < 0) return;
-  const cfg = getWeeklyConfig(round);
-  G.tubes = generateWeeklyTubes(round);
-  G.isDailyChallenge = false;
-  G.isWeeklyChallenge = true;
-  G.weeklyRound = round;
-  G.moves = 0;
-  G.history = [];
-  G.selected = -1;
-  G.selectedTime = -1;
-  G.won = false;
-  G.hintFrom = -1;
-  G.hintTo = -1;
-  G.hintUntil = 0;
-  G.solvedTubes = new Set();
-  G.frozenBalls = new Set();
-  resetAnim();
-  G.theme = cfg.tier;
-  document.getElementById('levelLabel').textContent = 'WOCHEN ' + (round + 1) + '/3 \u2022 ' + cfg.tier;
-  updateHUD();
-  hideOverlay();
-});
 
 document.getElementById('dailyStartBtn').addEventListener('click', () => {
   document.getElementById('dailyOverlay').classList.remove('show');
@@ -1749,7 +1692,7 @@ function buildShopItem(type, id, def) {
   preview.className = 'shop-item-preview';
   if (type === 'skin') {
     const c = document.createElement('canvas');
-    c.width = 100; c.height = 100;
+    c.width = 200; c.height = 200;
     preview.appendChild(c);
     requestAnimationFrame(() => drawSkinPreview(c, id));
   } else {
@@ -1823,149 +1766,253 @@ function buildShopItem(type, id, def) {
 
 function drawSkinPreview(canvas, skinId) {
   const ctx = canvas.getContext('2d');
-  const cx = 50, cy = 50, r = 36;
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const R = 68;
 
-  // Base ball gradient (coral color)
-  const grad = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, r * 0.1, cx, cy, r);
-  grad.addColorStop(0, '#F5A898');
-  grad.addColorStop(0.6, '#E8897A');
-  grad.addColorStop(1, '#C86B5C');
+  // ── Per-skin color theme ──
+  const themes = {
+    default: {
+      bg1: '#2d1a0e', bg2: '#0f0906',
+      ballBright: '#F5A898', ballBase: '#E8897A', ballDark: '#C86B5C',
+      glow: 'rgba(232,137,122,.5)', yarn: 'rgba(255,220,200,.2)',
+    },
+    glitter: {
+      bg1: '#1e1030', bg2: '#0a0610',
+      ballBright: '#E8C0F8', ballBase: '#C890E0', ballDark: '#9860B8',
+      glow: 'rgba(200,150,255,.55)', yarn: 'rgba(255,220,255,.25)',
+    },
+    crystal: {
+      bg1: '#0c1820', bg2: '#04080e',
+      ballBright: '#B8E8F8', ballBase: '#80C8E8', ballDark: '#4898C0',
+      glow: 'rgba(120,200,255,.5)', yarn: 'rgba(200,240,255,.2)',
+    },
+    gold: {
+      bg1: '#2a1e06', bg2: '#100c02',
+      ballBright: '#FFE880', ballBase: '#F0C840', ballDark: '#C89820',
+      glow: 'rgba(255,200,0,.55)', yarn: 'rgba(255,240,150,.25)',
+    },
+  };
+  const t = themes[skinId] || themes.default;
+
+  // ── Background ──
+  const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.8);
+  bg.addColorStop(0, t.bg1);
+  bg.addColorStop(1, t.bg2);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Large aura glow ──
+  const aura = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.6);
+  aura.addColorStop(0, t.glow);
+  aura.addColorStop(0.6, t.glow.replace(/[\d.]+\)$/, '.15)'));
+  aura.addColorStop(1, 'transparent');
+  ctx.fillStyle = aura;
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.arc(cx, cy, R * 1.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── Ball base ──
+  const grad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.05, cx, cy, R);
+  grad.addColorStop(0, t.ballBright);
+  grad.addColorStop(0.5, t.ballBase);
+  grad.addColorStop(1, t.ballDark);
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // Yarn strand texture (8 curved lines)
+  // ── Inner shadow for roundness ──
+  const inner = ctx.createRadialGradient(cx, cy - R * 0.3, R * 0.4, cx, cy, R);
+  inner.addColorStop(0, 'rgba(0,0,0,0)');
+  inner.addColorStop(0.75, 'rgba(0,0,0,0)');
+  inner.addColorStop(1, 'rgba(0,0,0,.18)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fillStyle = inner;
+  ctx.fill();
+
+  // ── Yarn strand texture ──
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.95, 0, Math.PI * 2);
+  ctx.arc(cx, cy, R * 0.97, 0, Math.PI * 2);
   ctx.clip();
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-  ctx.lineWidth = 1.5;
-  for (let s = 0; s < 8; s++) {
-    const a = (s * Math.PI) / 4;
-    const ox = Math.cos(a) * r * 0.3;
-    const oy = Math.sin(a) * r * 0.3;
+  ctx.strokeStyle = t.yarn;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + 0.15;
+    const cpA = a + Math.PI / 2;
+    const cpD = R * (0.4 + (i % 4) * 0.14);
+    ctx.lineWidth = i % 3 === 0 ? 3 : 2;
+    ctx.globalAlpha = i % 2 === 0 ? 0.7 : 0.4;
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-    ctx.quadraticCurveTo(cx + ox, cy + oy, cx + Math.cos(a + Math.PI) * r, cy + Math.sin(a + Math.PI) * r);
+    ctx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+    ctx.quadraticCurveTo(cx + Math.cos(cpA) * cpD, cy + Math.sin(cpA) * cpD,
+      cx + Math.cos(a + Math.PI) * R, cy + Math.sin(a + Math.PI) * R);
     ctx.stroke();
   }
+  ctx.globalAlpha = 1;
   ctx.restore();
 
-  // Skin-specific overlay
+  // ── Skin-specific overlay ON the ball ──
   if (skinId === 'glitter') {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+    ctx.arc(cx, cy, R * 0.95, 0, Math.PI * 2);
     ctx.clip();
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    const sparkles = [[0.3,-0.4],[-0.2,0.3],[0.5,0.1],[-0.4,-0.2],[0.1,0.5],[-0.1,-0.5],[0.4,0.4],[-0.3,0.1]];
-    for (const [sx, sy] of sparkles) {
+    // Big sparkle stars on the ball
+    const sparkles = [
+      [-.35,-.4,4],[.4,-.25,3.5],[.15,.4,3],[-.3,.2,2.5],
+      [.5,.1,3],[-.1,-.55,2.8],[.25,-.5,2],[-.45,.35,2.5],
+    ];
+    for (const [sx, sy, sz] of sparkles) {
+      const px = cx + sx * R, py = cy + sy * R;
+      // Star glow
+      ctx.fillStyle = 'rgba(255,255,255,.25)';
       ctx.beginPath();
-      ctx.arc(cx + sx * r, cy + sy * r, 2.5, 0, Math.PI * 2);
+      ctx.arc(px, py, sz * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      // 4-point star
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.beginPath();
+      ctx.moveTo(px, py - sz * 2.2);
+      ctx.lineTo(px + sz * 0.5, py);
+      ctx.lineTo(px, py + sz * 2.2);
+      ctx.lineTo(px - sz * 0.5, py);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(px - sz * 2.2, py);
+      ctx.lineTo(px, py + sz * 0.5);
+      ctx.lineTo(px + sz * 2.2, py);
+      ctx.lineTo(px, py - sz * 0.5);
+      ctx.closePath();
       ctx.fill();
     }
     ctx.restore();
   } else if (skinId === 'crystal') {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+    ctx.arc(cx, cy, R * 0.95, 0, Math.PI * 2);
     ctx.clip();
-    ctx.globalAlpha = 0.2;
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1.2;
-    for (let f = 0; f < 6; f++) {
-      const a1 = f * 1.05, a2 = a1 + 0.7;
+    // Facet lines — bright and visible
+    ctx.strokeStyle = 'rgba(255,255,255,.4)';
+    ctx.lineWidth = 1.5;
+    for (let f = 0; f < 8; f++) {
+      const a1 = f * 0.78, a2 = a1 + 0.5;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r);
-      ctx.lineTo(cx + Math.cos(a2) * r, cy + Math.sin(a2) * r);
+      ctx.lineTo(cx + Math.cos(a1) * R, cy + Math.sin(a1) * R);
+      ctx.lineTo(cx + Math.cos(a2) * R, cy + Math.sin(a2) * R);
       ctx.closePath();
       ctx.stroke();
     }
-    // Prismatic shimmer
-    ctx.globalAlpha = 0.08;
-    const prism = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-    prism.addColorStop(0, '#ff0000'); prism.addColorStop(0.33, '#00ff00');
-    prism.addColorStop(0.66, '#0000ff'); prism.addColorStop(1, '#ff0000');
+    // Strong prismatic rainbow overlay
+    const prism = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    prism.addColorStop(0, 'rgba(255,80,80,.18)');
+    prism.addColorStop(0.25, 'rgba(80,255,80,.18)');
+    prism.addColorStop(0.5, 'rgba(80,80,255,.18)');
+    prism.addColorStop(0.75, 'rgba(255,255,80,.18)');
+    prism.addColorStop(1, 'rgba(255,80,255,.18)');
     ctx.fillStyle = prism;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.fill();
+    // Glass reflection streak
+    ctx.strokeStyle = 'rgba(255,255,255,.35)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - R * 0.5, cy - R * 0.6);
+    ctx.quadraticCurveTo(cx - R * 0.1, cy - R * 0.3, cx + R * 0.3, cy - R * 0.5);
+    ctx.stroke();
     ctx.restore();
   } else if (skinId === 'gold') {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+    ctx.arc(cx, cy, R * 0.95, 0, Math.PI * 2);
     ctx.clip();
-    ctx.globalAlpha = 0.35;
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 2;
-    for (let g = 0; g < 5; g++) {
-      const gy = cy - r * 0.7 + g * r * 0.35;
+    // Bold gold thread lines
+    ctx.strokeStyle = 'rgba(255,215,0,.6)';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    for (let g = 0; g < 6; g++) {
+      const gy = cy - R * 0.8 + g * R * 0.32;
       ctx.beginPath();
-      ctx.moveTo(cx - r, gy);
-      ctx.quadraticCurveTo(cx, gy + 8, cx + r, gy);
+      ctx.moveTo(cx - R, gy);
+      ctx.quadraticCurveTo(cx, gy + 10, cx + R, gy);
       ctx.stroke();
     }
+    // Metallic sheen
+    const sheen = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    sheen.addColorStop(0, 'rgba(255,240,150,.0)');
+    sheen.addColorStop(0.4, 'rgba(255,240,150,.15)');
+    sheen.addColorStop(0.5, 'rgba(255,255,220,.25)');
+    sheen.addColorStop(0.6, 'rgba(255,240,150,.15)');
+    sheen.addColorStop(1, 'rgba(255,240,150,.0)');
+    ctx.fillStyle = sheen;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
-  // Cat face (eyes + nose + mouth)
+  // ── Cat face (except crystal) ──
   if (skinId !== 'crystal') {
+    const faceY = cy - R * 0.05;
+    const eyeR = 4.5;
     // Eyes
     ctx.fillStyle = '#402818';
     ctx.beginPath();
-    ctx.ellipse(cx - r * 0.22, cy - r * 0.1, 3, 3.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx - R * 0.22, faceY - R * 0.08, eyeR, eyeR * 1.2, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(cx + r * 0.22, cy - r * 0.1, 3, 3.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + R * 0.22, faceY - R * 0.08, eyeR, eyeR * 1.2, 0, 0, Math.PI * 2);
     ctx.fill();
     // Eye gleam
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
     ctx.beginPath();
-    ctx.arc(cx - r * 0.18, cy - r * 0.15, 1.5, 0, Math.PI * 2);
+    ctx.arc(cx - R * 0.18, faceY - R * 0.14, 2.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(cx + r * 0.26, cy - r * 0.15, 1.5, 0, Math.PI * 2);
+    ctx.arc(cx + R * 0.26, faceY - R * 0.14, 2.2, 0, Math.PI * 2);
     ctx.fill();
     // Nose
-    ctx.fillStyle = '#D4756B';
+    ctx.fillStyle = skinId === 'gold' ? '#C08840' : '#D4756B';
     ctx.beginPath();
-    ctx.moveTo(cx, cy + r * 0.05);
-    ctx.lineTo(cx - 3, cy + r * 0.15);
-    ctx.lineTo(cx + 3, cy + r * 0.15);
+    ctx.moveTo(cx, faceY + R * 0.06);
+    ctx.lineTo(cx - 4.5, faceY + R * 0.18);
+    ctx.lineTo(cx + 4.5, faceY + R * 0.18);
     ctx.closePath();
     ctx.fill();
     // Mouth
-    ctx.strokeStyle = '#B0605A';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = skinId === 'gold' ? '#A07030' : '#B0605A';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(cx, cy + r * 0.15);
-    ctx.quadraticCurveTo(cx - 5, cy + r * 0.28, cx - 8, cy + r * 0.2);
-    ctx.moveTo(cx, cy + r * 0.15);
-    ctx.quadraticCurveTo(cx + 5, cy + r * 0.28, cx + 8, cy + r * 0.2);
+    ctx.moveTo(cx, faceY + R * 0.18);
+    ctx.quadraticCurveTo(cx - 7, faceY + R * 0.32, cx - 11, faceY + R * 0.24);
+    ctx.moveTo(cx, faceY + R * 0.18);
+    ctx.quadraticCurveTo(cx + 7, faceY + R * 0.32, cx + 11, faceY + R * 0.24);
     ctx.stroke();
   }
 
-  // Specular highlight
-  ctx.save();
-  ctx.globalAlpha = 0.35;
-  const spec = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, 0, cx - r * 0.3, cy - r * 0.35, r * 0.45);
-  spec.addColorStop(0, '#fff');
+  // ── Specular highlight — big and bright ──
+  const spec = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, 0, cx - R * 0.3, cy - R * 0.35, R * 0.5);
+  spec.addColorStop(0, 'rgba(255,255,255,.6)');
+  spec.addColorStop(0.4, 'rgba(255,255,255,.2)');
   spec.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = spec;
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.arc(cx - R * 0.3, cy - R * 0.35, R * 0.5, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
 
-  // Rim light
+  // ── Rim light ──
   ctx.save();
-  ctx.globalAlpha = 0.15;
+  ctx.globalAlpha = 0.25;
   ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 1, -0.8, 0.8);
+  ctx.arc(cx, cy, R - 1, -0.9, 0.9);
   ctx.stroke();
   ctx.restore();
 }

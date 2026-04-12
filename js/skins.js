@@ -21,7 +21,9 @@ export const BG_DEFS = {
 // ── Skin state ───────────────────────────────────────────────────────────
 let _activeSkin = 'default';
 
-export function getActiveSkin() { return _activeSkin; }
+let _skinPreviewOverride = null;
+export function setSkinPreviewOverride(id) { _skinPreviewOverride = id; }
+export function getActiveSkin() { return _skinPreviewOverride ?? _activeSkin; }
 
 export function setActiveSkin(id) {
   _activeSkin = id;
