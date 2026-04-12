@@ -356,12 +356,23 @@ export function renderMouseGame(ctx, ts, cw, ch) {
     }
   }
 
-  // HUD: caught counter
+  // HUD: caught counter (large, centered above grid)
   ctx.save();
-  ctx.font = `bold 20px 'Fredoka', sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillStyle = MOUSE.caught >= MOUSE.target ? '#4CAF50' : '#FFF';
-  ctx.fillText(`🐭 ${MOUSE.caught} / ${MOUSE.target}`, cw / 2, ch * 0.2);
+  const done = MOUSE.caught >= MOUSE.target;
+
+  // Background pill
+  const hudX = cw / 2, hudY = ch * 0.22;
+  const pillW = 90, pillH = 32;
+  ctx.fillStyle = 'rgba(30,18,10,0.6)';
+  ctx.beginPath();
+  ctx.roundRect(hudX - pillW, hudY - pillH + 4, pillW * 2, pillH * 2, pillH);
+  ctx.fill();
+
+  // Mouse emoji + count
+  ctx.font = `bold 28px 'Fredoka', sans-serif`;
+  ctx.fillStyle = done ? '#4CAF50' : '#FFF';
+  ctx.fillText(`🐭  ${MOUSE.caught} / ${MOUSE.target}`, hudX, hudY + 10);
   ctx.restore();
 }
 
