@@ -39,6 +39,7 @@ import {
 import { DOG, startDog, endDog, updateDog } from './dog.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
+import { getWeeklyState, generateWeeklyTubes, getWeeklyConfig, completeWeeklyRound, nextWeeklyRound, isWeeklyDone } from './weekly.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -74,6 +75,8 @@ const G = {
   timer:          null,
   isDailyChallenge: false,
   dailyModifier:    null,
+  isWeeklyChallenge: false,
+  weeklyRound: 0,
   memoryRevealed:   true,
   memoryRevealEnd:  0,
   flashTube:      -1,
@@ -648,6 +651,15 @@ function showWin() {
   }
   const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
   const blitzWon = isBlitz && G.timer !== null;
+
+  if (G.isWeeklyChallenge) {
+    const allDone = completeWeeklyRound(G.weeklyRound);
+    if (allDone) {
+      earn(50);
+      updateBonesDisplay();
+    }
+    G.isWeeklyChallenge = false;
+  }
 
   if (!G.isDailyChallenge) {
     saveStars(LEVEL.current, stars);
@@ -1460,6 +1472,53 @@ document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
   playSound('click');
   document.getElementById('levelSelect').classList.remove('show');
   showDailyOverlay();
+});
+
+document.getElementById('weeklyBtn').addEventListener('click', () => {
+  playSound('click');
+  if (isWeeklyDone()) {
+    document.getElementById('weeklyDesc').textContent = 'Diese Woche bereits abgeschlossen! \u2705';
+    document.getElementById('weeklyStartBtn').style.display = 'none';
+  } else {
+    const round = nextWeeklyRound();
+    document.getElementById('weeklyDesc').textContent =
+      'Runde ' + (round + 1) + ' von 3 \u2014 ' + ['MEDIUM', 'HARD', 'EXPERT'][round];
+    document.getElementById('weeklyStartBtn').style.display = '';
+  }
+  const state = getWeeklyState();
+  const prog = document.getElementById('weeklyProgress');
+  prog.innerHTML = state.completed.map(done =>
+    '<div class="weekly-dot ' + (done ? 'done' : '') + '"></div>'
+  ).join('');
+  closeLevelSelect();
+  document.getElementById('weeklyOverlay').classList.add('show');
+});
+
+document.getElementById('weeklyStartBtn').addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('weeklyOverlay').classList.remove('show');
+  const round = nextWeeklyRound();
+  if (round < 0) return;
+  const cfg = getWeeklyConfig(round);
+  G.tubes = generateWeeklyTubes(round);
+  G.isDailyChallenge = false;
+  G.isWeeklyChallenge = true;
+  G.weeklyRound = round;
+  G.moves = 0;
+  G.history = [];
+  G.selected = -1;
+  G.selectedTime = -1;
+  G.won = false;
+  G.hintFrom = -1;
+  G.hintTo = -1;
+  G.hintUntil = 0;
+  G.solvedTubes = new Set();
+  G.frozenBalls = new Set();
+  resetAnim();
+  G.theme = cfg.tier;
+  document.getElementById('levelLabel').textContent = 'WOCHEN ' + (round + 1) + '/3 \u2022 ' + cfg.tier;
+  updateHUD();
+  hideOverlay();
 });
 
 document.getElementById('dailyStartBtn').addEventListener('click', () => {
