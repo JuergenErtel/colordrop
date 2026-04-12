@@ -83,6 +83,12 @@ export const PALETTE = {
     dark:   '#B06840',
     glow:   'rgba(212,136,92,0.45)',
   },
+  joker: {
+    base:   '#C0A0FF',
+    bright: '#E0C0FF',
+    dark:   '#8060C0',
+    glow:   'rgba(200,160,255,0.5)',
+  },
 };
 
 export const COLOR_KEYS = Object.keys(PALETTE);

@@ -103,8 +103,33 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts) {
   ctx.globalAlpha = 1;
   ctx.restore();
 
-  // ── Layer 3: Cat face ────────────────────────────────────────────────────
-  drawMiniCatFace(ctx, cx, cy - R * 0.05, BALL_R);
+  // ── Layer 3: Cat face (or joker shimmer) ─────────────────────────────────
+  if (colorId === 'joker') {
+    // Rainbow shimmer overlay
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.85, 0, Math.PI * 2);
+    ctx.clip();
+    const rainbow = ctx.createLinearGradient(cx - R, cy, cx + R, cy);
+    const hueShift = (ts * 0.05) % 360;
+    for (let i = 0; i <= 6; i++) {
+      rainbow.addColorStop(i / 6, `hsl(${(hueShift + i * 60) % 360}, 80%, 70%)`);
+    }
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = rainbow;
+    ctx.fill();
+    ctx.restore();
+    // Star symbol
+    ctx.save();
+    ctx.font = `bold ${R * 1.1}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillText('\u2726', cx, cy + 1);
+    ctx.restore();
+  } else {
+    drawMiniCatFace(ctx, cx, cy - R * 0.05, BALL_R);
+  }
 
   // ── Layer 4: Specular highlight — soft gradient ──────────────────────────
   const specGrad = ctx.createRadialGradient(
