@@ -171,3 +171,37 @@ export function migrateIfNeeded() {
 
   localStorage.setItem(versionKey, VERSION);
 }
+
+// ── Milestones ────────────────────────────────────────────────────────────
+export function loadMilestones() {
+  return loadJSON(key('milestones'), {});
+}
+export function saveMilestone(levelNum) {
+  const m = loadMilestones();
+  m[levelNum] = true;
+  saveJSON(key('milestones'), m);
+}
+
+// ── Ball skins ────────────────────────────────────────────────────────────
+export function loadSkins() {
+  return loadJSON(key('skins'), { owned: ['default'], active: 'default' });
+}
+export function saveSkins(data) {
+  saveJSON(key('skins'), data);
+}
+
+// ── Backgrounds ───────────────────────────────────────────────────────────
+export function loadBackgrounds() {
+  return loadJSON(key('backgrounds'), { owned: ['cafe'], active: 'cafe' });
+}
+export function saveBackgrounds(data) {
+  saveJSON(key('backgrounds'), data);
+}
+
+// ── Weekly challenge ──────────────────────────────────────────────────────
+export function loadWeekly() {
+  return loadJSON(key('weekly'), { week: 0, completed: [false, false, false], frame: null });
+}
+export function saveWeekly(data) {
+  saveJSON(key('weekly'), data);
+}
