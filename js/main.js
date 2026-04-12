@@ -43,7 +43,7 @@ import { getWeeklyState, generateWeeklyTubes, getWeeklyConfig, completeWeeklyRou
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
-import { spawnFireflies } from './particles.js';
+import { spawnFireflies, spawnConfetti, scheduleWinFireworks, triggerTubeExplosion } from './particles.js';
 import { playSound } from './audio.js';
 import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
@@ -2154,7 +2154,19 @@ function loop(ts) {
           G.won = true;
           TETRIS.landing = null;
           endTetris();
-          setTimeout(() => showWin(), 400);
+
+          // Win celebration effects
+          ANIM.screenShake = { startTime: performance.now(), duration: 350, amplitude: 8 };
+          const tubeCount = G.tubes.length;
+          for (let ti = 0; ti < tubeCount; ti++) {
+            setTimeout(() => triggerTubeExplosion(ti, G.tubes, (i) => tubeCX(i, tubeCount)), 200 + ti * 80);
+          }
+          setTimeout(() => { ANIM.goldFlash = { startTime: performance.now(), duration: 400 }; }, 400);
+          setTimeout(() => playSound('win'), 500);
+          setTimeout(() => spawnConfetti(), 600);
+          setTimeout(() => spawnConfetti(), 1200);
+          setTimeout(() => scheduleWinFireworks(), 900);
+          setTimeout(() => showWin(), 1800);
         } else {
           // Next ball after brief pause
           setTimeout(() => {
