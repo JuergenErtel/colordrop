@@ -93,8 +93,9 @@ export function calcStars(moves, par) {
 export function isSolved(tube) {
   if (tube.length === 0) return true;
   if (tube.length < CAPACITY) return false;
-  const first = tube[0];
-  return tube.every(c => c === first);
+  const real = tube.find(c => c !== 'joker');
+  if (!real) return true;
+  return tube.every(c => c === real || c === 'joker');
 }
 
 export function checkWinState(tubes) {
@@ -111,7 +112,7 @@ export function canMove(tubes, from, to) {
   const topSrc = src[src.length - 1];
   if (dst.length === 0) return true;
   const topDst = dst[dst.length - 1];
-  return topSrc === topDst;
+  return topSrc === topDst || topSrc === 'joker' || topDst === 'joker';
 }
 
 // ── Solvability check (BFS, returns move count or -1) ────────────────────
@@ -164,6 +165,12 @@ export function generateTubes(n) {
         const j = Math.floor(rng() * (i + 1));
         [pool[i], pool[j]] = [pool[j], pool[i]];
       }
+    }
+
+    // Joker ball: ~15% chance from level 20+, replaces one random ball
+    if (n >= 20 && rng() < 0.15) {
+      const ji = Math.floor(rng() * pool.length);
+      pool[ji] = 'joker';
     }
 
     // Distribute into tubes
