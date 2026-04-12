@@ -1201,6 +1201,10 @@ function openLevelSelect() {
   G.memoryRevealed = true;
   G.memoryRevealEnd = 0;
   if (TETRIS.active) endTetris();
+  endDog();
+  stopMusic();
+  // Play calm menu music after a short pause
+  setTimeout(() => startMusic('EASY'), 300);
   buildLevelSelect();
   updateNextGoalWidget();
   buildRoomPanel('roomPanel');
@@ -1212,6 +1216,7 @@ function openLevelSelect() {
   document.getElementById('blitzOverlay').classList.remove('show');
   document.getElementById('dailyOverlay').classList.remove('show');
   document.getElementById('timeoutOverlay').classList.remove('show');
+  document.getElementById('dogOverlay').classList.remove('show');
   // Show splash as atmospheric background behind level select
   showSplash(true);
   updateSplashMascot(loadMascot());
