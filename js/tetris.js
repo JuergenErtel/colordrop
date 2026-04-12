@@ -1,12 +1,12 @@
 'use strict';
 
 import { COLOR_KEYS } from './constants.js';
-import { levelConfig } from './engine.js';
+import { levelConfig, isDogLevel } from './engine.js';
 
 // ── Tetris level detection ───────────────────────────────────────────────
 
 export function isTetrisLevel(n) {
-  return n >= 5 && n % 5 === 0 && !(n >= 8 && n % 8 === 0); // every 5th, skip blitz
+  return n >= 5 && n % 5 === 0 && !(n >= 8 && n % 8 === 0) && !isDogLevel(n);
 }
 
 // ── Tetris state ─────────────────────────────────────────────────────────

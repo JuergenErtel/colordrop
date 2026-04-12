@@ -78,6 +78,10 @@ export function parForLevel(n) {
 
 export function isTimedLevel(n) { return n >= 8 && n % 8 === 0; }
 
+export function isDogLevel(n) {
+  return n >= 10 && n % 3 === 1 && !isTimedLevel(n);
+}
+
 export function timerDuration(n) {
   const tierMs = { EASY: 100, MEDIUM: 85, HARD: 70, EXPERT: 55, MASTER: 45 };
   return (tierMs[tierForLevel(n)] || 70) * 1000;
