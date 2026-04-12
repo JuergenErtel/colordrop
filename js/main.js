@@ -1604,6 +1604,7 @@ document.getElementById('blitzStartBtn').addEventListener('click', () => {
   G.timer.active  = true;
   G.timer.endTime = performance.now() + G.timer.duration;
   ANIM.busy       = false;
+  document.getElementById('timerBar').classList.add('visible');
 });
 
 document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
