@@ -22,6 +22,7 @@ import {
   loadStats, saveStats,
   loadAchievements, saveAchievements,
   isTutorialDone, markTutorialDone,
+  hasSeenIntro, markIntroSeen,
   migrateIfNeeded,
   loadSettings, saveSettings,
   loadCollection, saveCollection,
@@ -384,6 +385,15 @@ function generateLevel(n) {
     document.getElementById('blitzOverlay').classList.remove('show');
   }
 
+  // Feature intro overlays (shown once)
+  if (n === 21 && !hasSeenIntro('joker')) {
+    ANIM.busy = true;
+    document.getElementById('jokerIntroOverlay').classList.add('show');
+  } else if (n === 31 && !hasSeenIntro('ice')) {
+    ANIM.busy = true;
+    document.getElementById('iceIntroOverlay').classList.add('show');
+  }
+
   updateHUD();
   hideOverlay();
   startMusic(levelConfig(n).tier);
@@ -640,6 +650,12 @@ function showWin() {
   triggerCatWinJump();
   if (!G.won) return;
   G.won = false; // prevent re-entry
+
+  // Stop blitz timer so it doesn't keep ticking during the win overlay
+  if (G.timer) {
+    G.timer.active = false;
+    document.getElementById('timerBar').classList.remove('visible', 'pulse');
+  }
   const par = parForLevel(LEVEL.current);
   let stars;
   if (G.dailyModifier === 'minimalist') {
@@ -1209,6 +1225,8 @@ function openLevelSelect() {
   document.getElementById('dailyOverlay').classList.remove('show');
   document.getElementById('timeoutOverlay').classList.remove('show');
   document.getElementById('dogOverlay').classList.remove('show');
+  document.getElementById('jokerIntroOverlay').classList.remove('show');
+  document.getElementById('iceIntroOverlay').classList.remove('show');
   // Show splash as atmospheric background behind level select
   showSplash(true);
   updateSplashMascot(loadMascot());
@@ -1563,6 +1581,21 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   document.getElementById('timeoutOverlay').classList.remove('show');
   generateLevel(LEVEL.current);
   invalidateRoomDecorCache();
+});
+
+// ── Feature intro handlers ───────────────────────────────
+document.getElementById('jokerIntroBtn').addEventListener('click', () => {
+  playSound('click');
+  markIntroSeen('joker');
+  document.getElementById('jokerIntroOverlay').classList.remove('show');
+  ANIM.busy = false;
+});
+
+document.getElementById('iceIntroBtn').addEventListener('click', () => {
+  playSound('click');
+  markIntroSeen('ice');
+  document.getElementById('iceIntroOverlay').classList.remove('show');
+  ANIM.busy = false;
 });
 
 // ── Dog handlers ─────────────────────────────────────────

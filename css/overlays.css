@@ -414,6 +414,153 @@
     100%     { transform: translateX(50px) scaleX(-1); opacity: 0; }
 }
 
+/* ── Joker Ball Tutorial Visualization ────────────────────── */
+.joker-tut {
+    position: relative;
+    width: 200px; height: 130px;
+    margin: .8rem auto 1rem;
+}
+.joker-tut-tubes {
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 14px;
+}
+.joker-tut-tube {
+    width: 40px; min-height: 54px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,.06));
+    display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center; gap: 3px; padding-bottom: 4px;
+}
+.joker-tut-ball {
+    width: 14px; height: 14px; border-radius: 50%;
+    opacity: .8;
+}
+.joker-tut-ball--joker {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: linear-gradient(135deg, #c084fc, #f472b6, #60a5fa, #34d399);
+    background-size: 300% 300%;
+    animation: jokerShimmer 2s ease-in-out infinite, jokerMove 3.5s ease-in-out infinite;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; line-height: 1; color: #fff;
+    opacity: 1;
+}
+@keyframes jokerShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+/* Joker ball moves from its tube into the left tube */
+@keyframes jokerMove {
+    0%, 25%  { transform: translate(0, 0); }
+    40%      { transform: translate(0, -60px); }
+    60%      { transform: translate(-54px, -60px); }
+    75%      { transform: translate(-54px, -3px); }
+    85%, 100%{ transform: translate(-54px, -3px); }
+}
+/* Arrow follows the joker ball path */
+.joker-tut-arrow {
+    position: absolute; top: 18px; left: 50%;
+    width: 6px; height: 6px;
+    border-right: 2.5px solid rgba(255,255,255,.7);
+    border-bottom: 2.5px solid rgba(255,255,255,.7);
+    transform: translateX(-50%) rotate(45deg);
+    animation: jokerArrow 3.5s ease-in-out infinite;
+}
+@keyframes jokerArrow {
+    0%, 25%  { opacity: 0; }
+    35%      { opacity: 1; transform: translateX(-50%) rotate(45deg); }
+    55%      { opacity: 1; transform: translateX(-80px) rotate(45deg); }
+    65%      { opacity: 0; }
+    100%     { opacity: 0; }
+}
+/* Poof when surplus ball is removed */
+.joker-tut-poof {
+    position: absolute; bottom: 30px; right: 22px;
+    font-size: 1.2rem;
+    animation: jokerPoof 3.5s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes jokerPoof {
+    0%, 70%  { opacity: 0; transform: scale(.5); }
+    80%      { opacity: 1; transform: scale(1.2); }
+    90%      { opacity: 1; transform: scale(1); }
+    100%     { opacity: 0; transform: scale(.5) translateY(-10px); }
+}
+
+/* ── Ice Ball Tutorial Visualization ─────────────────────── */
+.ice-tut {
+    position: relative;
+    width: 200px; height: 130px;
+    margin: .8rem auto 1rem;
+}
+.ice-tut-tubes {
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 14px;
+}
+.ice-tut-tube {
+    width: 40px; min-height: 54px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,.06));
+    display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center; gap: 3px; padding-bottom: 4px;
+}
+.ice-tut-ball {
+    width: 14px; height: 14px; border-radius: 50%;
+    opacity: .8;
+}
+.ice-tut-ball--frozen {
+    position: relative;
+    box-shadow: 0 0 8px rgba(100,180,255,.6), inset 0 0 4px rgba(200,230,255,.4);
+    animation: icePulse 2s ease-in-out infinite alternate;
+}
+.ice-tut-frost {
+    position: absolute; inset: -3px;
+    border-radius: 50%;
+    border: 2px solid rgba(180,220,255,.7);
+    background: rgba(180,220,255,.25);
+    animation: iceShimmer 2.5s ease-in-out infinite alternate;
+}
+@keyframes icePulse {
+    0%   { box-shadow: 0 0 6px rgba(100,180,255,.4), inset 0 0 3px rgba(200,230,255,.3); }
+    100% { box-shadow: 0 0 12px rgba(100,180,255,.7), inset 0 0 6px rgba(200,230,255,.5); }
+}
+@keyframes iceShimmer {
+    0%   { background: rgba(180,220,255,.15); border-color: rgba(180,220,255,.5); }
+    100% { background: rgba(180,220,255,.35); border-color: rgba(180,220,255,.9); }
+}
+/* Lock icon wobbles to indicate "can't move" */
+.ice-tut-lock {
+    position: absolute; top: 28px; left: 28px;
+    font-size: 1.1rem;
+    animation: iceLock 2.5s ease-in-out infinite;
+}
+@keyframes iceLock {
+    0%, 40% { transform: rotate(0); opacity: .8; }
+    50%     { transform: rotate(-12deg); opacity: 1; }
+    60%     { transform: rotate(10deg); opacity: 1; }
+    70%     { transform: rotate(-6deg); opacity: .9; }
+    80%, 100% { transform: rotate(0); opacity: .6; }
+}
+/* Snowflake drifts down to indicate freezing */
+.ice-tut-thaw {
+    position: absolute; top: 2px; left: 38px;
+    font-size: 1.3rem;
+    animation: iceThawDrift 3s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes iceThawDrift {
+    0%       { opacity: 0; transform: translateY(-10px) rotate(0); }
+    20%      { opacity: 1; }
+    60%      { opacity: 1; transform: translateY(20px) rotate(120deg); }
+    80%      { opacity: .5; transform: translateY(30px) rotate(180deg); }
+    100%     { opacity: 0; transform: translateY(40px) rotate(220deg); }
+}
+
 /* ── Achievement Overlay ──────────────────────────────────── */
 .achievement-overlay {
     position: fixed; inset: 0;

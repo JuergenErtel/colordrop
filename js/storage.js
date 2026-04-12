@@ -88,6 +88,14 @@ export function markTutorialDone() {
   localStorage.setItem(key('tut_done'), '1');
 }
 
+export function hasSeenIntro(id) {
+  return localStorage.getItem(key('intro_' + id)) === '1';
+}
+
+export function markIntroSeen(id) {
+  localStorage.setItem(key('intro_' + id), '1');
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────
 const DEFAULT_SETTINGS = { musicVolume: 0.3, sfxVolume: 0.7, musicEnabled: true, sfxEnabled: true };
 
