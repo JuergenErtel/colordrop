@@ -248,6 +248,12 @@
     margin: 0 0 1.6rem;
     font-style: italic;
 }
+.blitz-desc {
+    font-size: .95rem;
+    color: rgba(255,255,255,.85);
+    margin: 0 0 1.2rem;
+    line-height: 1.4;
+}
 .blitz-btn {
     font-family: 'Fredoka', sans-serif;
     font-size: 1.1rem;
