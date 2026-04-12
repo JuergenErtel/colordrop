@@ -132,31 +132,13 @@ function processUnlockQueue() {
   showCatUnlockCelebration(cat);
 }
 
+let _unlockAnimId = 0;
+
 function showCatUnlockCelebration(cat) {
   playSound('cat_unlock');
+  if (_unlockAnimId) { cancelAnimationFrame(_unlockAnimId); _unlockAnimId = 0; }
 
-  // Draw cat portrait
-  const canvas = document.getElementById('catUnlockPortrait');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, 200, 200);
   const params = CAT_PARAMS.find(p => p.id === cat.id);
-  if (params) drawCatPortrait(ctx, 100, 105, 72, params);
-
-  // Set text
-  document.getElementById('catUnlockName').textContent = cat.name;
-  document.getElementById('catUnlockBreed').textContent = cat.breed;
-  document.getElementById('catUnlockFact').textContent = cat.fact;
-
-  // Show mascot hint only on first-ever cat unlock
-  const hintEl = document.getElementById('catUnlockHint');
-  if (hintEl) {
-    const collection = loadCollection();
-    if (collection.length <= 1) {
-      hintEl.textContent = 'Öffne das Katzen-Album um dein Maskottchen zu wählen!';
-    } else {
-      hintEl.textContent = '';
-    }
-  }
 
   // Show overlay
   const overlay = document.getElementById('catUnlockOverlay');
@@ -165,15 +147,39 @@ function showCatUnlockCelebration(cat) {
   // Start confetti
   startConfetti();
 
-  // Reset animations by re-inserting content children
+  // Reset CSS animations by re-inserting content children
   const content = overlay.querySelector('.cat-unlock-content');
   const clone = content.cloneNode(true);
   content.parentNode.replaceChild(clone, content);
+
+  // Set text on the cloned elements
+  clone.querySelector('#catUnlockName').textContent = cat.name;
+  clone.querySelector('#catUnlockBreed').textContent = cat.breed;
+  clone.querySelector('#catUnlockFact').textContent = cat.fact;
+
+  // Show mascot hint only on first-ever cat unlock
+  const hintEl = clone.querySelector('#catUnlockHint');
+  if (hintEl) {
+    const collection = loadCollection();
+    hintEl.textContent = collection.length <= 1
+      ? 'Öffne das Katzen-Album um dein Maskottchen zu wählen!' : '';
+  }
+
+  // Animate mascot cat on the cloned canvas
+  const canvas = clone.querySelector('#catUnlockPortrait');
+  const ctx = canvas.getContext('2d');
+  function animatePortrait(ts) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (params) drawMascotCat(ctx, canvas.width / 2, canvas.height * 0.38, canvas.width * 0.42, ts, params, null);
+    _unlockAnimId = requestAnimationFrame(animatePortrait);
+  }
+  _unlockAnimId = requestAnimationFrame(animatePortrait);
 
   // Re-bind close button
   clone.querySelector('#catUnlockClose').addEventListener('click', () => {
     overlay.classList.remove('show');
     stopConfetti();
+    if (_unlockAnimId) { cancelAnimationFrame(_unlockAnimId); _unlockAnimId = 0; }
     setTimeout(processUnlockQueue, 400);
   });
 }
