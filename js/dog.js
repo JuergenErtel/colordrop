@@ -47,16 +47,29 @@ export function planDogAttack(tubes, solvedTubes) {
   }
   if (dests.length === 0) return null;
 
-  const matching = dests.filter(d => tubes[d].length > 0 && tubes[d][tubes[d].length - 1] === topColor);
-  const empty = dests.filter(d => tubes[d].length === 0);
+  // Filter out destinations where placing would complete (solve) the tube
+  const safeDests = dests.filter(d => {
+    const tube = tubes[d];
+    if (tube.length + 1 < CAPACITY) return true; // won't be full
+    // Would be full — check if all same color
+    if (tube.length === 0) return true; // can't complete with 1 ball
+    const first = tube[0];
+    const allSame = tube.every(c => c === first || c === 'joker');
+    return !(allSame && (topColor === first || topColor === 'joker'));
+  });
+  if (safeDests.length === 0) return null;
+
+  // Prefer mismatching destinations (cause more chaos)
+  const mismatching = safeDests.filter(d => tubes[d].length > 0 && tubes[d][tubes[d].length - 1] !== topColor);
+  const empty = safeDests.filter(d => tubes[d].length === 0);
 
   let destIdx;
-  if (matching.length > 0) {
-    destIdx = matching[Math.floor(Math.random() * matching.length)];
+  if (mismatching.length > 0) {
+    destIdx = mismatching[Math.floor(Math.random() * mismatching.length)];
   } else if (empty.length > 0) {
     destIdx = empty[Math.floor(Math.random() * empty.length)];
   } else {
-    destIdx = dests[Math.floor(Math.random() * dests.length)];
+    destIdx = safeDests[Math.floor(Math.random() * safeDests.length)];
   }
 
   return { sourceTube: srcIdx, destTube: destIdx, color: topColor };
@@ -75,7 +88,7 @@ export function updateDog(ts, tubes, solvedTubes, animBusy) {
 
   if (DOG.attacking) {
     const elapsed = ts - DOG.attacking.startTime;
-    if (elapsed >= 1200) {
+    if (elapsed >= 1800) {
       DOG.attacking = null;
       DOG.nextAttack = ts + DOG.cooldown;
       DOG.side = DOG.side === 'left' ? 'right' : 'left';

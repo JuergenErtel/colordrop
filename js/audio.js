@@ -468,22 +468,36 @@ export function playSound(name) {
       }
 
       case 'dog_warn': {
+        // Deep growl: oscillator rumble + filtered noise
         const ctx = getCtx();
         if (!ctx) break;
         const now = ctx.currentTime;
-        const bufLen = ctx.sampleRate * 0.5;
+        // Oscillator growl (low rumble)
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(80, now);
+        osc.frequency.linearRampToValueAtTime(60, now + 0.6);
+        const oscGain = ctx.createGain();
+        oscGain.gain.setValueAtTime(0.25 * _sfxVolume, now);
+        oscGain.gain.setValueAtTime(0.3 * _sfxVolume, now + 0.15);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+        osc.connect(oscGain); oscGain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.7);
+        // Noise layer (breath/snarl)
+        const bufLen = Math.floor(ctx.sampleRate * 0.7);
         const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
         const d = buf.getChannelData(0);
-        for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1) * 0.3;
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
+        for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1);
+        const nSrc = ctx.createBufferSource();
+        nSrc.buffer = buf;
         const bp = ctx.createBiquadFilter();
-        bp.type = 'bandpass'; bp.frequency.value = 300; bp.Q.value = 3;
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(0.2 * _sfxVolume, now);
-        g.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-        src.connect(bp); bp.connect(g); g.connect(ctx.destination);
-        src.start(now); src.stop(now + 0.5);
+        bp.type = 'bandpass'; bp.frequency.value = 250; bp.Q.value = 2;
+        const nGain = ctx.createGain();
+        nGain.gain.setValueAtTime(0.15 * _sfxVolume, now);
+        nGain.gain.linearRampToValueAtTime(0.25 * _sfxVolume, now + 0.2);
+        nGain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+        nSrc.connect(bp); bp.connect(nGain); nGain.connect(ctx.destination);
+        nSrc.start(now); nSrc.stop(now + 0.7);
         break;
       }
 
