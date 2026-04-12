@@ -49,6 +49,7 @@ import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled,
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
+import { checkMilestone, claimMilestone } from './milestones.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -664,6 +665,20 @@ function showWin() {
     levelNum: actualLevel, stars, stats, progress,
     isDaily: G.isDailyChallenge, isBlitz,
   });
+
+  // Milestone check
+  const milestone = checkMilestone(LEVEL.current);
+  if (milestone) {
+    const claimed = claimMilestone(milestone);
+    updateBonesDisplay();
+    setTimeout(() => {
+      document.getElementById('milestoneLabel').textContent = claimed.label;
+      document.getElementById('milestoneDesc').textContent = claimed.desc;
+      document.getElementById('milestoneBones').textContent = '+' + claimed.bones + ' Fischgr\u00e4ten';
+      document.getElementById('milestoneOverlay').classList.add('show');
+      playSound('achievement');
+    }, 2800);
+  }
 
   // ── Economy: award fish bones ──
   const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz);
@@ -1395,6 +1410,10 @@ document.addEventListener('keydown', e => {
       tetrisMoveTo(next);
     }
   }
+});
+
+document.getElementById('milestoneClose').addEventListener('click', () => {
+  document.getElementById('milestoneOverlay').classList.remove('show');
 });
 
 document.getElementById('menuBtnHud').addEventListener('click', () => { playSound('click'); openLevelSelect(); });
