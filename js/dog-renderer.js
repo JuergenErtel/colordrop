@@ -266,7 +266,7 @@ function drawDogAttack(ctx, ts, tubeCount) {
   if (!atk) return;
 
   const elapsed = ts - atk.startTime;
-  const totalDur = 1800; // slower animation (was 1200)
+  const totalDur = 2800; // slow enough to read the speech bubble
   const t = Math.min(elapsed / totalDur, 1);
 
   const srcX = tubeCX(atk.sourceTube, tubeCount);
@@ -276,51 +276,54 @@ function drawDogAttack(ctx, ts, tubeCount) {
   const flip = DOG.side === 'right';
   const y = TUBE_BOT + 10;
 
+  // Timeline: 0–0.18 run in | 0.18–0.30 grab | 0.30–0.50 run to dest |
+  //           0.50–0.58 drop | 0.58–0.75 pause+bubble | 0.75–1.0 run away
+
   let dogX;
   let mouthOpen = false;
   let showBall = false;
   let ballX = 0, ballY = 0;
 
-  if (t < 0.25) {
+  if (t < 0.18) {
     // Run in to source tube
-    dogX = startX + (srcX - startX) * easeInOut(t / 0.25);
-  } else if (t < 0.4) {
-    // At source tube — grabbing ball (mouth opens)
+    dogX = startX + (srcX - startX) * easeInOut(t / 0.18);
+  } else if (t < 0.30) {
+    // At source tube — grabbing ball
     dogX = srcX;
     mouthOpen = true;
-    // Ball lifts from tube towards dog's mouth
-    const grabT = (t - 0.25) / 0.15;
+    const grabT = (t - 0.18) / 0.12;
     showBall = true;
-    const tubeTopY = ballCY(3); // approximate top ball position
+    const tubeTopY = ballCY(3);
     ballX = srcX;
     ballY = tubeTopY + (y - 15 - tubeTopY) * easeInOut(grabT);
-  } else if (t < 0.7) {
+  } else if (t < 0.50) {
     // Run to destination with ball in mouth
-    const runT = (t - 0.4) / 0.3;
+    const runT = (t - 0.30) / 0.20;
     dogX = srcX + (dstX - srcX) * easeInOut(runT);
     mouthOpen = true;
     showBall = true;
     ballX = dogX + (flip ? -35 : 35);
     ballY = y - 15;
-    // Dust while running
     if (Math.random() < 0.25) {
       spawnParticle(dogX, y + 25, (Math.random() - 0.5) * 3, -1.5 - Math.random() * 2,
         '#D0C0A0', 3 + Math.random() * 3, 400 + Math.random() * 200, 0.06);
     }
-  } else if (t < 0.8) {
+  } else if (t < 0.58) {
     // Drop ball at destination
     dogX = dstX;
-    const dropT = (t - 0.7) / 0.1;
+    const dropT = (t - 0.50) / 0.08;
     showBall = true;
-    const targetBallY = ballCY(0); // bottom-ish
+    const targetBallY = ballCY(0);
     ballX = dstX;
     ballY = (y - 15) + (targetBallY - (y - 15)) * easeInOut(dropT);
     mouthOpen = dropT < 0.5;
+  } else if (t < 0.75) {
+    // Pause at destination — show speech bubble (dog stays still)
+    dogX = dstX;
   } else {
     // Run away
-    const fleeT = (t - 0.8) / 0.2;
+    const fleeT = (t - 0.75) / 0.25;
     dogX = dstX + (endX - dstX) * easeInOut(fleeT);
-    // More dust
     if (Math.random() < 0.4) {
       spawnParticle(dogX, y + 25, (Math.random() - 0.5) * 4, -2 - Math.random() * 3,
         '#D0C0A0', 4 + Math.random() * 3, 300 + Math.random() * 300, 0.08);
@@ -335,26 +338,32 @@ function drawDogAttack(ctx, ts, tubeCount) {
   // Draw dog
   drawDogBody(ctx, dogX, y, flip, mouthOpen);
 
-  // Speech bubble when running away
-  if (t > 0.82 && t < 0.98) {
-    const bubbleAlpha = t < 0.85 ? (t - 0.82) / 0.03 : 1 - (t - 0.95) / 0.03;
+  // Speech bubble — visible from drop through pause and into flee (0.55–0.85)
+  if (t > 0.55 && t < 0.85) {
+    const fadeIn  = Math.min(1, (t - 0.55) / 0.04);
+    const fadeOut = Math.min(1, (0.85 - t) / 0.04);
     ctx.save();
-    ctx.globalAlpha = Math.max(0, Math.min(1, bubbleAlpha));
+    ctx.globalAlpha = Math.min(fadeIn, fadeOut);
+    const bx = dogX + (flip ? -55 : 55);
+    const by = y - 55;
     // Bubble background
-    const bx = dogX + (flip ? -50 : 50);
-    const by = y - 50;
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.beginPath();
-    ctx.ellipse(bx, by, 30, 16, 0, 0, Math.PI * 2);
+    ctx.ellipse(bx, by, 34, 18, 0, 0, Math.PI * 2);
     ctx.fill();
+    // Bubble outline
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
     // Bubble tail
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.beginPath();
-    ctx.moveTo(bx - 8, by + 14);
-    ctx.lineTo(dogX + (flip ? -20 : 30), y - 30);
-    ctx.lineTo(bx + 2, by + 14);
+    ctx.moveTo(bx - 10, by + 16);
+    ctx.lineTo(dogX + (flip ? -22 : 32), y - 32);
+    ctx.lineTo(bx + 4, by + 16);
     ctx.fill();
     // Text
-    ctx.font = 'bold 13px Fredoka, sans-serif';
+    ctx.font = 'bold 15px Fredoka, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#604020';

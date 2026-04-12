@@ -88,7 +88,7 @@ export function updateDog(ts, tubes, solvedTubes, animBusy) {
 
   if (DOG.attacking) {
     const elapsed = ts - DOG.attacking.startTime;
-    if (elapsed >= 1800) {
+    if (elapsed >= 2800) {
       DOG.attacking = null;
       DOG.nextAttack = ts + DOG.cooldown;
       DOG.side = DOG.side === 'left' ? 'right' : 'left';
