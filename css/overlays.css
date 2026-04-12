@@ -271,6 +271,84 @@
 .blitz-btn:hover  { transform: translateY(-1px); box-shadow: 0 5px 0 #B8860B, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
 .blitz-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #B8860B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
 
+/* ── Tetris Tutorial Visualization ────────────────────────── */
+.tetris-tut {
+    position: relative;
+    width: 180px; height: 110px;
+    margin: .8rem auto 1rem;
+}
+
+/* Three small tubes at the bottom */
+.tetris-tut-tubes {
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 12px;
+}
+.tetris-tut-tube {
+    width: 36px; height: 44px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,.06));
+    position: relative;
+}
+.tetris-tut-tube::after {
+    content: ''; position: absolute; bottom: 4px; left: 50%;
+    transform: translateX(-50%);
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--tube-clr);
+    opacity: .55;
+}
+
+/* Animated yarn ball swinging left-right */
+.tetris-tut-ball {
+    position: absolute; top: 4px; left: 50%;
+    font-size: 1.5rem; line-height: 1;
+    transform: translateX(-50%);
+    animation: tetrisTutSwing 2.4s ease-in-out infinite;
+}
+@keyframes tetrisTutSwing {
+    0%, 100% { transform: translateX(-50%); }
+    30%      { transform: translateX(-140%); }
+    70%      { transform: translateX(40%); }
+}
+
+/* Animated hand/finger following the ball */
+.tetris-tut-hand {
+    position: absolute; top: 32px; left: 50%;
+    font-size: 1.3rem; line-height: 1;
+    transform: translateX(-50%);
+    animation: tetrisTutHand 2.4s ease-in-out infinite;
+    opacity: .85;
+}
+@keyframes tetrisTutHand {
+    0%, 100% { transform: translateX(-50%); }
+    30%      { transform: translateX(-140%); }
+    70%      { transform: translateX(40%); }
+}
+
+/* Left/right arrow hints */
+.tetris-tut-arrows {
+    position: absolute; top: 8px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    pointer-events: none;
+}
+.tetris-tut-arrow {
+    font-size: 1.6rem; font-weight: 700;
+    color: rgba(255,255,255,.3);
+    animation: tetrisTutArrow 2.4s ease-in-out infinite;
+}
+.tetris-tut-arrow--l { animation-name: tetrisTutArrowL; }
+.tetris-tut-arrow--r { animation-name: tetrisTutArrowR; }
+@keyframes tetrisTutArrowL {
+    0%, 50%, 100% { opacity: .2; transform: translateX(0); }
+    25%           { opacity: .7; transform: translateX(-4px); }
+}
+@keyframes tetrisTutArrowR {
+    0%, 50%, 100% { opacity: .2; transform: translateX(0); }
+    75%           { opacity: .7; transform: translateX(4px); }
+}
+
 /* ── Achievement Overlay ──────────────────────────────────── */
 .achievement-overlay {
     position: fixed; inset: 0;
