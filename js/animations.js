@@ -77,6 +77,7 @@ export const ANIM = {
   screenShake: null,
   goldFlash:  null,
   canvasDim:  0,
+  tubeClear:  new Map(), // tubeIdx → { startTime, duration, color }
 };
 
 export function resetAnim() {
@@ -93,4 +94,5 @@ export function resetAnim() {
   ANIM.screenShake = null;
   ANIM.goldFlash  = null;
   ANIM.canvasDim  = 0;
+  ANIM.tubeClear  = new Map();
 }

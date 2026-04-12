@@ -79,6 +79,63 @@ function checkWinTutorial(tubes) {
   return true;
 }
 
+// ── Win sequence ────────────────────────────────────────────────────────
+
+function triggerWinSequence(ts, G, tubeCount) {
+  // 200ms: screen shake (strong)
+  if (!REDUCED_MOTION) {
+    setTimeout(() => {
+      ANIM.screenShake = { startTime: performance.now(), duration: 350, amplitude: 8 };
+    }, 200);
+  }
+
+  // 300ms: ALL tubes explode staggered
+  for (let ti = 0; ti < tubeCount; ti++) {
+    setTimeout(() => {
+      triggerTubeExplosion(ti, G.tubes, (i) => tubeCX(i, tubeCount));
+    }, 300 + ti * 80);
+  }
+
+  // 500ms: gold flash
+  setTimeout(() => {
+    ANIM.goldFlash = { startTime: performance.now(), duration: 400 };
+  }, 500);
+
+  // 600ms: win sound
+  setTimeout(() => playSound('win'), 600);
+
+  // 700ms: first confetti wave
+  setTimeout(() => spawnConfetti(), 700);
+
+  // 1000ms: second screen shake + fireworks
+  if (!REDUCED_MOTION) {
+    setTimeout(() => {
+      ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 4 };
+    }, 1000);
+  }
+  setTimeout(() => scheduleWinFireworks(), 1000);
+
+  // 1400ms: second confetti wave
+  setTimeout(() => spawnConfetti(), 1400);
+
+  // 1800ms: third confetti wave + second gold flash
+  setTimeout(() => {
+    spawnConfetti();
+    ANIM.goldFlash = { startTime: performance.now(), duration: 300 };
+  }, 1800);
+
+  // 600ms: trigger showWin
+  if (G.tutorial) {
+    if (G.tutStep < TUTORIAL_SCRIPT.length &&
+        TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
+      G.tutStep++;
+    }
+    setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 600);
+  } else {
+    setTimeout(() => { if (G.onWin) G.onWin(); }, 600);
+  }
+}
+
 // ── Arc completion ───────────────────────────────────────────────────────
 
 function updateArc(ts, G) {
@@ -136,11 +193,60 @@ function updateArc(ts, G) {
 
   playSound('pop');
 
-  // Tube explosion (once per solved tube)
-  if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube])) {
+  // Tube solved → clear animation (balls vanish with effect)
+  if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube]) && G.tubes[toTube].length > 0) {
     G.solvedTubes.add(toTube);
     triggerTubeExplosion(toTube, G.tubes, (idx) => tubeCX(idx, tubeCount));
     playSound('solved');
+
+    // Schedule the clear animation
+    const clearDuration = 500;
+    ANIM.tubeClear.set(toTube, {
+      startTime: ts,
+      duration: clearDuration,
+      color: G.tubes[toTube][0], // all same color
+    });
+
+    // After animation: empty the tube and check win
+    const savedColor = G.tubes[toTube][0];
+    const savedTubeIdx = toTube;
+    const savedTubeCount = tubeCount;
+    setTimeout(() => {
+      // If clear was cancelled (e.g. by undo), skip
+      if (!ANIM.tubeClear.has(savedTubeIdx)) return;
+      ANIM.tubeClear.delete(savedTubeIdx);
+      G.tubes[savedTubeIdx].length = 0;
+      // Screen shake on clear
+      if (!REDUCED_MOTION) {
+        ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 3 };
+      }
+      // Final burst of particles at tube center
+      const burstCx = tubeCX(savedTubeIdx, savedTubeCount);
+      const pal = PALETTE[savedColor];
+      if (pal) {
+        for (let p = 0; p < 18; p++) {
+          const angle = (Math.PI * 2 * p) / 18 + Math.random() * 0.3;
+          const speed = 4 + Math.random() * 5;
+          spawnParticle(
+            burstCx, 320,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed - 3,
+            pal.bright,
+            5 + Math.random() * 4,
+            500 + Math.random() * 400,
+            0.12,
+          );
+        }
+      }
+
+      // Win check after clear
+      const won2 = G.tutorial ? checkWinTutorial(G.tubes) : checkWinState(G.tubes);
+      if (won2 && !G.won) {
+        G.won = true;
+        triggerWinSequence(performance.now(), G, savedTubeCount);
+      }
+      if (G.onHUDUpdate) G.onHUDUpdate();
+    }, clearDuration);
   }
 
   ANIM.arc  = null;
@@ -153,70 +259,11 @@ function updateArc(ts, G) {
     if (G.onTutAdvance) G.onTutAdvance();
   }
 
-  // Win check
-  const won = G.tutorial ? checkWinTutorial(G.tubes) : checkWinState(G.tubes);
+  // Win check (immediate — for cases where no tube-clear is needed)
+  const won = (G.tutorial ? checkWinTutorial(G.tubes) : checkWinState(G.tubes)) && !G.won;
   if (won) {
     G.won = true;
-
-    // 0ms: Extra-strong impact on winning ball
-    ANIM.bounceMap.set(`${toTube}-${ballIdx}`, {
-      startTime: ts,
-      duration: DUR_BOUNCE,
-      amplitude: 20,
-    });
-
-    // 200ms: screen shake (strong)
-    if (!REDUCED_MOTION) {
-      setTimeout(() => {
-        ANIM.screenShake = { startTime: performance.now(), duration: 350, amplitude: 8 };
-      }, 200);
-    }
-
-    // 300ms: ALL tubes explode staggered
-    for (let ti = 0; ti < tubeCount; ti++) {
-      setTimeout(() => {
-        triggerTubeExplosion(ti, G.tubes, (i) => tubeCX(i, tubeCount));
-      }, 300 + ti * 80);
-    }
-
-    // 500ms: gold flash (long, bright)
-    setTimeout(() => {
-      ANIM.goldFlash = { startTime: performance.now(), duration: 400 };
-    }, 500);
-
-    // 600ms: win sound
-    setTimeout(() => playSound('win'), 600);
-
-    // 700ms: first confetti wave
-    setTimeout(() => spawnConfetti(), 700);
-
-    // 1000ms: second screen shake + fireworks
-    if (!REDUCED_MOTION) {
-      setTimeout(() => {
-        ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 4 };
-      }, 1000);
-    }
-    setTimeout(() => scheduleWinFireworks(), 1000);
-
-    // 1400ms: second confetti wave
-    setTimeout(() => spawnConfetti(), 1400);
-
-    // 1800ms: third confetti wave + second gold flash
-    setTimeout(() => {
-      spawnConfetti();
-      ANIM.goldFlash = { startTime: performance.now(), duration: 300 };
-    }, 1800);
-
-    // 600ms: trigger showWin (which internally delays overlay by 1800ms)
-    if (G.tutorial) {
-      if (G.tutStep < TUTORIAL_SCRIPT.length &&
-          TUTORIAL_SCRIPT[G.tutStep].waitFor === 'win') {
-        G.tutStep++;
-      }
-      setTimeout(() => { if (G.onTutAdvance) G.onTutAdvance(); }, 600);
-    } else {
-      setTimeout(() => { if (G.onWin) G.onWin(); }, 600);
-    }
+    triggerWinSequence(ts, G, tubeCount);
   }
 
   if (G.onHUDUpdate) G.onHUDUpdate();
@@ -374,6 +421,44 @@ function drawTubes(ctx, ts, G) {
 
     drawContainer(ctx, cx, theme.containerStyle, state, ts);
 
+    // Tube-clear animation: shrink + glow balls before they vanish
+    const clearAnim = ANIM.tubeClear.get(i);
+    let clearScale = 1;
+    let clearAlpha = 1;
+    if (clearAnim) {
+      const ct = Math.min((ts - clearAnim.startTime) / clearAnim.duration, 1);
+      clearScale = 1 - ct * 0.8;          // shrink to 20%
+      clearAlpha = 1 - ct;                 // fade out
+      // Sparkle glow ring around the tube
+      if (ct < 0.8) {
+        const gp = ct / 0.8;
+        const pal = PALETTE[clearAnim.color];
+        if (pal) {
+          ctx.save();
+          ctx.globalAlpha = 0.6 * (1 - gp);
+          ctx.strokeStyle = pal.bright;
+          ctx.lineWidth = 3 + 4 * gp;
+          ctx.shadowColor = pal.glow;
+          ctx.shadowBlur = 15 + 20 * gp;
+          const rx = cx - TUBE_W / 2 - 4, ry = TUBE_TOP - 4;
+          const rw = TUBE_W + 8, rh = TUBE_H + 8, rr = 12;
+          ctx.beginPath();
+          ctx.moveTo(rx + rr, ry);
+          ctx.lineTo(rx + rw - rr, ry);
+          ctx.arcTo(rx + rw, ry, rx + rw, ry + rr, rr);
+          ctx.lineTo(rx + rw, ry + rh - rr);
+          ctx.arcTo(rx + rw, ry + rh, rx + rw - rr, ry + rh, rr);
+          ctx.lineTo(rx + rr, ry + rh);
+          ctx.arcTo(rx, ry + rh, rx, ry + rh - rr, rr);
+          ctx.lineTo(rx, ry + rr);
+          ctx.arcTo(rx, ry, rx + rr, ry, rr);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+
     // Balls inside tube
     const renderCount = (arcDest || sel) ? tube.length - 1 : tube.length;
     for (let bi = 0; bi < renderCount; bi++) {
@@ -422,10 +507,14 @@ function drawTubes(ctx, ts, G) {
         ? (cx2, cy2) => drawBallHidden(ctx, cx2, cy2, false, ts)
         : (cx2, cy2) => drawBall(ctx, cx2, cy2, _color, false, ts);
 
-      if (jSx !== 1) {
+      // Apply tube-clear shrink/fade if active
+      const finalSx = jSx * clearScale;
+      const finalSy = jSy * clearScale;
+      if (finalSx !== 1 || clearAlpha < 1) {
         ctx.save();
+        if (clearAlpha < 1) ctx.globalAlpha = clearAlpha;
         ctx.translate(bx, by);
-        ctx.scale(jSx, jSy);
+        ctx.scale(finalSx, finalSy);
         _drawBall(0, 0);
         ctx.restore();
       } else {

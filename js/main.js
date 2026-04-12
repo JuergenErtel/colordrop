@@ -90,8 +90,10 @@ const G = {
 //  ECONOMY / COLLECTION HELPERS
 // ══════════════════════════════════════════════════════════════════════════
 
+const FISHBONE_ICON = '<i class="fishbone"></i>';
+
 function updateBonesDisplay() {
-  document.getElementById('bonesDisplay').textContent = '\uD83E\uDDB4 ' + getBalance();
+  document.getElementById('bonesDisplay').innerHTML = FISHBONE_ICON + ' ' + getBalance();
 }
 
 function updatePremiumBanner() {
@@ -415,6 +417,7 @@ function undo() {
   G.hintFrom     = G.hintTo = -1;
   G.hintUntil    = 0;
   G.solvedTubes  = new Set();
+  ANIM.tubeClear = new Map(); // cancel pending tube-clear animations
   for (let i = 0; i < G.tubes.length; i++) {
     if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
   }
@@ -422,15 +425,18 @@ function undo() {
   hideOverlay();
 }
 
-function setHintIcon(emoji) {
+function setHintIcon(content) {
   const btn = document.getElementById('hintBtn');
   const cost = document.getElementById('hintCost');
-  // Preserve the cost badge — only replace the text node
-  const textNode = btn.firstChild;
-  if (textNode && textNode.nodeType === 3) {
-    textNode.textContent = emoji;
-  } else {
-    btn.insertBefore(document.createTextNode(emoji), cost);
+  // Remove all child nodes before the cost badge, then insert new content
+  while (btn.firstChild && btn.firstChild !== cost) {
+    btn.removeChild(btn.firstChild);
+  }
+  // Insert HTML content before cost badge
+  const wrapper = document.createElement('span');
+  wrapper.innerHTML = content;
+  while (wrapper.firstChild) {
+    btn.insertBefore(wrapper.firstChild, cost);
   }
 }
 
@@ -441,7 +447,7 @@ function updateHintCostBadge() {
     el.classList.add('hidden');
   } else {
     el.classList.remove('hidden');
-    el.textContent = `\uD83E\uDDB4${COSTS.hint}`;
+    el.innerHTML = `${FISHBONE_ICON}${COSTS.hint}`;
   }
 }
 
@@ -452,7 +458,7 @@ function showHintAction() {
   // Economy check — hints cost fish bones (free for premium)
   playSound('hint');
   if (!spendHint()) {
-    setHintIcon('\uD83E\uDDB4\u2753');  // 🦴❓
+    setHintIcon(FISHBONE_ICON + '\u2753');  // fishbone + ❓
     btn.disabled = true;
     setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
     return;
@@ -497,15 +503,8 @@ function triggerFlash(idx) {
 }
 
 function handleInput(lx, ly) {
-  // Tetris mode: tap a tube to redirect the falling ball
-  if (TETRIS.active && TETRIS.current) {
-    const idx = tubeAt(lx, ly, TETRIS.numTubes);
-    if (idx >= 0) {
-      playSound('select');
-      tetrisMoveTo(idx);
-    }
-    return;
-  }
+  // Tetris mode: swipe handled separately (see touch/pointer events below)
+  if (TETRIS.active && TETRIS.current) return;
   if (G.won)     return;
   if (ANIM.busy) return;
 
@@ -1296,16 +1295,85 @@ function toCanvas(e) {
 //  EVENT LISTENERS
 // ══════════════════════════════════════════════════════════════════════════
 
+// ── Tetris swipe handling ──────────────────────────────────────────────────
+let tetrisSwipeStartX = 0;
+let tetrisSwipeActive = false;
+const SWIPE_THRESHOLD = 20; // min px to register as swipe
+
+function tetrisSwipeStart(clientX) {
+  if (TETRIS.active && TETRIS.current) {
+    tetrisSwipeStartX = clientX;
+    tetrisSwipeActive = true;
+  }
+}
+
+function tetrisSwipeEnd(clientX) {
+  if (!tetrisSwipeActive) return false;
+  tetrisSwipeActive = false;
+  if (!TETRIS.active || !TETRIS.current) return false;
+  const dx = clientX - tetrisSwipeStartX;
+  if (Math.abs(dx) < SWIPE_THRESHOLD) return true; // tap — do nothing in tetris
+  const dir = dx > 0 ? 1 : -1;
+  const next = TETRIS.column + dir;
+  if (next >= 0 && next < TETRIS.numTubes) {
+    playSound('select');
+    tetrisMoveTo(next);
+  }
+  return true;
+}
+
 canvas.addEventListener('click', e => {
+  if (TETRIS.active && TETRIS.current) return; // swipe handles tetris
   const p = toCanvas(e);
   handleInput(p.x, p.y);
 });
 
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
+  if (TETRIS.active && TETRIS.current) {
+    tetrisSwipeStart(e.touches[0].clientX);
+    return;
+  }
   const p = toCanvas(e);
   handleInput(p.x, p.y);
 }, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  if (TETRIS.active && TETRIS.current && tetrisSwipeActive) {
+    const touch = e.changedTouches[0];
+    tetrisSwipeEnd(touch.clientX);
+    return;
+  }
+}, { passive: false });
+
+// Mouse swipe fallback for desktop
+canvas.addEventListener('mousedown', e => {
+  if (TETRIS.active && TETRIS.current) {
+    tetrisSwipeStart(e.clientX);
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (tetrisSwipeActive) {
+    tetrisSwipeEnd(e.clientX);
+  }
+});
+
+// Keyboard controls for tetris mode (arrow keys / A-D)
+document.addEventListener('keydown', e => {
+  if (!TETRIS.active || !TETRIS.current) return;
+  let dir = 0;
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dir = -1;
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dir = 1;
+  if (dir !== 0) {
+    e.preventDefault();
+    const next = TETRIS.column + dir;
+    if (next >= 0 && next < TETRIS.numTubes) {
+      playSound('select');
+      tetrisMoveTo(next);
+    }
+  }
+});
 
 document.getElementById('menuBtnHud').addEventListener('click', () => { playSound('click'); openLevelSelect(); });
 document.getElementById('undoBtn').addEventListener('click', undo);
