@@ -54,7 +54,11 @@ export function themeCenter(theme, ts) {
 
 // ══════════════════════════════════════════════════════════════════════════
 
-export function drawBackground(ctx, ts, theme, prevTheme, fade) {
+export function drawBackground(ctx, ts, theme, prevTheme, fade, bgId) {
+  if (bgId === 'garden') { drawGardenBg(ctx, ts, theme); return; }
+  if (bgId === 'rooftop') { drawRooftopBg(ctx, ts, theme); return; }
+  if (bgId === 'winter') { drawWinterBg(ctx, ts, theme); return; }
+  // Default: existing cafe code continues below
 
   // ── 0. Compute blended theme colour ────────────────────────────────────
   const cur  = themeCenter(theme, ts);
@@ -221,4 +225,182 @@ export function drawBackground(ctx, ts, theme, prevTheme, fade) {
     ctx.fill();
   }
   ctx.restore();
+}
+
+function drawGardenBg(ctx, ts, theme) {
+  // Sky
+  const sky = ctx.createLinearGradient(0, 0, 0, CH * 0.5);
+  sky.addColorStop(0, '#87CEEB');
+  sky.addColorStop(1, '#B0E0D0');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, CW, CH * 0.5);
+
+  // Clouds
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  for (let i = 0; i < 3; i++) {
+    const cx = ((ts * 0.01 + i * 160) % (CW + 100)) - 50;
+    const cy = 40 + i * 30;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+    ctx.arc(cx + 20, cy - 8, 20, 0, Math.PI * 2);
+    ctx.arc(cx + 35, cy, 22, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Grass
+  const grass = ctx.createLinearGradient(0, CH * 0.45, 0, CH);
+  grass.addColorStop(0, '#5B8C3E');
+  grass.addColorStop(1, '#3D6B2E');
+  ctx.fillStyle = grass;
+  ctx.fillRect(0, CH * 0.45, CW, CH * 0.55);
+
+  // Flowers
+  const colors = ['#FF6B8A', '#FFD700', '#FF8C42', '#E066FF'];
+  for (let i = 0; i < 8; i++) {
+    const fx = 20 + i * 55 + Math.sin(ts * 0.002 + i) * 5;
+    const fy = CH * 0.48 + Math.sin(i * 2.1) * 15;
+    ctx.fillStyle = colors[i % colors.length];
+    for (let p = 0; p < 5; p++) {
+      const pa = (Math.PI * 2 * p) / 5;
+      ctx.beginPath();
+      ctx.arc(fx + Math.cos(pa) * 5, fy + Math.sin(pa) * 5, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Vignette
+  const vig = ctx.createRadialGradient(CW / 2, CH / 2, CW * 0.25, CW / 2, CH / 2, CW * 0.75);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, CW, CH);
+}
+
+function drawRooftopBg(ctx, ts, theme) {
+  // Sunset sky
+  const sky = ctx.createLinearGradient(0, 0, 0, CH * 0.5);
+  sky.addColorStop(0, '#1a1a3e');
+  sky.addColorStop(0.4, '#4a2c6a');
+  sky.addColorStop(0.7, '#c05050');
+  sky.addColorStop(1, '#e8a040');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, CW, CH * 0.5);
+
+  // Stars
+  ctx.save();
+  for (let i = 0; i < 12; i++) {
+    const sx = (i * 37 + 13) % CW;
+    const sy = (i * 23 + 7) % (CH * 0.3);
+    const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(ts * 0.001 + i * 1.7));
+    ctx.globalAlpha = twinkle * 0.4;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // City silhouette
+  ctx.fillStyle = '#1a1a2e';
+  const buildings = [[0,0.38,40],[45,0.32,35],[85,0.42,30],[120,0.35,45],[170,0.28,35],[210,0.40,40],[255,0.33,30],[290,0.45,35],[330,0.30,40],[375,0.38,45]];
+  for (const [bx, hFrac, bw] of buildings) {
+    ctx.fillRect(bx, CH * 0.5 - CH * hFrac, bw, CH * hFrac);
+  }
+
+  // Rooftop floor
+  const floor = ctx.createLinearGradient(0, CH * 0.5, 0, CH);
+  floor.addColorStop(0, '#4a4040');
+  floor.addColorStop(1, '#2a2020');
+  ctx.fillStyle = floor;
+  ctx.fillRect(0, CH * 0.5, CW, CH * 0.5);
+
+  // String lights
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, CH * 0.48);
+  for (let lx = 0; lx <= CW; lx += 5) {
+    ctx.lineTo(lx, CH * 0.48 + Math.sin(lx * 0.03) * 8);
+  }
+  ctx.stroke();
+  for (let lx = 20; lx < CW; lx += 40) {
+    const ly = CH * 0.48 + Math.sin(lx * 0.03) * 8;
+    const glow = 0.5 + 0.3 * Math.sin(ts * 0.003 + lx * 0.1);
+    ctx.fillStyle = `rgba(255, 220, 100, ${glow})`;
+    ctx.beginPath();
+    ctx.arc(lx, ly + 5, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Vignette
+  const vig = ctx.createRadialGradient(CW / 2, CH / 2, CW * 0.25, CW / 2, CH / 2, CW * 0.75);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.4)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, CW, CH);
+}
+
+function drawWinterBg(ctx, ts, theme) {
+  // Warm wall
+  const wall = ctx.createLinearGradient(0, 0, 0, CH * 0.5);
+  wall.addColorStop(0, '#4a3525');
+  wall.addColorStop(1, '#6a4a35');
+  ctx.fillStyle = wall;
+  ctx.fillRect(0, 0, CW, CH * 0.5);
+
+  // Window
+  ctx.fillStyle = '#8ab4d8';
+  ctx.fillRect(CW * 0.6, CH * 0.05, CW * 0.3, CH * 0.25);
+  ctx.strokeStyle = '#5a3a20';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(CW * 0.6, CH * 0.05, CW * 0.3, CH * 0.25);
+  ctx.beginPath();
+  ctx.moveTo(CW * 0.75, CH * 0.05);
+  ctx.lineTo(CW * 0.75, CH * 0.30);
+  ctx.moveTo(CW * 0.6, CH * 0.175);
+  ctx.lineTo(CW * 0.9, CH * 0.175);
+  ctx.stroke();
+
+  // Snow on windowsill
+  ctx.fillStyle = '#e8e8f0';
+  ctx.beginPath();
+  ctx.ellipse(CW * 0.75, CH * 0.30, CW * 0.17, 8, 0, 0, Math.PI);
+  ctx.fill();
+
+  // Snowflakes outside window
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  for (let i = 0; i < 8; i++) {
+    const sx = CW * 0.6 + ((ts * 0.02 + i * 17) % (CW * 0.3));
+    const sy = CH * 0.05 + ((ts * 0.015 + i * 23) % (CH * 0.25));
+    ctx.beginPath();
+    ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Wood floor
+  const floor = ctx.createLinearGradient(0, CH * 0.45, 0, CH);
+  floor.addColorStop(0, '#5a3a22');
+  floor.addColorStop(1, '#3a2515');
+  ctx.fillStyle = floor;
+  ctx.fillRect(0, CH * 0.45, CW, CH * 0.55);
+
+  // Warm glow
+  ctx.save();
+  const glow = ctx.createRadialGradient(30, CH * 0.4, 0, 30, CH * 0.4, 200);
+  glow.addColorStop(0, 'rgba(255, 140, 40, 0.15)');
+  glow.addColorStop(1, 'rgba(255, 140, 40, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, CW, CH);
+  ctx.restore();
+
+  // Vignette
+  const vig = ctx.createRadialGradient(CW / 2, CH / 2, CW * 0.25, CW / 2, CH / 2, CW * 0.75);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, CW, CH);
 }

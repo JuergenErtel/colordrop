@@ -2,6 +2,7 @@
 
 import { loadMilestones, saveMilestone, loadBackgrounds, saveBackgrounds } from './storage.js';
 import { earn } from './economy.js';
+import { unlockSkin } from './skins.js';
 
 export const MILESTONES = [
   { level: 25,  bones: 30,  reward: null,           label: 'Entdecker',  desc: '25 Level geschafft!' },
@@ -32,7 +33,10 @@ export function claimMilestone(milestone) {
         saveBackgrounds(bgs);
       }
     }
-    // skin unlocks will be handled when skins module exists
+    else if (milestone.reward.startsWith('skin_')) {
+      const skinId = milestone.reward.replace('skin_', '');
+      unlockSkin(skinId);
+    }
   }
 
   return milestone;

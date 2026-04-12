@@ -27,6 +27,7 @@ import {
   loadCollection, saveCollection,
   loadStreak, saveStreak,
   loadMascot, saveMascot,
+  loadBackgrounds, saveBackgrounds,
 } from './storage.js';
 
 import {
@@ -88,6 +89,7 @@ const G = {
   onWin:          null,
   onHUDUpdate:    null,
   onTutAdvance:   null,
+  background:     'cafe',
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1595,6 +1597,7 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('musicToggle').textContent = s.musicEnabled ? '🔊' : '🔇';
   document.getElementById('sfxToggle').textContent = s.sfxEnabled ? '🔊' : '🔇';
   document.getElementById('skinSelector').value = getActiveSkin();
+  document.getElementById('bgSelector').value = G.background;
   document.getElementById('settingsScreen').classList.remove('hidden');
 });
 
@@ -1615,6 +1618,21 @@ document.getElementById('skinSelector').addEventListener('change', e => {
       e.target.value = getActiveSkin();
       playSound('invalid');
     }
+  }
+});
+document.getElementById('bgSelector').addEventListener('change', e => {
+  const id = e.target.value;
+  const owned = loadBackgrounds().owned;
+  if (owned.includes(id)) {
+    G.background = id;
+    const data = loadBackgrounds();
+    data.active = id;
+    saveBackgrounds(data);
+    invalidateRoomDecorCache();
+    playSound('click');
+  } else {
+    e.target.value = G.background;
+    playSound('invalid');
   }
 });
 document.getElementById('settingsBackBtn').addEventListener('click', () => {
@@ -1851,6 +1869,7 @@ function loop(ts) {
 
 migrateIfNeeded();
 initSkins();
+G.background = loadBackgrounds().active;
 updateMascotParams();
 updateSplashMascot(loadMascot());
 const savedSettings = loadSettings();

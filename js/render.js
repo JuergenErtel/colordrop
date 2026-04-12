@@ -952,7 +952,7 @@ export function renderFrame(ctx, ts, G) {
   // Draw
   const theme     = THEMES[G.theme] || THEMES.EASY;
   const prevTheme = G.themePrev ? (THEMES[G.themePrev] || theme) : theme;
-  drawBackground(ctx, ts, theme, prevTheme, G.themeFade);
+  drawBackground(ctx, ts, theme, prevTheme, G.themeFade, G.background || 'cafe');
   drawRoomDecor(ctx, ts, theme, prevTheme, G.themeFade, G.level);
   if (!REDUCED_MOTION) drawFireflies(ctx, ts);
 
