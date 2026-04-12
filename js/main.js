@@ -1734,21 +1734,22 @@ function buildShopItem(type, id, def) {
   const owned = type === 'skin' ? ownsSkin(id) : ownsBg(id);
   const active = type === 'skin' ? getActiveSkin() === id : G.background === id;
   const isFree = def.cost === 0;
-  const canAfford = def.cost > 0 && getBalance() >= def.cost;
-  // Item can be bought if not owned, has a price, and player can afford it
-  const canBuy = !owned && !isFree && def.cost > 0 && canAfford;
-  // Item is locked if not owned and can't afford (show milestone hint if available)
-  const isLocked = !owned && !isFree && !canAfford;
+
+  // Skins: always buyable with fishbones (if affordable)
+  // Backgrounds: only unlockable via milestones, never purchasable
+  const canBuy = type === 'skin' && !owned && !isFree && getBalance() >= def.cost;
+  const tooExpensive = type === 'skin' && !owned && !isFree && getBalance() < def.cost;
+  const bgLocked = type === 'bg' && !owned && !isFree;
 
   const card = document.createElement('div');
-  card.className = 'shop-item' + (active ? ' active' : '') + (isLocked ? ' locked' : '');
+  card.className = 'shop-item' + (active ? ' active' : '') + ((tooExpensive || bgLocked) ? ' locked' : '');
 
   // Preview
   const preview = document.createElement('div');
   preview.className = 'shop-item-preview';
   if (type === 'skin') {
     const c = document.createElement('canvas');
-    c.width = 80; c.height = 80;
+    c.width = 100; c.height = 100;
     preview.appendChild(c);
     requestAnimationFrame(() => drawSkinPreview(c, id));
   } else {
@@ -1789,12 +1790,11 @@ function buildShopItem(type, id, def) {
     btn.className = 'shop-btn shop-btn--buy';
     btn.innerHTML = FISHBONE_ICON + ' ' + def.cost;
     btn.addEventListener('click', () => {
-      // Confirmation dialog
       if (!confirm(def.name + ' f\u00fcr ' + def.cost + ' Fischgr\u00e4ten kaufen?')) return;
       if (getBalance() >= def.cost) {
         setBalance(getBalance() - def.cost);
-        if (type === 'skin') { unlockSkin(id); setActiveSkin(id); }
-        else { unlockBg(id); setActiveBg(id); G.background = id; invalidateRoomDecorCache(); }
+        unlockSkin(id);
+        setActiveSkin(id);
         playSound('cat_unlock');
         updateBonesDisplay();
         buildShopGrid();
@@ -1803,15 +1803,17 @@ function buildShopItem(type, id, def) {
       }
     });
     status.appendChild(btn);
-  } else if (isLocked) {
+  } else if (tooExpensive) {
+    // Skin too expensive — show price greyed out
     const btn = document.createElement('span');
     btn.className = 'shop-btn shop-btn--locked';
-    if (def.milestone) {
-      btn.textContent = '\uD83D\uDD12 Level ' + def.milestone + ' oder ' + def.cost + ' \uD83D\uDC1F';
-    } else {
-      btn.textContent = FISHBONE_ICON + ' ' + def.cost;
-      btn.style.opacity = '0.5';
-    }
+    btn.innerHTML = FISHBONE_ICON + ' ' + def.cost;
+    status.appendChild(btn);
+  } else if (bgLocked) {
+    // Background locked — only via milestone
+    const btn = document.createElement('span');
+    btn.className = 'shop-btn shop-btn--locked';
+    btn.textContent = '\uD83D\uDD12 Level ' + (def.milestone || '?') + ' erreichen';
     status.appendChild(btn);
   }
   card.appendChild(status);
@@ -1821,32 +1823,60 @@ function buildShopItem(type, id, def) {
 
 function drawSkinPreview(canvas, skinId) {
   const ctx = canvas.getContext('2d');
-  const cx = 40, cy = 40, r = 28;
-  // Simple ball with skin effect
-  const grad = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.2, 0, cx, cy, r);
+  const cx = 50, cy = 50, r = 36;
+
+  // Base ball gradient (coral color)
+  const grad = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, r * 0.1, cx, cy, r);
   grad.addColorStop(0, '#F5A898');
-  grad.addColorStop(0.7, '#E8897A');
+  grad.addColorStop(0.6, '#E8897A');
   grad.addColorStop(1, '#C86B5C');
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.fillStyle = grad;
   ctx.fill();
 
+  // Yarn strand texture (8 curved lines)
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.95, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 1.5;
+  for (let s = 0; s < 8; s++) {
+    const a = (s * Math.PI) / 4;
+    const ox = Math.cos(a) * r * 0.3;
+    const oy = Math.sin(a) * r * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    ctx.quadraticCurveTo(cx + ox, cy + oy, cx + Math.cos(a + Math.PI) * r, cy + Math.sin(a + Math.PI) * r);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Skin-specific overlay
   if (skinId === 'glitter') {
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    for (let i = 0; i < 8; i++) {
-      const a = (i * 0.8) % (Math.PI * 2);
-      const sr = r * 0.4 + (i % 3) * 5;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    const sparkles = [[0.3,-0.4],[-0.2,0.3],[0.5,0.1],[-0.4,-0.2],[0.1,0.5],[-0.1,-0.5],[0.4,0.4],[-0.3,0.1]];
+    for (const [sx, sy] of sparkles) {
       ctx.beginPath();
-      ctx.arc(cx + Math.cos(a) * sr, cy + Math.sin(a) * sr, 2, 0, Math.PI * 2);
+      ctx.arc(cx + sx * r, cy + sy * r, 2.5, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.restore();
   } else if (skinId === 'crystal') {
-    ctx.globalAlpha = 0.25;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.globalAlpha = 0.2;
     ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    for (let f = 0; f < 5; f++) {
-      const a1 = f * 1.26, a2 = a1 + 0.8;
+    ctx.lineWidth = 1.2;
+    for (let f = 0; f < 6; f++) {
+      const a1 = f * 1.05, a2 = a1 + 0.7;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r);
@@ -1854,20 +1884,90 @@ function drawSkinPreview(canvas, skinId) {
       ctx.closePath();
       ctx.stroke();
     }
-    ctx.globalAlpha = 1;
+    // Prismatic shimmer
+    ctx.globalAlpha = 0.08;
+    const prism = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    prism.addColorStop(0, '#ff0000'); prism.addColorStop(0.33, '#00ff00');
+    prism.addColorStop(0.66, '#0000ff'); prism.addColorStop(1, '#ff0000');
+    ctx.fillStyle = prism;
+    ctx.fill();
+    ctx.restore();
   } else if (skinId === 'gold') {
-    ctx.globalAlpha = 0.4;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.9, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.globalAlpha = 0.35;
     ctx.strokeStyle = '#FFD700';
     ctx.lineWidth = 2;
-    for (let g = 0; g < 4; g++) {
-      const gy = cy - r * 0.6 + g * r * 0.4;
+    for (let g = 0; g < 5; g++) {
+      const gy = cy - r * 0.7 + g * r * 0.35;
       ctx.beginPath();
       ctx.moveTo(cx - r, gy);
-      ctx.quadraticCurveTo(cx, gy + 6, cx + r, gy);
+      ctx.quadraticCurveTo(cx, gy + 8, cx + r, gy);
       ctx.stroke();
     }
-    ctx.globalAlpha = 1;
+    ctx.restore();
   }
+
+  // Cat face (eyes + nose + mouth)
+  if (skinId !== 'crystal') {
+    // Eyes
+    ctx.fillStyle = '#402818';
+    ctx.beginPath();
+    ctx.ellipse(cx - r * 0.22, cy - r * 0.1, 3, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + r * 0.22, cy - r * 0.1, 3, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Eye gleam
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.18, cy - r * 0.15, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.26, cy - r * 0.15, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Nose
+    ctx.fillStyle = '#D4756B';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.05);
+    ctx.lineTo(cx - 3, cy + r * 0.15);
+    ctx.lineTo(cx + 3, cy + r * 0.15);
+    ctx.closePath();
+    ctx.fill();
+    // Mouth
+    ctx.strokeStyle = '#B0605A';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.15);
+    ctx.quadraticCurveTo(cx - 5, cy + r * 0.28, cx - 8, cy + r * 0.2);
+    ctx.moveTo(cx, cy + r * 0.15);
+    ctx.quadraticCurveTo(cx + 5, cy + r * 0.28, cx + 8, cy + r * 0.2);
+    ctx.stroke();
+  }
+
+  // Specular highlight
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  const spec = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, 0, cx - r * 0.3, cy - r * 0.35, r * 0.45);
+  spec.addColorStop(0, '#fff');
+  spec.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = spec;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Rim light
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 1, -0.8, 0.8);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawBgPreview(canvas, bgId) {
