@@ -81,16 +81,11 @@
     gap: 1.5rem;
 }
 
-.ls-title {
-    font-family: var(--f-head);
-    font-size: clamp(2rem, 9vw, 3.2rem);
-    letter-spacing: .08em;
-    line-height: 1;
-    background: linear-gradient(130deg, #d4873f 0%, #c96b4f 45%, #a67c52 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-align: center;
+.ls-title-logo {
+    width: clamp(200px, 60vw, 360px);
+    height: auto;
+    display: block;
+    margin: 0 auto;
 }
 
 .ls-tagline {
