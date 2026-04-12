@@ -405,6 +405,34 @@ export function solveHint(tubes) {
   return null;
 }
 
+// ── Seeded RNG for ice positions ─────────────────────────────────────────
+function mulberry32Ice(seed) {
+  let s = seed | 0;
+  return function () {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function getIcePositions(n, tubes) {
+  if (n < 30) return [];
+  const rng = mulberry32Ice(n * 1234567 + 42);
+  if (rng() >= 0.20) return [];
+  const positions = [];
+  const iceCount = 1 + (rng() < 0.3 ? 1 : 0);
+  const candidates = [];
+  for (let t = 0; t < tubes.length; t++) {
+    if (tubes[t].length >= 2) candidates.push(t);
+  }
+  for (let ic = 0; ic < iceCount && candidates.length > 0; ic++) {
+    const ti = Math.floor(rng() * candidates.length);
+    positions.push(candidates.splice(ti, 1)[0]);
+  }
+  return positions;
+}
+
 // ── Daily level number ────────────────────────────────────────────────────
 export function dailyLevelNum() {
   const epoch = new Date('2025-01-01').getTime();

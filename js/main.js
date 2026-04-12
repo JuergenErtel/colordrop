@@ -33,7 +33,7 @@ import {
   levelConfig, parForLevel, isTimedLevel, timerDuration,
   calcStars, checkWinState, isSolved, canMove,
   generateTubes, generateTutorialTubes, solveHint,
-  dailyLevelNum, generateDailyTubes,
+  dailyLevelNum, generateDailyTubes, getIcePositions,
 } from './engine.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
@@ -81,6 +81,7 @@ const G = {
   frameTime:      0,
   lastTime:       -1,
   solvedTubes:    new Set(),
+  frozenBalls:    new Set(),
   onWin:          null,
   onHUDUpdate:    null,
   onTutAdvance:   null,
@@ -318,6 +319,11 @@ function generateLevel(n) {
   G.hintUntil    = 0;
   G.hintCooldown = false;
   G.solvedTubes  = new Set();
+  G.frozenBalls  = new Set();
+  const icePositions = getIcePositions(n, G.tubes);
+  for (const ti of icePositions) {
+    G.frozenBalls.add(`${ti}-0`);
+  }
   resetAnim();
 
   // Staggered tube drop-in animation
@@ -371,7 +377,7 @@ function generateLevel(n) {
 
 function doMove(from, to) {
   // Undo snapshot (capped at 5)
-  G.history.push(G.tubes.map(t => [...t]));
+  G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls) });
   if (G.history.length > 5) G.history.shift();
 
   const tubeCount = G.tubes.length;
@@ -409,7 +415,14 @@ function undo() {
   if (!canUndo(G.history.length) || ANIM.busy) return;
   trackUndo();
   playSound('undo');
-  G.tubes        = G.history.pop();
+  const snapshot = G.history.pop();
+  if (Array.isArray(snapshot)) {
+    G.tubes = snapshot;
+    G.frozenBalls = new Set();
+  } else {
+    G.tubes = snapshot.tubes;
+    G.frozenBalls = snapshot.frozen;
+  }
   G.selected     = -1;
   G.selectedTime = -1;
   G.moves        = Math.max(0, G.moves - 1);
@@ -532,7 +545,7 @@ function handleInput(lx, ly) {
   } else if (idx === G.selected) {
     G.selected     = -1;
     G.selectedTime = -1;
-  } else if (canMove(G.tubes, G.selected, idx)) {
+  } else if (canMove(G.tubes, G.selected, idx) && !G.frozenBalls.has(`${G.selected}-${G.tubes[G.selected].length - 1}`)) {
     const from     = G.selected;
     G.selected     = -1;
     G.selectedTime = -1;
@@ -1240,6 +1253,7 @@ function startTutorial() {
   G.hintUntil    = 0;
   G.hintCooldown = false;
   G.solvedTubes  = new Set();
+  G.frozenBalls  = new Set();
   resetAnim();
 
   G.tubes = generateTutorialTubes();
@@ -1456,6 +1470,7 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
   G.hintUntil    = 0;
   G.hintCooldown = false;
   G.solvedTubes  = new Set();
+  G.frozenBalls  = new Set();
   G.memoryRevealed = true;
   G.memoryRevealEnd = 0;
   resetAnim();

@@ -249,6 +249,26 @@ function updateArc(ts, G) {
     }, clearDuration);
   }
 
+  // Ice thaw: check if any frozen ball is now alone in its tube
+  if (G.frozenBalls && G.frozenBalls.size > 0) {
+    for (const key of G.frozenBalls) {
+      const [ti] = key.split('-').map(Number);
+      if (G.tubes[ti] && G.tubes[ti].length === 1) {
+        ANIM.iceThaw.set(ti, {
+          startTime: ts,
+          duration: 800,
+          ballColor: G.tubes[ti][0],
+        });
+        playSound('solved');
+        const frozenKey = key;
+        setTimeout(() => {
+          G.frozenBalls.delete(frozenKey);
+          ANIM.iceThaw.delete(ti);
+        }, 800);
+      }
+    }
+  }
+
   ANIM.arc  = null;
   ANIM.busy = false;
 
@@ -505,7 +525,7 @@ function drawTubes(ctx, ts, G) {
         ? (cx2, cy2) => drawBallSymbol(ctx, cx2, cy2, _color, COLOR_SYMBOLS[_color] || '?', false, ts)
         : (G.dailyModifier === 'memory' && G.memoryRevealed === false && !sel && !isTop)
         ? (cx2, cy2) => drawBallHidden(ctx, cx2, cy2, false, ts)
-        : (cx2, cy2) => drawBall(ctx, cx2, cy2, _color, false, ts);
+        : (cx2, cy2) => drawBall(ctx, cx2, cy2, _color, false, ts, G.frozenBalls && G.frozenBalls.has(`${i}-${bi}`));
 
       // Apply tube-clear shrink/fade if active
       const finalSx = jSx * clearScale;
