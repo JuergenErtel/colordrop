@@ -227,7 +227,6 @@
     transition: transform 0.08s ease !important;
 }
 
-/* ── Weekly button ───────────────────────────────────── */
-.weekly-btn { background: linear-gradient(180deg, #8B5CF6, #6D28D9) !important; }
+/* ── Weekly dots ─────────────────────────────────────── */
 .weekly-dot { display:inline-block; width:20px; height:20px; border-radius:50%; border:2px solid #FFD700; }
 .weekly-dot.done { background: #FFD700; }
