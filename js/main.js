@@ -33,8 +33,9 @@ import {
   levelConfig, parForLevel, isTimedLevel, timerDuration,
   calcStars, checkWinState, isSolved, canMove,
   generateTubes, generateTutorialTubes, solveHint,
-  dailyLevelNum, generateDailyTubes, getIcePositions,
+  dailyLevelNum, generateDailyTubes, getIcePositions, isDogLevel,
 } from './engine.js';
+import { DOG, startDog, endDog, updateDog } from './dog.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
@@ -325,6 +326,7 @@ function generateLevel(n) {
     G.frozenBalls.add(`${ti}-0`);
   }
   resetAnim();
+  endDog();
 
   // Staggered tube drop-in animation
   const introNow = performance.now();
@@ -348,6 +350,11 @@ function generateLevel(n) {
     ANIM.busy = true;
     document.getElementById('timeoutOverlay').classList.remove('show');
     showBlitzOverlay(n);
+  } else if (isDogLevel(n) && !G.isDailyChallenge) {
+    const cfg = levelConfig(n);
+    document.getElementById('dogLevel').textContent = n;
+    document.getElementById('dogTier').textContent = cfg.tier;
+    document.getElementById('dogOverlay').classList.add('show');
   } else if (isTetrisLevel(n) && !G.isDailyChallenge) {
     // Tetris round: replace normal puzzle with drop mode
     G.timer = null;
@@ -621,6 +628,7 @@ function updateHUD() {
 }
 
 function showWin() {
+  endDog();
   triggerCatWinJump();
   if (!G.won) return;
   G.won = false; // prevent re-entry
@@ -1523,6 +1531,13 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   invalidateRoomDecorCache();
 });
 
+// ── Dog handlers ─────────────────────────────────────────
+document.getElementById('dogStartBtn').addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('dogOverlay').classList.remove('show');
+  startDog();
+});
+
 // ── Tetris handlers ─────────────────────────────────────────
 document.getElementById('tetrisStartBtn').addEventListener('click', () => {
   playSound('click');
@@ -1760,6 +1775,27 @@ function loop(ts) {
           document.getElementById('tetrisTotal').textContent = TETRIS.total;
           document.getElementById('tetrisGameOverOverlay').classList.add('show');
         }, 500);
+      }
+    }
+  }
+
+  // Dog: update state machine
+  if (DOG.active && !G.won) {
+    const dogAction = updateDog(ts, G.tubes, G.solvedTubes, ANIM.busy);
+    if (dogAction === 'warn' && ts - DOG.warning.startTime < 50) {
+      playSound('click'); // placeholder for dog_warn
+    }
+    if (dogAction === 'attack') {
+      playSound('click'); // placeholder for dog_bark
+      const destTube = DOG.attacking.destTube;
+      const ballIdx = G.tubes[destTube].length - 1;
+      if (ballIdx >= 0) {
+        ANIM.bounceMap.set(`${destTube}-${ballIdx}`, {
+          startTime: ts, duration: 480, amplitude: 8,
+        });
+        ANIM.tubeWobble.set(destTube, {
+          startTime: ts, duration: 400, amplitude: 2 * Math.PI / 180,
+        });
       }
     }
   }

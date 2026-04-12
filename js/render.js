@@ -16,6 +16,7 @@ import { drawContainer } from './containers.js';
 import { drawBall, drawBallSymbol, drawBallHidden } from './balls.js';
 import { COLOR_SYMBOLS } from './daily.js';
 import { drawMascotCat } from './cat-renderer.js';
+import { drawDog } from './dog-renderer.js';
 import { TETRIS, tetrisBallProgress } from './tetris.js';
 import { playSound } from './audio.js';
 import { checkWinState, isSolved } from './engine.js';
@@ -984,6 +985,7 @@ export function renderFrame(ctx, ts, G) {
 
   drawBoardFrame(ctx, ts, G);
   drawTubes(ctx, ts, G);
+  drawDog(ctx, ts, G.tubes.length);
   drawHintOverlay(ctx, ts, G);
 
   if (ANIM.arc)                        drawArcBall(ctx, ts, dt / 1000, G);
