@@ -112,19 +112,21 @@
 /* ── Timer bar ─────────────────────────────────────────── */
 .timer-bar {
     position: absolute;
-    top: 59px;          /* just below the HUD strip */
+    top: 57px;          /* just below the HUD strip */
     left: 0;
     width: 100%;
-    height: 6px;
+    height: 10px;
     background: #4caf50;
     transform-origin: left;
     z-index: 9;
     display: none;      /* hidden until a timed level starts */
     transition: background .4s;
+    border-radius: 0 5px 5px 0;
+    box-shadow: 0 0 8px currentColor, 0 2px 4px rgba(0,0,0,.4);
 }
 .timer-bar.visible { display: block; }
-.timer-bar.pulse   { animation: timer-pulse .5s ease-in-out infinite alternate; }
-@keyframes timer-pulse { from { opacity: .55; } to { opacity: 1; } }
+.timer-bar.pulse   { animation: timer-pulse .4s ease-in-out infinite alternate; }
+@keyframes timer-pulse { from { opacity: .6; transform: scaleY(1); } to { opacity: 1; transform: scaleY(1.3); } }
 
 /* ── Fish bone counter ─────────────────────────────────── */
 .hud-bones { font-family: var(--f-head); font-size: .75rem; color: var(--gold); letter-spacing: .05em; }

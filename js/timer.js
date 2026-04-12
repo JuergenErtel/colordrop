@@ -48,6 +48,7 @@ export function drawTimerBar(bar, timer, frameTime) {
   const pct = remaining / timer.duration;
 
   bar.style.width      = (pct * 100) + '%';
-  bar.style.background = `hsl(${Math.round(pct * 120)}, 80%, 50%)`;
+  bar.style.background = `hsl(${Math.round(pct * 120)}, 100%, 55%)`;
+  bar.style.color      = `hsl(${Math.round(pct * 120)}, 100%, 55%)`; // for box-shadow currentColor
   bar.classList.toggle('pulse', pct < 0.2);
 }
