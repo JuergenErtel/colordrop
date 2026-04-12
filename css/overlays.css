@@ -349,6 +349,71 @@
     75%           { opacity: .7; transform: translateX(4px); }
 }
 
+/* ── Dog (Strolch) Tutorial Visualization ─────────────────── */
+.dog-tut {
+    position: relative;
+    width: 200px; height: 120px;
+    margin: .8rem auto 1rem;
+}
+
+/* Three tubes */
+.dog-tut-tubes {
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 14px;
+}
+.dog-tut-tube {
+    width: 40px; height: 54px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,.06));
+    display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center; gap: 3px; padding-bottom: 4px;
+}
+.dog-tut-ball {
+    width: 14px; height: 14px; border-radius: 50%;
+    opacity: .8;
+}
+
+/* The ball being stolen — flies up and to the right toward the dog */
+.dog-tut-ball--stolen {
+    animation: dogStealBall 2.8s ease-in-out infinite;
+}
+@keyframes dogStealBall {
+    0%, 30%  { transform: translate(0, 0); opacity: .8; }
+    55%      { transform: translate(52px, -60px); opacity: .9; }
+    70%      { transform: translate(52px, -60px); opacity: 0; }
+    71%, 100%{ transform: translate(0, 0); opacity: 0; }
+    95%      { opacity: 0; }
+    100%     { opacity: .8; }
+}
+
+/* Top ball drops down when stolen ball is removed */
+.dog-tut-ball--top {
+    animation: dogBallDrop 2.8s ease-in-out infinite;
+}
+@keyframes dogBallDrop {
+    0%, 55%  { transform: translateY(0); }
+    70%      { transform: translateY(4px); }
+    100%     { transform: translateY(0); }
+}
+
+/* Animated dog running in, grabbing, running out */
+.dog-tut-dog {
+    position: absolute; bottom: 8px; right: -10px;
+    font-size: 2rem; line-height: 1;
+    animation: dogRun 2.8s ease-in-out infinite;
+}
+@keyframes dogRun {
+    0%       { transform: translateX(40px) scaleX(-1); opacity: 0; }
+    20%      { transform: translateX(0) scaleX(-1); opacity: 1; }
+    45%      { transform: translateX(-5px) scaleX(-1) rotate(-8deg); opacity: 1; }
+    60%      { transform: translateX(-5px) scaleX(-1) rotate(0deg); opacity: 1; }
+    80%      { transform: translateX(50px) scaleX(-1); opacity: .8; }
+    100%     { transform: translateX(50px) scaleX(-1); opacity: 0; }
+}
+
 /* ── Achievement Overlay ──────────────────────────────────── */
 .achievement-overlay {
     position: fixed; inset: 0;

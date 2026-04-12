@@ -36,8 +36,10 @@ export function updateTimer(timer, frameTime, won) {
  *   frameTime — current rAF timestamp
  */
 export function drawTimerBar(bar, timer, frameTime) {
+  const countdown = document.getElementById('timerCountdown');
   if (!timer) {
     bar.classList.remove('visible', 'pulse');
+    if (countdown) countdown.classList.remove('visible', 'urgent');
     return;
   }
   bar.classList.add('visible');
@@ -46,9 +48,20 @@ export function drawTimerBar(bar, timer, frameTime) {
     ? Math.max(0, timer.endTime - frameTime)
     : (timer.active === false && timer.endTime > 0 ? 0 : timer.duration);
   const pct = remaining / timer.duration;
+  const hue = Math.round(pct * 120);
+  const clr = `hsl(${hue}, 100%, 55%)`;
 
   bar.style.width      = (pct * 100) + '%';
-  bar.style.background = `hsl(${Math.round(pct * 120)}, 100%, 55%)`;
-  bar.style.color      = `hsl(${Math.round(pct * 120)}, 100%, 55%)`; // for box-shadow currentColor
+  bar.style.background = clr;
+  bar.style.color      = clr;
   bar.classList.toggle('pulse', pct < 0.2);
+
+  // Countdown number
+  if (countdown) {
+    countdown.classList.add('visible');
+    const secs = Math.ceil(remaining / 1000);
+    countdown.textContent = secs;
+    countdown.style.color = clr;
+    countdown.classList.toggle('urgent', pct < 0.2);
+  }
 }

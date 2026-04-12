@@ -37,6 +37,7 @@
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>
                 <div id="timerBar" class="timer-bar"></div>
+                <div id="timerCountdown" class="timer-countdown"></div>
             </div>
         </div>
 
@@ -165,6 +166,23 @@
             <div class="blitz-card">
                 <h1 class="blitz-title">&#x1F436; STROLCH IST DA! &#x1F436;</h1>
                 <p class="blitz-sub">LEVEL <span id="dogLevel"></span> &middot; <span id="dogTier"></span></p>
+                <!-- Dog steal visualization -->
+                <div class="dog-tut">
+                    <div class="dog-tut-tubes">
+                        <div class="dog-tut-tube">
+                            <div class="dog-tut-ball dog-tut-ball--top" style="background:#e63c2f"></div>
+                            <div class="dog-tut-ball" style="background:#2e86c1"></div>
+                        </div>
+                        <div class="dog-tut-tube">
+                            <div class="dog-tut-ball dog-tut-ball--stolen" style="background:#28b463"></div>
+                            <div class="dog-tut-ball" style="background:#f1c40f"></div>
+                        </div>
+                        <div class="dog-tut-tube">
+                            <div class="dog-tut-ball" style="background:#8e44ad"></div>
+                        </div>
+                    </div>
+                    <div class="dog-tut-dog">🐕</div>
+                </div>
                 <p class="blitz-desc">Strolch klaut Kn&auml;uel und bringt Chaos!<br><em>Sortiere trotzdem alles richtig.</em></p>
                 <button id="dogStartBtn" class="blitz-btn">BEREIT!</button>
             </div>
