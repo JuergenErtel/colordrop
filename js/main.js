@@ -33,7 +33,7 @@ import {
 import {
   levelConfig, parForLevel, isTimedLevel, timerDuration,
   calcStars, checkWinState, isSolved, canMove,
-  generateTubes, generateTutorialTubes, solveHint,
+  generateTubes, generateTutorialTubes, solveHint, findJokerTube,
   dailyLevelNum, generateDailyTubes, getIcePositions, isDogLevel,
 } from './engine.js';
 import { DOG, startDog, endDog, updateDog } from './dog.js';
@@ -87,6 +87,7 @@ const G = {
   lastTime:       -1,
   solvedTubes:    new Set(),
   frozenBalls:    new Set(),
+  jokerUsed:      true,
   onWin:          null,
   onHUDUpdate:    null,
   onTutAdvance:   null,
@@ -326,6 +327,7 @@ function generateLevel(n) {
   G.hintCooldown = false;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
+  G.jokerUsed    = findJokerTube(G.tubes) === -1; // false if joker present
   const icePositions = getIcePositions(n, G.tubes);
   for (const ti of icePositions) {
     G.frozenBalls.add(`${ti}-0`);
@@ -389,7 +391,7 @@ function generateLevel(n) {
 
 function doMove(from, to) {
   // Undo snapshot (capped at 5)
-  G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls) });
+  G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls), jokerUsed: G.jokerUsed });
   if (G.history.length > 5) G.history.shift();
 
   const tubeCount = G.tubes.length;
@@ -435,6 +437,7 @@ function undo() {
     G.tubes = snapshot.tubes;
     G.frozenBalls = snapshot.frozen;
   }
+  G.jokerUsed    = snapshot.jokerUsed ?? true;
   G.selected     = -1;
   G.selectedTime = -1;
   G.moves        = Math.max(0, G.moves - 1);
@@ -493,7 +496,7 @@ function showHintAction() {
 
   let move;
   try {
-    move = solveHint(G.tubes);
+    move = solveHint(G.tubes, G.jokerUsed);
   } catch (e) {
     console.error('solveHint failed:', e);
     return;
@@ -1508,6 +1511,7 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
   G.hintCooldown = false;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
+  G.jokerUsed    = findJokerTube(G.tubes) === -1;
   G.memoryRevealed = true;
   G.memoryRevealEnd = 0;
   resetAnim();

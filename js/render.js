@@ -19,7 +19,7 @@ import { drawMascotCat } from './cat-renderer.js';
 import { drawDog } from './dog-renderer.js';
 import { TETRIS, tetrisBallProgress } from './tetris.js';
 import { playSound } from './audio.js';
-import { checkWinState, isSolved } from './engine.js';
+import { checkWinState, isSolved, applyJokerRemoval } from './engine.js';
 import { updateTimer, drawTimerBar } from './timer.js';
 
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -194,6 +194,38 @@ function updateArc(ts, G) {
 
   playSound('pop');
 
+  // Joker extra-ball removal: when joker first shares a tube with colored
+  // balls, one ball of that color vanishes from another tube.
+  if (!G.jokerUsed) {
+    const tube = G.tubes[toTube];
+    if (tube.includes('joker') && tube.length >= 2 && tube.some(c => c !== 'joker')) {
+      const removal = applyJokerRemoval(G.tubes, toTube);
+      if (removal) {
+        G.jokerUsed = true;
+        // Visual poof at removed ball's position
+        const rmCx = tubeCX(removal.tubeIdx, tubeCount);
+        const rmCy = ballCY(removal.ballIdx);
+        const pal = PALETTE[removal.color];
+        if (pal) {
+          for (let p = 0; p < 12; p++) {
+            const angle = (Math.PI * 2 * p) / 12;
+            const speed = 3 + Math.random() * 3;
+            spawnParticle(
+              rmCx, rmCy,
+              Math.cos(angle) * speed,
+              Math.sin(angle) * speed - 2,
+              pal.bright,
+              4 + Math.random() * 3,
+              400 + Math.random() * 300,
+              0.1,
+            );
+          }
+        }
+        playSound('solved');
+      }
+    }
+  }
+
   // Tube solved → clear animation (balls vanish with effect)
   if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube]) && G.tubes[toTube].length > 0) {
     G.solvedTubes.add(toTube);
@@ -217,6 +249,7 @@ function updateArc(ts, G) {
       if (!ANIM.tubeClear.has(savedTubeIdx)) return;
       ANIM.tubeClear.delete(savedTubeIdx);
       G.tubes[savedTubeIdx].length = 0;
+      G.solvedTubes.delete(savedTubeIdx);
       // Screen shake on clear
       if (!REDUCED_MOTION) {
         ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 3 };

@@ -106,6 +106,46 @@ export function checkWinState(tubes) {
   return tubes.every(tube => isSolved(tube));
 }
 
+// ── Joker ball removal ───────────────────────────────────────────────────
+// When the joker first shares a tube with colored balls, one ball of that
+// color is removed from another tube (the joker is an extra ball).
+// Returns { color, tubeIdx, ballIdx } of the removed ball, or null.
+export function applyJokerRemoval(tubes, jokerTubeIdx) {
+  const tube = tubes[jokerTubeIdx];
+  const jokerColor = tube.find(c => c !== 'joker');
+  if (!jokerColor) return null;
+
+  // Prefer removing from the top of another tube (cleanest visually)
+  for (let ti = 0; ti < tubes.length; ti++) {
+    if (ti === jokerTubeIdx) continue;
+    const t = tubes[ti];
+    if (t.length > 0 && t[t.length - 1] === jokerColor) {
+      t.pop();
+      return { color: jokerColor, tubeIdx: ti, ballIdx: t.length };
+    }
+  }
+  // Fallback: remove from anywhere
+  for (let ti = 0; ti < tubes.length; ti++) {
+    if (ti === jokerTubeIdx) continue;
+    const t = tubes[ti];
+    for (let bi = t.length - 1; bi >= 0; bi--) {
+      if (t[bi] === jokerColor) {
+        t.splice(bi, 1);
+        return { color: jokerColor, tubeIdx: ti, ballIdx: bi };
+      }
+    }
+  }
+  return null;
+}
+
+// Find which tube index contains the joker, or -1
+export function findJokerTube(tubes) {
+  for (let i = 0; i < tubes.length; i++) {
+    if (tubes[i].includes('joker')) return i;
+  }
+  return -1;
+}
+
 // ── Move validation ───────────────────────────────────────────────────────
 export function canMove(tubes, from, to) {
   if (from === to) return false;
@@ -171,19 +211,21 @@ export function generateTubes(n) {
       }
     }
 
-    // Joker ball: ~15% chance from level 20+, replaces one random ball
-    if (n >= 20 && rng() < 0.15) {
-      const ji = Math.floor(rng() * pool.length);
-      pool[ji] = 'joker';
-    }
+    // Joker ball: ~15% chance from level 20+, extra ball in an empty tube
+    const hasJoker = n >= 20 && rng() < 0.15;
 
     // Distribute into tubes
     const result = [];
     for (let t = 0; t < colors.length; t++) {
       result.push(pool.slice(t * capacity, (t + 1) * capacity));
     }
-    // Add empty tubes
-    for (let e = 0; e < empty; e++) result.push([]);
+    // Add empty tubes (joker occupies one if present)
+    if (hasJoker) {
+      result.push(['joker']);
+      for (let e = 1; e < empty; e++) result.push([]);
+    } else {
+      for (let e = 0; e < empty; e++) result.push([]);
+    }
 
     // Verify solvability (skip for 2+ empty tubes — virtually always solvable)
     if (empty >= 2 || isSolvable(result) >= 0) return result;
@@ -363,7 +405,41 @@ function countTopRun(tube) {
   return run;
 }
 
-export function solveHint(tubes) {
+export function solveHint(tubes, jokerUsed = true) {
+  // If joker hasn't been committed yet, pre-remove surplus ball for each
+  // possible color match and return the best hint found.
+  if (!jokerUsed) {
+    const jti = findJokerTube(tubes);
+    if (jti !== -1) {
+      const colors = new Set();
+      for (const t of tubes) for (const c of t) if (c !== 'joker') colors.add(c);
+      let bestHint = null;
+      for (const color of colors) {
+        const copy = tubes.map(t => [...t]);
+        // Simulate: move joker next to this color, then remove surplus
+        // Just pre-remove one ball of this color
+        let removed = false;
+        for (let ti = 0; ti < copy.length; ti++) {
+          const t = copy[ti];
+          if (t.length > 0 && t[t.length - 1] === color) {
+            t.pop(); removed = true; break;
+          }
+        }
+        if (!removed) {
+          for (let ti = 0; ti < copy.length; ti++) {
+            const idx = copy[ti].lastIndexOf(color);
+            if (idx !== -1) { copy[ti].splice(idx, 1); removed = true; break; }
+          }
+        }
+        if (removed) {
+          const hint = solveHint(copy, true);
+          if (hint) { bestHint = hint; break; }
+        }
+      }
+      return bestHint;
+    }
+  }
+
   function serialize(ts) { return ts.map(t => t.join(',')).join('|'); }
   function cloneTs(ts)    { return ts.map(t => [...t]); }
 
