@@ -1299,36 +1299,20 @@ function scheduleRiser(config, barStart) {
   src.stop(barStart + riserDur + 0.05);
 }
 
-// ── Cat Choir — sings "Kit-ty-sort!" ─────────────────────────────────────
-// Child-like cat voices singing the game name.
-// 4 bright voices with slight pitch/timing offsets for choir effect.
+// ── Cat Choir — "Kit-ty-sort!" jingle ────────────────────────────────────
+// Bright children's humming choir with consonant clicks for rhythm.
+// Pure sine tones = clear pitch. Clicks = recognizable "K", "T", "S".
 
-// Syllable definitions with formant TRANSITIONS (start → end)
-// Child formants are higher than adult formants
-const CHOIR_SYLLABLES = [
-  { // "KI" — crisp /k/ + bright /ɪ/
-    f1s: 550, f1e: 400,
-    f2s: 2400, f2e: 3000,   // higher F2 = child voice
-    dur: 0.20,
-    noiseDur: 0.03, noiseFreq: 4000, noiseVol: 1.5,
-  },
-  { // "TI" — crisp /t/ + bright /i/
-    f1s: 450, f1e: 320,
-    f2s: 2800, f2e: 3400,   // very high F2 = childlike /i/
-    dur: 0.18,
-    noiseDur: 0.025, noiseFreq: 6000, noiseVol: 1.8,
-  },
-  { // "SORT" — /s/ + round /ɔː/ + /t/
-    f1s: 600, f1e: 750,
-    f2s: 1300, f2e: 1000,
-    dur: 0.45,
-    noiseDur: 0.06, noiseFreq: 8000, noiseVol: 1.5,
-  },
+// Syllable timing and consonant definitions
+const CHOIR_NOTES = [
+  { dur: 0.22, click: 3500, clickVol: 0.25 },  // "Kit" — /k/ click
+  { dur: 0.18, click: 5000, clickVol: 0.20 },  // "ty"  — /t/ click
+  { dur: 0.55, click: 7000, clickVol: 0.18 },  // "sort" — /s/ hiss + /t/ end
 ];
 
-// Choir melodies
+// Choir melodies (scale degrees)
 const CHOIR_MELODIES = [
-  [4, 4, 2],     // sol-sol-mi
+  [4, 4, 2],     // sol-sol-mi  (iconic, easy to recognize)
   [2, 4, 7],     // mi-sol-do'
   [4, 2, 0],     // sol-mi-do
   [0, 2, 4],     // do-re-mi
@@ -1344,195 +1328,123 @@ function scheduleCatChoir(config, barStart) {
   const barDur = barDuration(config.bpm, config.beatsPerBar);
 
   // ── Duck the music during choir ──
-  // Briefly lower master volume so choir cuts through
-  const totalChoirDur = 1.2;  // approximate duration of all syllables
+  const totalChoirDur = 1.1;
   const choirStart = barStart + barDur * 0.45;
   const duckStart = choirStart - 0.1;
   _masterGain.gain.setValueAtTime(_volume, duckStart);
-  _masterGain.gain.linearRampToValueAtTime(_volume * 0.2, duckStart + 0.08);
-  _masterGain.gain.setValueAtTime(_volume * 0.2, duckStart + totalChoirDur);
-  _masterGain.gain.linearRampToValueAtTime(_volume, duckStart + totalChoirDur + 0.3);
+  _masterGain.gain.linearRampToValueAtTime(_volume * 0.18, duckStart + 0.06);
+  _masterGain.gain.setValueAtTime(_volume * 0.18, duckStart + totalChoirDur);
+  _masterGain.gain.linearRampToValueAtTime(_volume, duckStart + totalChoirDur + 0.4);
 
-  // ── Choir output — bypasses masterGain (not ducked) ──
+  // ── Choir output (bypasses masterGain) ──
   const choirBus = ctx.createGain();
-  choirBus.gain.value = 0.55; // louder choir — must cut through clearly
+  choirBus.gain.value = 0.6;
   choirBus.connect(ctx.destination);
 
   const melodyIdx = Math.floor(_barIndex / 12) % CHOIR_MELODIES.length;
   const choirMelody = CHOIR_MELODIES[melodyIdx];
 
-  const numVoices = 4;
-  const voiceDetune = [8, -8, 3, -3];  // slight spread for choir width
+  // 5 voices with slight detuning = warm children's choir
+  const numVoices = 5;
+  const voiceDetune = [10, -10, 5, -5, 0];
+  // Alternate octaves for richness (some voices an octave higher)
+  const voiceOctave = [0, 0, 12, 12, 0];
 
   for (let voice = 0; voice < numVoices; voice++) {
-    const timeJitter = (Math.random() - 0.5) * 0.02;
-    let syllableTime = choirStart + timeJitter;
+    const timeJitter = (Math.random() - 0.5) * 0.015;
+    let noteTime = choirStart + timeJitter;
 
-    for (let s = 0; s < CHOIR_SYLLABLES.length; s++) {
-      const syl = CHOIR_SYLLABLES[s];
+    for (let s = 0; s < CHOIR_NOTES.length; s++) {
+      const note = CHOIR_NOTES[s];
       const melDegree = choirMelody[s];
-
       const semi = scaleNoteToSemi(melDegree, config.scale);
-      // Child register: ~600-1100 Hz (bright and clear)
-      let baseFreq = semiToFreq(config.root, semi + 12);
-      while (baseFreq < 550) baseFreq *= 2;
-      while (baseFreq > 1100) baseFreq /= 2;
 
-      const t = syllableTime;
-      const dur = syl.dur;
+      // Child pitch range: 600-1000 Hz base
+      let baseFreq = semiToFreq(config.root, semi + 12 + voiceOctave[voice]);
+      while (baseFreq < 500) baseFreq *= 2;
+      while (baseFreq > 1200) baseFreq /= 2;
 
-      // ═══ CONSONANT — strong, distinct noise burst ═══
-      const nDur = syl.noiseDur;
-      const nLen = Math.floor(ctx.sampleRate * nDur);
-      const nBuf = ctx.createBuffer(1, nLen, ctx.sampleRate);
-      const nData = nBuf.getChannelData(0);
-      for (let i = 0; i < nLen; i++) nData[i] = Math.random() * 2 - 1;
+      const t = noteTime;
+      const dur = note.dur;
 
-      const nSrc = ctx.createBufferSource();
-      nSrc.buffer = nBuf;
-
-      // Highpass gives consonants bite
-      const nHp = ctx.createBiquadFilter();
-      nHp.type = 'highpass';
-      nHp.frequency.value = syl.noiseFreq * 0.5;
-      nHp.Q.value = 0.5;
-
-      const nBp = ctx.createBiquadFilter();
-      nBp.type = 'bandpass';
-      nBp.frequency.value = syl.noiseFreq;
-      nBp.Q.value = 1.5;
-
-      const nGain = ctx.createGain();
-      nGain.gain.setValueAtTime(syl.noiseVol * 0.15, t);
-      nGain.gain.exponentialRampToValueAtTime(0.001, t + nDur);
-
-      nSrc.connect(nHp);
-      nHp.connect(nBp);
-      nBp.connect(nGain);
-      nGain.connect(choirBus);
-      nSrc.start(t);
-      nSrc.stop(t + nDur + 0.01);
-
-      // ═══ VOWEL — sawtooth through MOVING formants ═══
-      const vowelStart = t + nDur * 0.4;
-      const vowelDur = dur - nDur * 0.2;
-      const isLast = s === CHOIR_SYLLABLES.length - 1;
-
-      // Triangle + square mix = child-like brightness without harshness
-      const saw = ctx.createOscillator();
-      saw.type = 'triangle';
-      saw.detune.value = voiceDetune[voice];
-
-      // Add a quiet square wave for harmonics (children have bright overtones)
-      const sq = ctx.createOscillator();
-      sq.type = 'square';
-      sq.frequency.value = baseFreq;
-      sq.detune.value = voiceDetune[voice];
-      const sqGain = ctx.createGain();
-      sqGain.gain.value = 0.15; // very quiet — just adds brightness
-      sq.connect(sqGain);
-
-      // Quick pitch scoop (child-like eager attack)
-      saw.frequency.setValueAtTime(baseFreq * 0.94, vowelStart);
-      saw.frequency.exponentialRampToValueAtTime(baseFreq, vowelStart + 0.03);
-      sq.frequency.setValueAtTime(baseFreq * 0.94, vowelStart);
-      sq.frequency.exponentialRampToValueAtTime(baseFreq, vowelStart + 0.03);
-
-      // Very subtle vibrato (children sing straighter)
-      const vib = ctx.createOscillator();
-      const vibG = ctx.createGain();
-      vib.frequency.value = 4 + Math.random();
-      vibG.gain.value = baseFreq * 0.005; // much less vibrato
-      vib.connect(vibG);
-      vibG.connect(saw.frequency);
-      vib.start(vowelStart);
-      vib.stop(vowelStart + vowelDur + 0.1);
-
-      // Brighter lowpass — children have more high-frequency energy
-      const soft = ctx.createBiquadFilter();
-      soft.type = 'lowpass';
-      soft.frequency.value = 5000;
-      soft.Q.value = 0.3;
-
-      // FORMANT 1 — wider Q = more natural, less nasal
-      const f1 = ctx.createBiquadFilter();
-      f1.type = 'bandpass';
-      f1.frequency.setValueAtTime(syl.f1s, vowelStart);
-      f1.frequency.linearRampToValueAtTime(syl.f1e, vowelStart + vowelDur * 0.3);
-      f1.Q.value = 2.5;  // wider = warmer, less ghostly
-
-      // FORMANT 2 — wider for child-like brightness
-      const f2 = ctx.createBiquadFilter();
-      f2.type = 'bandpass';
-      f2.frequency.setValueAtTime(syl.f2s, vowelStart);
-      f2.frequency.linearRampToValueAtTime(syl.f2e, vowelStart + vowelDur * 0.3);
-      f2.Q.value = 2;
-
-      // Formant gains — balanced for clarity
-      const f1g = ctx.createGain();
-      f1g.gain.value = 2.5;
-      const f2g = ctx.createGain();
-      f2g.gain.value = 2.0;
-
-      // Route: saw+sq → soft → (f1, f2) → envelope
-      saw.connect(soft);
-      sqGain.connect(soft);
-      soft.connect(f1);
-      soft.connect(f2);
-      f1.connect(f1g);
-      f2.connect(f2g);
-
-      const vowelEnv = ctx.createGain();
-      vowelEnv.gain.setValueAtTime(0, vowelStart);
-      vowelEnv.gain.linearRampToValueAtTime(0.85, vowelStart + 0.01); // fast attack = child energy
-      if (isLast) {
-        // "SORT" — sustain and fade
-        vowelEnv.gain.setValueAtTime(0.75, vowelStart + vowelDur * 0.4);
-        vowelEnv.gain.linearRampToValueAtTime(0, vowelStart + vowelDur);
-      } else {
-        vowelEnv.gain.setValueAtTime(0.7, vowelStart + vowelDur * 0.3);
-        vowelEnv.gain.exponentialRampToValueAtTime(0.001, vowelStart + vowelDur * 0.85);
+      // ═══ CONSONANT CLICK — short, crisp, percussive ═══
+      // Makes rhythm of "Kit-ty-sort" recognizable without formant speech
+      if (voice === 0) {  // only one click per syllable (not per voice)
+        const clickLen = Math.floor(ctx.sampleRate * 0.02);
+        const clickBuf = ctx.createBuffer(1, clickLen, ctx.sampleRate);
+        const clickData = clickBuf.getChannelData(0);
+        for (let i = 0; i < clickLen; i++) clickData[i] = Math.random() * 2 - 1;
+        const clickSrc = ctx.createBufferSource();
+        clickSrc.buffer = clickBuf;
+        const clickBp = ctx.createBiquadFilter();
+        clickBp.type = 'bandpass';
+        clickBp.frequency.value = note.click;
+        clickBp.Q.value = 2;
+        const clickEnv = ctx.createGain();
+        clickEnv.gain.setValueAtTime(note.clickVol, t);
+        clickEnv.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+        clickSrc.connect(clickBp);
+        clickBp.connect(clickEnv);
+        clickEnv.connect(choirBus);
+        clickSrc.start(t);
+        clickSrc.stop(t + 0.025);
       }
 
-      f1g.connect(vowelEnv);
-      f2g.connect(vowelEnv);
-      vowelEnv.connect(choirBus);
-      saw.start(vowelStart);
-      saw.stop(vowelStart + vowelDur + 0.05);
-      sq.start(vowelStart);
-      sq.stop(vowelStart + vowelDur + 0.05);
-      trackNode(saw, vowelEnv);
+      // ═══ VOICE — pure sine humming (like "mmm") ═══
+      const hum = ctx.createOscillator();
+      hum.type = 'sine';
+      hum.detune.value = voiceDetune[voice];
 
-      // Pitch clarity: quiet sine following the same pitch
-      const sine = ctx.createOscillator();
-      sine.type = 'sine';
-      sine.frequency.value = baseFreq;
-      sine.detune.value = voiceDetune[voice];
-      sine.frequency.setValueAtTime(baseFreq * 0.92, vowelStart);
-      sine.frequency.exponentialRampToValueAtTime(baseFreq, vowelStart + 0.04);
-      const vibG2 = ctx.createGain();
-      vibG2.gain.value = baseFreq * 0.012;
-      vib.connect(vibG2);
-      vibG2.connect(sine.frequency);
+      // Eager pitch scoop up
+      hum.frequency.setValueAtTime(baseFreq * 0.95, t + 0.01);
+      hum.frequency.exponentialRampToValueAtTime(baseFreq, t + 0.04);
 
-      const sineEnv = ctx.createGain();
-      sineEnv.gain.setValueAtTime(0, vowelStart);
-      sineEnv.gain.linearRampToValueAtTime(0.25, vowelStart + 0.015); // stronger sine = clearer pitch
+      // Envelope: quick attack, sustain, release
+      const humEnv = ctx.createGain();
+      const isLast = s === CHOIR_NOTES.length - 1;
+      humEnv.gain.setValueAtTime(0, t + 0.008);
+      humEnv.gain.linearRampToValueAtTime(0.45, t + 0.025);  // fast attack
       if (isLast) {
-        sineEnv.gain.linearRampToValueAtTime(0, vowelStart + vowelDur);
+        humEnv.gain.setValueAtTime(0.40, t + dur * 0.5);
+        humEnv.gain.linearRampToValueAtTime(0, t + dur);
       } else {
-        sineEnv.gain.exponentialRampToValueAtTime(0.001, vowelStart + vowelDur * 0.8);
+        humEnv.gain.setValueAtTime(0.35, t + dur * 0.4);
+        humEnv.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
       }
-      sine.connect(sineEnv);
-      sineEnv.connect(choirBus);
-      sine.start(vowelStart);
-      sine.stop(vowelStart + vowelDur + 0.05);
-      trackNode(sine, sineEnv);
 
-      // Ending /t/ on "sort" — sharp click
+      hum.connect(humEnv);
+      humEnv.connect(choirBus);
+      hum.start(t + 0.008);
+      hum.stop(t + dur + 0.05);
+      trackNode(hum, humEnv);
+
+      // ═══ OCTAVE HARMONIC — adds brightness/presence ═══
+      const harm = ctx.createOscillator();
+      harm.type = 'sine';
+      harm.frequency.value = baseFreq * 2;  // one octave up
+      harm.detune.value = voiceDetune[voice];
+      harm.frequency.setValueAtTime(baseFreq * 2 * 0.95, t + 0.01);
+      harm.frequency.exponentialRampToValueAtTime(baseFreq * 2, t + 0.04);
+
+      const harmEnv = ctx.createGain();
+      harmEnv.gain.setValueAtTime(0, t + 0.008);
+      harmEnv.gain.linearRampToValueAtTime(0.12, t + 0.03);
       if (isLast) {
-        const tEnd = vowelStart + vowelDur - 0.03;
-        const tLen = Math.floor(ctx.sampleRate * 0.025);
+        harmEnv.gain.linearRampToValueAtTime(0, t + dur);
+      } else {
+        harmEnv.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.85);
+      }
+
+      harm.connect(harmEnv);
+      harmEnv.connect(choirBus);
+      harm.start(t + 0.008);
+      harm.stop(t + dur + 0.05);
+      trackNode(harm, harmEnv);
+
+      // Ending /t/ click on "sort"
+      if (isLast && voice === 0) {
+        const tEnd = t + dur - 0.025;
+        const tLen = Math.floor(ctx.sampleRate * 0.018);
         const tBuf = ctx.createBuffer(1, tLen, ctx.sampleRate);
         const tData = tBuf.getChannelData(0);
         for (let i = 0; i < tLen; i++) tData[i] = Math.random() * 2 - 1;
@@ -1540,19 +1452,19 @@ function scheduleCatChoir(config, barStart) {
         tSrc.buffer = tBuf;
         const tBp = ctx.createBiquadFilter();
         tBp.type = 'bandpass';
-        tBp.frequency.value = 4000;
-        tBp.Q.value = 1;
+        tBp.frequency.value = 4500;
+        tBp.Q.value = 1.5;
         const tGain = ctx.createGain();
-        tGain.gain.setValueAtTime(0.12, tEnd);
-        tGain.gain.exponentialRampToValueAtTime(0.001, tEnd + 0.025);
+        tGain.gain.setValueAtTime(0.15, tEnd);
+        tGain.gain.exponentialRampToValueAtTime(0.001, tEnd + 0.018);
         tSrc.connect(tBp);
         tBp.connect(tGain);
         tGain.connect(choirBus);
         tSrc.start(tEnd);
-        tSrc.stop(tEnd + 0.03);
+        tSrc.stop(tEnd + 0.025);
       }
 
-      syllableTime += dur + 0.07;
+      noteTime += dur + 0.05;
     }
   }
 }
