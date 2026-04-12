@@ -1445,6 +1445,9 @@ document.getElementById('tetrisStartBtn').addEventListener('click', () => {
   playSound('click');
   document.getElementById('tetrisOverlay').classList.remove('show');
   startTetris(LEVEL.current);
+  // Safeguard: ensure G.tubes matches TETRIS.numTubes
+  while (G.tubes.length < TETRIS.numTubes) G.tubes.push([]);
+  if (G.tubes.length > TETRIS.numTubes) G.tubes.length = TETRIS.numTubes;
   TETRIS.dropStart = performance.now(); // reset so ball starts falling NOW
   ANIM.busy = false;
 });
