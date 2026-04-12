@@ -52,7 +52,7 @@ import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
-import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS } from './skins.js';
+import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg } from './skins.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -1661,44 +1661,7 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('sfxVolume').value = Math.round(s.sfxVolume * 100);
   document.getElementById('musicToggle').textContent = s.musicEnabled ? '🔊' : '🔇';
   document.getElementById('sfxToggle').textContent = s.sfxEnabled ? '🔊' : '🔇';
-  document.getElementById('skinSelector').value = getActiveSkin();
-  document.getElementById('bgSelector').value = G.background;
   document.getElementById('settingsScreen').classList.remove('hidden');
-});
-
-document.getElementById('skinSelector').addEventListener('change', e => {
-  const id = e.target.value;
-  if (id === 'default' || ownsSkin(id)) {
-    setActiveSkin(id);
-    playSound('click');
-  } else {
-    const cost = SKIN_DEFS[id]?.cost || 0;
-    if (getBalance() >= cost) {
-      setBalance(getBalance() - cost);
-      unlockSkin(id);
-      setActiveSkin(id);
-      updateBonesDisplay();
-      playSound('cat_unlock');
-    } else {
-      e.target.value = getActiveSkin();
-      playSound('invalid');
-    }
-  }
-});
-document.getElementById('bgSelector').addEventListener('change', e => {
-  const id = e.target.value;
-  const owned = loadBackgrounds().owned;
-  if (owned.includes(id)) {
-    G.background = id;
-    const data = loadBackgrounds();
-    data.active = id;
-    saveBackgrounds(data);
-    invalidateRoomDecorCache();
-    playSound('click');
-  } else {
-    e.target.value = G.background;
-    playSound('invalid');
-  }
 });
 document.getElementById('settingsBackBtn').addEventListener('click', () => {
   document.getElementById('settingsScreen').classList.add('hidden');
@@ -1745,6 +1708,209 @@ document.getElementById('albumBackBtn').addEventListener('click', () => {
 });
 document.getElementById('catDetailBack').addEventListener('click', () => {
   document.getElementById('catDetailOverlay').classList.add('hidden');
+});
+
+// ── Shop ──────────────────────────────────────────────────────────────────
+
+let _shopTab = 'skins';
+
+function buildShopGrid() {
+  const grid = document.getElementById('shopGrid');
+  grid.innerHTML = '';
+  document.getElementById('shopBalance').innerHTML = FISHBONE_ICON + ' ' + getBalance();
+
+  if (_shopTab === 'skins') {
+    for (const [id, def] of Object.entries(SKIN_DEFS)) {
+      grid.appendChild(buildShopItem('skin', id, def));
+    }
+  } else {
+    for (const [id, def] of Object.entries(BG_DEFS)) {
+      grid.appendChild(buildShopItem('bg', id, def));
+    }
+  }
+}
+
+function buildShopItem(type, id, def) {
+  const owned = type === 'skin' ? ownsSkin(id) : ownsBg(id);
+  const active = type === 'skin' ? getActiveSkin() === id : G.background === id;
+  const isFree = def.cost === 0;
+  const canBuy = !owned && !isFree && def.cost > 0;
+  const locked = !owned && !isFree && def.milestone && getBalance() < def.cost;
+
+  const card = document.createElement('div');
+  card.className = 'shop-item' + (active ? ' active' : '') + (!owned && !isFree ? ' locked' : '');
+
+  // Preview
+  const preview = document.createElement('div');
+  preview.className = 'shop-item-preview';
+  if (type === 'skin') {
+    const c = document.createElement('canvas');
+    c.width = 80; c.height = 80;
+    preview.appendChild(c);
+    requestAnimationFrame(() => drawSkinPreview(c, id));
+  } else {
+    const c = document.createElement('canvas');
+    c.width = 120; c.height = 80;
+    preview.appendChild(c);
+    requestAnimationFrame(() => drawBgPreview(c, id));
+  }
+  card.appendChild(preview);
+
+  // Name
+  const name = document.createElement('div');
+  name.className = 'shop-item-name';
+  name.textContent = def.name;
+  card.appendChild(name);
+
+  // Status
+  const status = document.createElement('div');
+  status.className = 'shop-item-status';
+  if (active) {
+    const btn = document.createElement('span');
+    btn.className = 'shop-btn shop-btn--active';
+    btn.textContent = '\u2713 Aktiv';
+    status.appendChild(btn);
+  } else if (owned || isFree) {
+    const btn = document.createElement('button');
+    btn.className = 'shop-btn shop-btn--select';
+    btn.textContent = 'Ausw\u00e4hlen';
+    btn.addEventListener('click', () => {
+      if (type === 'skin') { setActiveSkin(id); }
+      else { setActiveBg(id); G.background = id; invalidateRoomDecorCache(); }
+      playSound('click');
+      buildShopGrid();
+    });
+    status.appendChild(btn);
+  } else if (canBuy) {
+    const btn = document.createElement('button');
+    btn.className = 'shop-btn shop-btn--buy';
+    btn.innerHTML = FISHBONE_ICON + ' ' + def.cost;
+    btn.addEventListener('click', () => {
+      if (getBalance() >= def.cost) {
+        setBalance(getBalance() - def.cost);
+        if (type === 'skin') { unlockSkin(id); setActiveSkin(id); }
+        else { unlockBg(id); setActiveBg(id); G.background = id; invalidateRoomDecorCache(); }
+        playSound('cat_unlock');
+        updateBonesDisplay();
+        buildShopGrid();
+      } else {
+        playSound('invalid');
+        btn.style.animation = 'none';
+        btn.offsetHeight; // reflow
+        btn.style.animation = '';
+      }
+    });
+    status.appendChild(btn);
+  } else {
+    const btn = document.createElement('span');
+    btn.className = 'shop-btn shop-btn--locked';
+    btn.textContent = '\uD83D\uDD12 Level ' + (def.milestone || '?');
+    status.appendChild(btn);
+  }
+  card.appendChild(status);
+
+  return card;
+}
+
+function drawSkinPreview(canvas, skinId) {
+  const ctx = canvas.getContext('2d');
+  const cx = 40, cy = 40, r = 28;
+  // Simple ball with skin effect
+  const grad = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.2, 0, cx, cy, r);
+  grad.addColorStop(0, '#F5A898');
+  grad.addColorStop(0.7, '#E8897A');
+  grad.addColorStop(1, '#C86B5C');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  if (skinId === 'glitter') {
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    for (let i = 0; i < 8; i++) {
+      const a = (i * 0.8) % (Math.PI * 2);
+      const sr = r * 0.4 + (i % 3) * 5;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * sr, cy + Math.sin(a) * sr, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (skinId === 'crystal') {
+    ctx.globalAlpha = 0.25;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    for (let f = 0; f < 5; f++) {
+      const a1 = f * 1.26, a2 = a1 + 0.8;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r);
+      ctx.lineTo(cx + Math.cos(a2) * r, cy + Math.sin(a2) * r);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  } else if (skinId === 'gold') {
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 2;
+    for (let g = 0; g < 4; g++) {
+      const gy = cy - r * 0.6 + g * r * 0.4;
+      ctx.beginPath();
+      ctx.moveTo(cx - r, gy);
+      ctx.quadraticCurveTo(cx, gy + 6, cx + r, gy);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawBgPreview(canvas, bgId) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  if (bgId === 'cafe') {
+    const wall = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+    wall.addColorStop(0, '#6a4a35'); wall.addColorStop(1, '#8a6a55');
+    ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h * 0.55);
+    ctx.fillStyle = '#4a3020'; ctx.fillRect(0, h * 0.55, w, h * 0.45);
+  } else if (bgId === 'garden') {
+    const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+    sky.addColorStop(0, '#87CEEB'); sky.addColorStop(1, '#B0E0D0');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.5);
+    ctx.fillStyle = '#5B8C3E'; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+    ctx.fillStyle = '#FF6B8A';
+    for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(15 + i * 25, h * 0.52, 3, 0, Math.PI * 2); ctx.fill(); }
+  } else if (bgId === 'rooftop') {
+    const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+    sky.addColorStop(0, '#1a1a3e'); sky.addColorStop(0.5, '#4a2c6a'); sky.addColorStop(1, '#e8a040');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.5);
+    ctx.fillStyle = '#1a1a2e';
+    for (let i = 0; i < 6; i++) ctx.fillRect(i * 22, h * 0.25 + (i % 3) * 8, 18, h * 0.25 - (i % 3) * 8);
+    ctx.fillStyle = '#4a4040'; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+  } else if (bgId === 'winter') {
+    ctx.fillStyle = '#5a3a25'; ctx.fillRect(0, 0, w, h * 0.55);
+    ctx.fillStyle = '#8ab4d8'; ctx.fillRect(w * 0.6, h * 0.05, w * 0.3, h * 0.3);
+    ctx.fillStyle = '#3a2515'; ctx.fillRect(0, h * 0.55, w, h * 0.45);
+  }
+}
+
+document.getElementById('shopBtn').addEventListener('click', () => {
+  playSound('click');
+  _shopTab = 'skins';
+  document.querySelectorAll('.shop-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'skins'));
+  buildShopGrid();
+  document.getElementById('shopScreen').classList.remove('hidden');
+});
+
+document.getElementById('shopBackBtn').addEventListener('click', () => {
+  document.getElementById('shopScreen').classList.add('hidden');
+});
+
+document.querySelectorAll('.shop-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    _shopTab = tab.dataset.tab;
+    document.querySelectorAll('.shop-tab').forEach(t => t.classList.toggle('active', t === tab));
+    buildShopGrid();
+    playSound('click');
+  });
 });
 
 function buildAlbumScreen() {

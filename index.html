@@ -64,6 +64,7 @@
                     <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
                     <button id="settingsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">⚙️ Einstellungen</button>
                     <button id="albumBtn" class="ls-action-btn ls-action-btn--secondary ls-action-btn--album" type="button">🐱 Katzen-Album</button>
+                    <button id="shopBtn" class="ls-action-btn ls-action-btn--secondary" type="button">🛒 Shop</button>
                     <div id="serieDisplay" class="ls-serie-display">🔥 <span id="serieCount">0</span> Tage</div>
                 </div>
                 <div class="ls-next-goal" id="nextGoalWidget">
@@ -224,24 +225,6 @@
             <input type="range" id="sfxVolume" min="0" max="100" value="70" class="settings-slider">
             <button id="sfxToggle" class="settings-toggle" type="button">🔊</button>
           </div>
-          <label>Ball-Skin</label>
-          <div class="settings-control">
-            <select id="skinSelector" style="width:100%;padding:.4rem;border:1px solid rgba(255,215,0,.3);border-radius:6px;background:rgba(0,0,0,.3);color:#FFD700;font-family:var(--f-head);font-size:.7rem">
-              <option value="default">Wollknäuel</option>
-              <option value="glitter">Glitzer (50&#x1F41F;)</option>
-              <option value="crystal">Kristall (80&#x1F41F;)</option>
-              <option value="gold">Goldfaden (100&#x1F41F;)</option>
-            </select>
-          </div>
-          <label>Hintergrund</label>
-          <div class="settings-control">
-            <select id="bgSelector" style="width:100%;padding:.4rem;border:1px solid rgba(255,215,0,.3);border-radius:6px;background:rgba(0,0,0,.3);color:#FFD700;font-family:var(--f-head);font-size:.7rem">
-              <option value="cafe">Katzencaf&eacute;</option>
-              <option value="garden">Garten (&#x2B50; Lvl 50)</option>
-              <option value="rooftop">Dachterrasse (&#x2B50; Lvl 100)</option>
-              <option value="winter">Winterstube (&#x2B50; Lvl 200)</option>
-            </select>
-          </div>
         </div>
         <button class="win-btn" id="settingsBackBtn" type="button">← Zurück</button>
         <!-- TODO: Remove reset button before production release -->
@@ -269,6 +252,22 @@
       </div>
     </div>
 
+
+    <!-- Shop Screen -->
+    <div id="shopScreen" class="screen-overlay sheet-panel hidden">
+      <div class="album-card">
+        <div class="shop-header">
+          <h2 class="stats-title">SHOP</h2>
+          <span class="shop-balance" id="shopBalance"></span>
+        </div>
+        <div class="shop-tabs">
+          <button class="shop-tab active" data-tab="skins">Ball-Skins</button>
+          <button class="shop-tab" data-tab="backgrounds">Hintergr&uuml;nde</button>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+        <button class="win-btn" id="shopBackBtn" type="button">&larr; Zur&uuml;ck</button>
+      </div>
+    </div>
 
     <!-- Premium Banner -->
     <div class="premium-banner" id="premiumBanner">
