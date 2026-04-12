@@ -211,15 +211,13 @@
 .ls-action-btn--daily:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #B8860B, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
 .ls-action-btn--daily:active { box-shadow: 0 2px 0 #B8860B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
 
-.ls-action-btn--weekly {
+.ls-action-btn--shop {
     background: linear-gradient(135deg, #A855F7 0%, #8B5CF6 50%, #6D28D9 100%);
     color: #fff;
     box-shadow: 0 4px 0 #4C1D95, 0 6px 15px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2);
 }
-.ls-action-btn--weekly:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #4C1D95, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2); }
-.ls-action-btn--weekly:active { box-shadow: 0 2px 0 #4C1D95, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2); }
-
-.ls-action-btn--endless:active { box-shadow: 0 2px 0 #483D8B, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); }
+.ls-action-btn--shop:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #4C1D95, 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2); }
+.ls-action-btn--shop:active { box-shadow: 0 2px 0 #4C1D95, 0 3px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2); }
 
 .ls-action-btn--secondary {
     font-size: .8rem;
@@ -459,13 +457,14 @@
 
 /* ── Serie Display ─────────────────────────────────────── */
 .ls-serie-display {
-    display: inline-flex; align-items: center; gap: .3rem;
-    font-size: .95rem; font-weight: 700;
-    color: var(--gold, #FFD700);
-    padding: .4rem .8rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255,215,0,.15);
-    background: rgba(255,215,0,.06);
+    display: inline-flex; align-items: center; justify-content: center; gap: .3rem;
+    font-size: .8rem; font-weight: 500;
+    color: rgba(255,215,0,.8);
+    padding: .6rem .8rem;
+    border-radius: 100px;
+    border: 1px solid rgba(255,215,0,.18);
+    background: rgba(255,255,255,.06);
+    text-transform: uppercase;
 }
 
 /* ── Premium Banner ────────────────────────────────────── */
