@@ -467,6 +467,61 @@ export function playSound(name) {
         break;
       }
 
+      case 'dog_warn': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const bufLen = ctx.sampleRate * 0.5;
+        const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1) * 0.3;
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 300; bp.Q.value = 3;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.2 * _sfxVolume, now);
+        g.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+        src.start(now); src.stop(now + 0.5);
+        break;
+      }
+
+      case 'dog_bark': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(250, now);
+        osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.3 * _sfxVolume, now);
+        g.gain.setValueAtTime(0.3 * _sfxVolume, now + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.2);
+        break;
+      }
+
+      case 'dog_run': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        for (let i = 0; i < 4; i++) {
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.value = 800 + Math.random() * 400;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0, now + i * 0.06);
+          g.gain.linearRampToValueAtTime(0.1 * _sfxVolume, now + i * 0.06 + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.05);
+          osc.connect(g); g.connect(ctx.destination);
+          osc.start(now + i * 0.06); osc.stop(now + i * 0.06 + 0.05);
+        }
+        break;
+      }
+
       default:
         break;
     }

@@ -1783,10 +1783,10 @@ function loop(ts) {
   if (DOG.active && !G.won) {
     const dogAction = updateDog(ts, G.tubes, G.solvedTubes, ANIM.busy);
     if (dogAction === 'warn' && ts - DOG.warning.startTime < 50) {
-      playSound('click'); // placeholder for dog_warn
+      playSound('dog_warn');
     }
     if (dogAction === 'attack') {
-      playSound('click'); // placeholder for dog_bark
+      playSound('dog_bark');
       const destTube = DOG.attacking.destTube;
       const ballIdx = G.tubes[destTube].length - 1;
       if (ballIdx >= 0) {
