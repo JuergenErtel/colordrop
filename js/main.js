@@ -1734,11 +1734,14 @@ function buildShopItem(type, id, def) {
   const owned = type === 'skin' ? ownsSkin(id) : ownsBg(id);
   const active = type === 'skin' ? getActiveSkin() === id : G.background === id;
   const isFree = def.cost === 0;
-  const canBuy = !owned && !isFree && def.cost > 0;
-  const locked = !owned && !isFree && def.milestone && getBalance() < def.cost;
+  const canAfford = def.cost > 0 && getBalance() >= def.cost;
+  // Item can be bought if not owned, has a price, and player can afford it
+  const canBuy = !owned && !isFree && def.cost > 0 && canAfford;
+  // Item is locked if not owned and can't afford (show milestone hint if available)
+  const isLocked = !owned && !isFree && !canAfford;
 
   const card = document.createElement('div');
-  card.className = 'shop-item' + (active ? ' active' : '') + (!owned && !isFree ? ' locked' : '');
+  card.className = 'shop-item' + (active ? ' active' : '') + (isLocked ? ' locked' : '');
 
   // Preview
   const preview = document.createElement('div');
@@ -1786,6 +1789,8 @@ function buildShopItem(type, id, def) {
     btn.className = 'shop-btn shop-btn--buy';
     btn.innerHTML = FISHBONE_ICON + ' ' + def.cost;
     btn.addEventListener('click', () => {
+      // Confirmation dialog
+      if (!confirm(def.name + ' f\u00fcr ' + def.cost + ' Fischgr\u00e4ten kaufen?')) return;
       if (getBalance() >= def.cost) {
         setBalance(getBalance() - def.cost);
         if (type === 'skin') { unlockSkin(id); setActiveSkin(id); }
@@ -1795,16 +1800,18 @@ function buildShopItem(type, id, def) {
         buildShopGrid();
       } else {
         playSound('invalid');
-        btn.style.animation = 'none';
-        btn.offsetHeight; // reflow
-        btn.style.animation = '';
       }
     });
     status.appendChild(btn);
-  } else {
+  } else if (isLocked) {
     const btn = document.createElement('span');
     btn.className = 'shop-btn shop-btn--locked';
-    btn.textContent = '\uD83D\uDD12 Level ' + (def.milestone || '?');
+    if (def.milestone) {
+      btn.textContent = '\uD83D\uDD12 Level ' + def.milestone + ' oder ' + def.cost + ' \uD83D\uDC1F';
+    } else {
+      btn.textContent = FISHBONE_ICON + ' ' + def.cost;
+      btn.style.opacity = '0.5';
+    }
     status.appendChild(btn);
   }
   card.appendChild(status);
