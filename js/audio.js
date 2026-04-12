@@ -536,6 +536,65 @@ export function playSound(name) {
         break;
       }
 
+      // ── Mouse hunt sounds ──────────────────────────────────
+      case 'mouse_catch': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        // Quick happy chirp (rising pitch)
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.linearRampToValueAtTime(1200, now + 0.08);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.2 * _sfxVolume, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.12);
+        break;
+      }
+
+      case 'mouse_golden': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        // Coin kling (two tones)
+        for (let i = 0; i < 2; i++) {
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.value = i === 0 ? 1400 : 1800;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.2 * _sfxVolume, now + i * 0.08);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.15);
+          osc.connect(g); g.connect(ctx.destination);
+          osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.15);
+        }
+        break;
+      }
+
+      case 'hedgehog_hit': {
+        const ctx = getCtx();
+        if (!ctx) break;
+        const now = ctx.currentTime;
+        // Short pain buzz (low + noise)
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 150;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.25 * _sfxVolume, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.15);
+        // Noise burst
+        const noise = makeNoise(ctx, 0.1);
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.15 * _sfxVolume, now);
+        ng.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        noise.connect(ng); ng.connect(ctx.destination);
+        noise.start(now); noise.stop(now + 0.1);
+        break;
+      }
+
       default:
         break;
     }

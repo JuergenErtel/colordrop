@@ -36,8 +36,11 @@ import {
   calcStars, checkWinState, isSolved, canMove,
   generateTubes, generateTutorialTubes, solveHint, findJokerTube,
   dailyLevelNum, generateDailyTubes, getIcePositions, isDogLevel,
+  isMouseLevel, mouseConfig,
 } from './engine.js';
 import { DOG, startDog, endDog, updateDog } from './dog.js';
+import { MOUSE, startMouse, endMouse, updateMouse, tapHole, mouseStars } from './mouse.js';
+import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
@@ -369,6 +372,16 @@ function generateLevel(n) {
     document.getElementById('dogLevel').textContent = n;
     document.getElementById('dogTier').textContent = cfg.tier;
     document.getElementById('dogOverlay').classList.add('show');
+  } else if (isMouseLevel(n) && !G.isDailyChallenge) {
+    // Mouse hunt: whack-a-mole mini-game
+    G.tubes = [];
+    const mcfg = mouseConfig(n);
+    G.timer = { active: false, endTime: 0, duration: mcfg.timer * 1000, _lastTick: -1 };
+    ANIM.busy = true;
+    ANIM.tubeIntro = [];
+    document.getElementById('timerBar').classList.remove('visible', 'pulse');
+    document.getElementById('mouseGameOverOverlay').classList.remove('show');
+    showMouseOverlay(n);
   } else if (isTetrisLevel(n) && !G.isDailyChallenge) {
     // Tetris round: replace normal puzzle with drop mode
     G.timer = null;
@@ -392,7 +405,10 @@ function generateLevel(n) {
   }
 
   // Feature intro overlays (shown once)
-  if (n === 21 && !hasSeenIntro('joker')) {
+  if (n === 12 && !hasSeenIntro('mouse')) {
+    ANIM.busy = true;
+    document.getElementById('mouseIntroOverlay').classList.add('show');
+  } else if (n === 21 && !hasSeenIntro('joker')) {
     ANIM.busy = true;
     document.getElementById('jokerIntroOverlay').classList.add('show');
   } else if (n === 31 && !hasSeenIntro('ice')) {
@@ -547,6 +563,19 @@ function triggerFlash(idx) {
 }
 
 function handleInput(lx, ly) {
+  // Mouse hunt mode: tap on holes
+  if (MOUSE.active) {
+    const hole = mouseHitTest(lx, ly, CW, CH);
+    if (hole >= 0) {
+      const result = tapHole(hole, performance.now());
+      if (result && result.type === 'trap' && G.timer && G.timer.active) {
+        // Apply time penalty
+        G.timer.endTime -= result.penalty;
+      }
+    }
+    return;
+  }
+
   // Tetris mode: swipe handled separately (see touch/pointer events below)
   if (TETRIS.active && TETRIS.current) return;
   if (G.won)     return;
@@ -637,6 +666,8 @@ function updateHUD() {
   }
   if (TETRIS.active) {
     document.getElementById('levelLabel').textContent = '\uD83E\uDDF6 SORTIER-REGEN';
+  } else if (MOUSE.active) {
+    document.getElementById('levelLabel').textContent = '\uD83D\uDC2D M\u00c4USEJAGD';
   } else if (G.isDailyChallenge && G.dailyModifier) {
     const mod = getDailyModifier();
     document.getElementById('levelLabel').textContent = mod.icon + ' ' + mod.name.toUpperCase();
@@ -653,6 +684,7 @@ function updateHUD() {
 
 function showWin() {
   endDog();
+  if (MOUSE.active) endMouse();
   triggerCatWinJump();
   if (!G.won) return;
   G.won = false; // prevent re-entry
@@ -1091,6 +1123,16 @@ function showBlitzOverlay(n) {
   document.getElementById('blitzOverlay').classList.add('show');
 }
 
+function showMouseOverlay(n) {
+  const cfg = levelConfig(n);
+  const mcfg = mouseConfig(n);
+  document.getElementById('mouseLevel').textContent = 'LEVEL ' + n + ' \u00B7 ' + cfg.tier;
+  document.getElementById('mouseGoal').textContent = 'Fang ' + mcfg.target + ' M\u00e4use in ' + mcfg.timer + ' Sekunden!';
+  const theme = THEMES[cfg.tier] || THEMES.EASY;
+  document.getElementById('mouseOverlay').style.setProperty('--blitz-color', theme.accentColor);
+  document.getElementById('mouseOverlay').classList.add('show');
+}
+
 function showTetrisOverlay(n) {
   const cfg = levelConfig(n);
   document.getElementById('tetrisLevel').textContent = 'LEVEL ' + n + ' \u00B7 ' + cfg.tier;
@@ -1233,6 +1275,10 @@ function openLevelSelect() {
   document.getElementById('dogOverlay').classList.remove('show');
   document.getElementById('jokerIntroOverlay').classList.remove('show');
   document.getElementById('iceIntroOverlay').classList.remove('show');
+  document.getElementById('mouseOverlay').classList.remove('show');
+  document.getElementById('mouseIntroOverlay').classList.remove('show');
+  document.getElementById('mouseGameOverOverlay').classList.remove('show');
+  if (MOUSE.active) endMouse();
   // Show splash as atmospheric background behind level select
   showSplash(true);
   updateSplashMascot(loadMascot());
@@ -1587,6 +1633,37 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   document.getElementById('timeoutOverlay').classList.remove('show');
   generateLevel(LEVEL.current);
   invalidateRoomDecorCache();
+});
+
+// ── Mouse hunt handlers ─────────────────────────────────
+document.getElementById('mouseStartBtn').addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('mouseOverlay').classList.remove('show');
+  startMouse(LEVEL.current);
+  G.timer.active  = true;
+  G.timer.endTime = performance.now() + G.timer.duration;
+  ANIM.busy       = false;
+  document.getElementById('timerBar').classList.add('visible');
+});
+
+document.getElementById('mouseRetryBtn').addEventListener('click', () => {
+  document.getElementById('mouseGameOverOverlay').classList.remove('show');
+  generateLevel(LEVEL.current);
+  invalidateRoomDecorCache();
+});
+
+document.getElementById('mouseSkipBtn').addEventListener('click', () => {
+  document.getElementById('mouseGameOverOverlay').classList.remove('show');
+  endMouse();
+  generateLevel(LEVEL.current + 1);
+  invalidateRoomDecorCache();
+});
+
+document.getElementById('mouseIntroBtn').addEventListener('click', () => {
+  playSound('click');
+  markIntroSeen('mouse');
+  document.getElementById('mouseIntroOverlay').classList.remove('show');
+  ANIM.busy = false;
 });
 
 // ── Feature intro handlers ───────────────────────────────
@@ -2296,6 +2373,43 @@ function loop(ts) {
           startTime: ts, duration: 400, amplitude: 2 * Math.PI / 180,
         });
       }
+    }
+  }
+
+  // Mouse hunt: update spawns, check timer
+  if (MOUSE.active) {
+    updateMouse(ts);
+
+    // Timer-driven timeout check
+    if (G.timer && G.timer.active && ts >= G.timer.endTime) {
+      G.timer.active = false;
+      // Evaluate BEFORE ending (endMouse clears state)
+      const stars = mouseStars();
+      const caught = MOUSE.caught;
+      const target = MOUSE.target;
+      const bonus = MOUSE.bonusBones;
+      endMouse();
+      if (stars > 0) {
+        // Target reached — win!
+        G.won = true;
+        saveStars(LEVEL.current, stars);
+        const reward = calcWinReward(stars, false, false);
+        earn(reward + bonus);
+        updateBonesDisplay();
+        playSound('win');
+        setTimeout(() => showWin(), 800);
+      } else {
+        playSound('invalid');
+        document.getElementById('mouseCaught').textContent = caught;
+        document.getElementById('mouseTarget').textContent = target;
+        document.getElementById('mouseGameOverOverlay').classList.add('show');
+      }
+    }
+
+    // Check if target reached mid-game
+    if (MOUSE.active && MOUSE.caught >= MOUSE.target) {
+      // Keep playing for bonus stars until timer ends — but if ALL mice caught perfectly
+      // we could end early. For now, let timer run for bonus opportunities.
     }
   }
 

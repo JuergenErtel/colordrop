@@ -147,6 +147,75 @@
         </div>
     </div>
 
+    <!-- Mouse Hunt Announcement -->
+    <div id="mouseOverlay" class="blitz-overlay">
+        <div class="blitz-inner" style="--blitz-color:#e8a040">
+            <h2 class="blitz-title">&#x1F42D; M&Auml;USEJAGD &#x1F42D;</h2>
+            <p class="blitz-level" id="mouseLevel">LEVEL 12 · MEDIUM</p>
+            <p class="blitz-time" id="mouseGoal">Fang 8 M&auml;use in 25 Sekunden!</p>
+            <!-- Mouse tutorial visualization -->
+            <div class="mouse-tut">
+                <div class="mouse-tut-holes">
+                    <div class="mouse-tut-hole"></div>
+                    <div class="mouse-tut-hole">
+                        <div class="mouse-tut-mouse">&#x1F42D;</div>
+                    </div>
+                    <div class="mouse-tut-hole"></div>
+                    <div class="mouse-tut-hole">
+                        <div class="mouse-tut-hedgehog">&#x1F994;</div>
+                    </div>
+                    <div class="mouse-tut-hole"></div>
+                    <div class="mouse-tut-hole">
+                        <div class="mouse-tut-mouse mouse-tut-mouse--gold">&#x1F42D;</div>
+                    </div>
+                </div>
+                <div class="mouse-tut-paw">&#x1F43E;</div>
+            </div>
+            <p class="blitz-desc">Tippe auf die M&auml;use, bevor sie verschwinden!<br><em>Vorsicht vor Igeln &mdash; die kosten Zeit!</em></p>
+            <button id="mouseStartBtn" class="blitz-btn" type="button">BEREIT!</button>
+        </div>
+    </div>
+
+    <!-- Mouse Hunt Game Over -->
+    <div id="mouseGameOverOverlay" class="overlay">
+        <div class="win-card">
+            <div class="win-icon">&#x1F640;</div>
+            <h2 class="win-title">ZEIT ABGELAUFEN!</h2>
+            <p class="win-sub">Du hast <b id="mouseCaught">0</b> von <b id="mouseTarget">0</b> M&auml;usen gefangen</p>
+            <div class="win-actions">
+                <button class="win-btn" id="mouseRetryBtn" type="button">Nochmal &#x21BA;</button>
+                <button class="win-btn win-btn--secondary" id="mouseSkipBtn" type="button">&Uuml;berspringen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mouse Hunt Intro (shown once at level 12) -->
+    <div id="mouseIntroOverlay" class="blitz-overlay">
+        <div class="blitz-inner" style="--blitz-color:#e8a040">
+            <h2 class="blitz-title">&#x1F42D; M&Auml;USEJAGD &#x1F42D;</h2>
+            <p class="blitz-level">NEUES FEATURE AB JETZT</p>
+            <div class="mouse-tut">
+                <div class="mouse-tut-holes">
+                    <div class="mouse-tut-hole"></div>
+                    <div class="mouse-tut-hole">
+                        <div class="mouse-tut-mouse">&#x1F42D;</div>
+                    </div>
+                    <div class="mouse-tut-hole"></div>
+                    <div class="mouse-tut-hole">
+                        <div class="mouse-tut-hedgehog">&#x1F994;</div>
+                    </div>
+                    <div class="mouse-tut-hole"></div>
+                    <div class="mouse-tut-hole">
+                        <div class="mouse-tut-mouse mouse-tut-mouse--gold">&#x1F42D;</div>
+                    </div>
+                </div>
+                <div class="mouse-tut-paw">&#x1F43E;</div>
+            </div>
+            <p class="blitz-desc">M&auml;use gucken aus L&ouml;chern &mdash; tippe schnell!<br><b>Goldene M&auml;use</b> geben Bonus-Fischgr&auml;ten.<br><em>&#x1F994; Igel NICHT antippen &mdash; kosten 3 Sekunden!</em></p>
+            <button id="mouseIntroBtn" class="blitz-btn" type="button">VERSTANDEN!</button>
+        </div>
+    </div>
+
     <!-- Tetris Game Over -->
     <div id="tetrisGameOverOverlay" class="overlay">
         <div class="win-card">

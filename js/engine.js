@@ -82,6 +82,22 @@ export function isDogLevel(n) {
   return n >= 10 && n % 3 === 1 && !isTimedLevel(n);
 }
 
+export function isMouseLevel(n) {
+  return n >= 12 && n % 5 === 2 && !isTimedLevel(n) && !isDogLevel(n);
+}
+
+export function mouseConfig(n) {
+  const tier = tierForLevel(n);
+  const cfg = {
+    EASY:   { timer: 30, target: 6,  visibility: 2500, maxActive: 2, spawnInterval: 1200, traps: 1, hasFast: false, hasFat: false, hasGold: false },
+    MEDIUM: { timer: 25, target: 8,  visibility: 2000, maxActive: 3, spawnInterval: 1000, traps: 2, hasFast: true,  hasFat: false, hasGold: true  },
+    HARD:   { timer: 22, target: 10, visibility: 1500, maxActive: 3, spawnInterval: 800,  traps: 2, hasFast: true,  hasFat: true,  hasGold: true  },
+    EXPERT: { timer: 18, target: 12, visibility: 1200, maxActive: 4, spawnInterval: 700,  traps: 3, hasFast: true,  hasFat: true,  hasGold: true  },
+    MASTER: { timer: 15, target: 14, visibility: 900,  maxActive: 4, spawnInterval: 600,  traps: 3, hasFast: true,  hasFat: true,  hasGold: true  },
+  };
+  return cfg[tier] || cfg.MEDIUM;
+}
+
 export function timerDuration(n) {
   const tierMs = { EASY: 100, MEDIUM: 85, HARD: 70, EXPERT: 55, MASTER: 45 };
   return (tierMs[tierForLevel(n)] || 70) * 1000;

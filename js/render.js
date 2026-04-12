@@ -18,6 +18,8 @@ import { COLOR_SYMBOLS } from './daily.js';
 import { drawMascotCat } from './cat-renderer.js';
 import { drawDog } from './dog-renderer.js';
 import { TETRIS, tetrisBallProgress } from './tetris.js';
+import { MOUSE } from './mouse.js';
+import { renderMouseGame } from './mouse-renderer.js';
 import { playSound } from './audio.js';
 import { checkWinState, isSolved, applyJokerRemoval } from './engine.js';
 import { updateTimer, drawTimerBar } from './timer.js';
@@ -1017,7 +1019,11 @@ export function renderFrame(ctx, ts, G) {
   }
 
   drawBoardFrame(ctx, ts, G);
-  drawTubes(ctx, ts, G);
+  if (MOUSE.active) {
+    renderMouseGame(ctx, ts, CW, CH);
+  } else {
+    drawTubes(ctx, ts, G);
+  }
   drawDog(ctx, ts, G.tubes.length);
   drawHintOverlay(ctx, ts, G);
 
@@ -1062,7 +1068,7 @@ export function renderFrame(ctx, ts, G) {
   const timerBar = document.getElementById('timerBar');
   if (timerBar) {
     const timedOut = updateTimer(G.timer, G.frameTime, G.won);
-    if (timedOut) {
+    if (timedOut && !MOUSE.active) {
       ANIM.busy = true;
       document.getElementById('timeoutOverlay').classList.add('show');
     }
