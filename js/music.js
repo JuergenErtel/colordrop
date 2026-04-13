@@ -258,27 +258,27 @@ const TIER_CONFIG = {
   MENU: {
     root: 392.00,  // G4 — bright, cheerful
     scale: [0, 2, 4, 7, 9],  // major pentatonic — pure happy, no dissonance
-    bpm: 100,      // relaxed but cheerful — café lobby feel
+    bpm: 108,      // slightly more lively — still relaxed but with flow
     beatsPerBar: 4,
-    swing: 0.12,   // gentle shuffle
-    melodyOsc: 'triangle',
-    melodyVol: 0.20,       // melody is the star — clear and present
-    melodyAttack: 0.01,    // soft pluck — not too sharp
-    melodyDecay: 0.55,     // longer notes — singable, melodic
+    swing: 0.15,   // warm shuffle feel
+    melodyOsc: 'custom_pluck',  // bell-like pluck — warm and melodic
+    melodyVol: 0.22,       // melody is the star — clear and present
+    melodyAttack: 0.005,   // soft pluck attack
+    melodyDecay: 0.65,     // longer sustain — notes sing and breathe
     padOsc: 'sine',
-    padVol: 0.07,          // warm bed underneath
-    padVoices: 4,
-    padDetune: 6,
+    padVol: 0.08,          // warm harmonic bed
+    padVoices: 5,          // richer pad — lush warmth
+    padDetune: 8,          // gentle detuning for shimmer
     bassOsc: 'sine',
-    bassVol: 0.06,
+    bassVol: 0.07,         // slightly more present bass for warmth
     hatVol: 0.02,          // barely-there hi-hat
     kickVol: 0.05,         // gentle pulse
     clapVol: 0.0,
     snareVol: 0.0,
     tambVol: 0.02,
-    arpVol: 0.07,          // quiet arpeggios — support, not compete
-    arpSpeed: 4,           // slow arpeggios — gentle shimmer
-    counterVol: 0.0,       // NO counter-melody — keeps it clean and singable
+    arpVol: 0.09,          // sparkling arpeggios — like a music box
+    arpSpeed: 8,           // eighth-note arpeggios — gentle shimmer
+    counterVol: 0.06,      // soft counter-melody — call & response
     stabVol: 0.0,
     hatPattern:  [0.2, 0, 0.15, 0, 0.2, 0, 0.15, 0],
     kickPattern: [0.4, 0, 0, 0, 0.25, 0, 0, 0],
@@ -286,18 +286,18 @@ const TIER_CONFIG = {
     snarePattern:[0, 0, 0, 0, 0, 0, 0, 0],
     tambPattern: [0.15, 0.08, 0.1, 0.08, 0.15, 0.08, 0.1, 0.08,
                   0.15, 0.08, 0.1, 0.08, 0.15, 0.08, 0.1, 0.08],
-    melodyNoteDivision: 4,   // quarter notes — simple, singable melody
-    melodyRestChance: 0.2,   // some rests for phrasing
-    melodySkipChance: 0.0,   // NO skips — stepwise motion only = melodic
+    melodyNoteDivision: 8,   // eighth notes — flowing melodic lines
+    melodyRestChance: 0.15,  // occasional rests for breathing
+    melodySkipChance: 0.08,  // rare skips — mostly stepwise for singability
     chords: [
       [0, 4, 7],     // I   (G)
-      [0, 4, 7],     // I   (G)  — repeat for stability
+      [2, 5, 9],     // vi  (Em) — adds gentle emotion
       [5, 9, 12],    // IV  (C)  — bright lift
-      [5, 9, 12],    // IV  (C)
-      [0, 4, 7],     // I   (G)
       [7, 11, 14],   // V   (D)  — gentle push
+      [0, 4, 7],     // I   (G)
       [5, 9, 12],    // IV  (C)
-      [0, 4, 7],     // I   (G)  — home
+      [2, 5, 9],     // vi  (Em) — wistful turn
+      [7, 11, 14],   // V   (D)  — resolve back
     ],
   },
 };
@@ -330,7 +330,7 @@ const HOOK_RIFFS = {
   HARD:   [[0,0.5], [0,0.5], [3,1], [5,0.5], [3,0.5], [0,1], [7,1]], // punchy riff
   EXPERT: [[0,0.5], [4,0.5], [7,0.5], [4,0.5], [0,0.5], [4,0.5], [7,0.5], [11,0.5]], // arpeggio run
   MASTER: [[0,1], [3,0.5], [5,0.5], [7,1], [5,0.5], [3,0.5], [0,2]], // epic motif
-  MENU:   [[0,2], [2,2], [4,2], [2,2]],                                      // simple, singable — do re mi re
+  MENU:   [[0,1], [2,1], [4,1.5], [2,0.5], [0,1], [4,1], [7,1.5], [4,0.5]],  // flowing lullaby hook — do re mi~ re do mi sol~ mi
 };
 
 // ── Arpeggio patterns (intervals within chord) ──────────────────────────
@@ -350,7 +350,7 @@ const BASS_PATTERNS = {
   HARD:   [[0, 0, 12, 0], [0, 5, 7, 5], [0, 0, 7, 12], [0, 12, 7, 0]],
   EXPERT: [[0, 12, 0, 7, 0, 12, 7, 0], [0, 7, 12, 7, 0, 5, 7, 12]],
   MASTER: [[0, 0, 12, 12, 0, 0, 7, 7], [0, 12, 7, 0, 5, 12, 7, 5]],
-  MENU:   [[0, 7, 12, 7], [0, 12, 7, 0]],
+  MENU:   [[0, 7, 12, 7], [0, 4, 7, 12], [0, 7, 4, 7]],
 };
 
 // ── Fill patterns (hit indices within 16 steps) ─────────────────────────
