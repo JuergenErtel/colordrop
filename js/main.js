@@ -2146,29 +2146,196 @@ function drawSkinPreview(canvas, skinId) {
 function drawBgPreview(canvas, bgId) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
+
   if (bgId === 'cafe') {
-    const wall = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    wall.addColorStop(0, '#6a4a35'); wall.addColorStop(1, '#8a6a55');
+    // Wall with warm gradient
+    const wall = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+    wall.addColorStop(0, '#5a3828');
+    wall.addColorStop(0.4, '#7a5a45');
+    wall.addColorStop(1, '#8a6a55');
     ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h * 0.55);
-    ctx.fillStyle = '#4a3020'; ctx.fillRect(0, h * 0.55, w, h * 0.45);
+    // Wall texture stripes
+    ctx.save(); ctx.globalAlpha = 0.08;
+    for (let y = 3; y < h * 0.55; y += 6) {
+      ctx.fillStyle = y % 12 === 0 ? '#ffe8d0' : '#3a1a08';
+      ctx.fillRect(0, y, w, 0.5);
+    }
+    ctx.restore();
+    // Floor
+    const floor = ctx.createLinearGradient(0, h * 0.55, 0, h);
+    floor.addColorStop(0, '#4a3020'); floor.addColorStop(1, '#2a1a10');
+    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.55, w, h * 0.45);
+    // Floor grain
+    ctx.save(); ctx.globalAlpha = 0.08; ctx.strokeStyle = '#b08860'; ctx.lineWidth = 0.5;
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath(); ctx.moveTo(i * (w / 4), h); ctx.lineTo(w * 0.5 + (i * (w / 4) - w * 0.5) * 0.3, h * 0.55); ctx.stroke();
+    }
+    ctx.restore();
+    // Baseboard
+    ctx.fillStyle = 'rgba(30,15,5,0.5)'; ctx.fillRect(0, h * 0.55 - 1, w, 2);
+    ctx.fillStyle = 'rgba(255,220,180,0.15)'; ctx.fillRect(0, h * 0.55 - 2, w, 1);
+    // Table
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(w * 0.5, h * 0.72, w * 0.4, h * 0.08, 0, 0, Math.PI * 2);
+    const tg = ctx.createRadialGradient(w * 0.4, h * 0.7, 0, w * 0.5, h * 0.72, w * 0.4);
+    tg.addColorStop(0, 'rgba(180,140,100,0.4)'); tg.addColorStop(1, 'rgba(120,80,50,0.15)');
+    ctx.fillStyle = tg; ctx.fill(); ctx.restore();
+    // Spotlight
+    const spot = ctx.createRadialGradient(w * 0.3, 0, 0, w * 0.3, 0, h * 0.7);
+    spot.addColorStop(0, 'rgba(255,220,160,0.18)'); spot.addColorStop(1, 'rgba(255,220,160,0)');
+    ctx.fillStyle = spot; ctx.fillRect(0, 0, w, h);
+    // Lamp glow bottom
+    const lamp = ctx.createRadialGradient(w * 0.5, h, 0, w * 0.5, h, h * 0.4);
+    lamp.addColorStop(0, 'rgba(235,170,90,0.18)'); lamp.addColorStop(1, 'rgba(235,170,90,0)');
+    ctx.fillStyle = lamp; ctx.fillRect(0, 0, w, h);
+    // Dust motes
+    ctx.fillStyle = 'rgba(255,225,180,0.35)';
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath(); ctx.arc(15 + i * 22, 12 + (i * 17) % (h * 0.6), 1, 0, Math.PI * 2); ctx.fill();
+    }
+    // Vignette
+    const vig = ctx.createRadialGradient(w / 2, h * 0.4, h * 0.15, w / 2, h * 0.4, w * 0.8);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(20,10,3,0.4)');
+    ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
+
   } else if (bgId === 'garden') {
+    // Sky
     const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
     sky.addColorStop(0, '#87CEEB'); sky.addColorStop(1, '#B0E0D0');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.5);
-    ctx.fillStyle = '#5B8C3E'; ctx.fillRect(0, h * 0.5, w, h * 0.5);
-    ctx.fillStyle = '#FF6B8A';
-    for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(15 + i * 25, h * 0.52, 3, 0, Math.PI * 2); ctx.fill(); }
+    // Clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    const clouds = [[20, 14], [55, 10], [90, 16]];
+    for (const [cx, cy] of clouds) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+      ctx.arc(cx + 7, cy - 3, 6, 0, Math.PI * 2);
+      ctx.arc(cx + 13, cy, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Grass
+    const grass = ctx.createLinearGradient(0, h * 0.45, 0, h);
+    grass.addColorStop(0, '#5B8C3E'); grass.addColorStop(1, '#3D6B2E');
+    ctx.fillStyle = grass; ctx.fillRect(0, h * 0.45, w, h * 0.55);
+    // Flowers
+    const fColors = ['#FF6B8A', '#FFD700', '#FF8C42', '#E066FF', '#FF6B8A', '#FFD700'];
+    for (let i = 0; i < 6; i++) {
+      const fx = 10 + i * 20;
+      const fy = h * 0.48 + Math.sin(i * 2.1) * 5;
+      ctx.fillStyle = fColors[i];
+      for (let p = 0; p < 5; p++) {
+        const pa = (Math.PI * 2 * p) / 5;
+        ctx.beginPath(); ctx.arc(fx + Math.cos(pa) * 2.5, fy + Math.sin(pa) * 2.5, 2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath(); ctx.arc(fx, fy, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+    // Butterflies
+    ctx.save(); ctx.globalAlpha = 0.5;
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath(); ctx.ellipse(35, h * 0.35, 3, 2, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(38, h * 0.35, 3, 2, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#E066FF';
+    ctx.beginPath(); ctx.ellipse(85, h * 0.28, 2.5, 1.5, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(87.5, h * 0.28, 2.5, 1.5, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // Sun
+    ctx.save();
+    const sun = ctx.createRadialGradient(w - 18, 14, 2, w - 18, 14, 14);
+    sun.addColorStop(0, 'rgba(255,240,120,0.8)'); sun.addColorStop(0.3, 'rgba(255,220,80,0.3)'); sun.addColorStop(1, 'rgba(255,220,80,0)');
+    ctx.fillStyle = sun; ctx.fillRect(w - 32, 0, 32, 28);
+    ctx.restore();
+    // Vignette
+    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+    ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
+
   } else if (bgId === 'rooftop') {
+    // Sunset sky
     const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    sky.addColorStop(0, '#1a1a3e'); sky.addColorStop(0.5, '#4a2c6a'); sky.addColorStop(1, '#e8a040');
+    sky.addColorStop(0, '#1a1a3e'); sky.addColorStop(0.4, '#4a2c6a');
+    sky.addColorStop(0.7, '#c05050'); sky.addColorStop(1, '#e8a040');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.5);
+    // Stars
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    const stars = [[8,5],[25,8],[48,3],[72,10],[95,6],[110,4]];
+    for (const [sx, sy] of stars) {
+      ctx.beginPath(); ctx.arc(sx, sy, 0.8, 0, Math.PI * 2); ctx.fill();
+    }
+    // City silhouette
     ctx.fillStyle = '#1a1a2e';
-    for (let i = 0; i < 6; i++) ctx.fillRect(i * 22, h * 0.25 + (i % 3) * 8, 18, h * 0.25 - (i % 3) * 8);
-    ctx.fillStyle = '#4a4040'; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+    const bldgs = [[0,0.38,14],[16,0.30,12],[30,0.42,10],[43,0.35,15],[60,0.28,12],[74,0.40,14],[90,0.33,10],[102,0.45,12],[115,0.30,5]];
+    for (const [bx, hf, bw] of bldgs) {
+      ctx.fillRect(bx, h * 0.5 - h * hf, bw, h * hf);
+    }
+    // Lit windows
+    ctx.fillStyle = 'rgba(255,200,80,0.6)';
+    const wins = [[5,h*0.32],[8,h*0.36],[22,h*0.3],[35,h*0.2],[48,h*0.28],[65,h*0.34],[78,h*0.22],[80,h*0.28],[95,h*0.24],[106,h*0.15],[108,h*0.22]];
+    for (const [wx, wy] of wins) { ctx.fillRect(wx, wy, 2, 2.5); }
+    // Rooftop floor
+    const floor = ctx.createLinearGradient(0, h * 0.5, 0, h);
+    floor.addColorStop(0, '#4a4040'); floor.addColorStop(1, '#2a2020');
+    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+    // String lights
+    ctx.strokeStyle = 'rgba(255,215,0,0.4)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(0, h * 0.48);
+    for (let lx = 0; lx <= w; lx += 2) ctx.lineTo(lx, h * 0.48 + Math.sin(lx * 0.08) * 3);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,220,100,0.7)';
+    for (let lx = 8; lx < w; lx += 16) {
+      ctx.beginPath(); ctx.arc(lx, h * 0.48 + Math.sin(lx * 0.08) * 3 + 2, 1.8, 0, Math.PI * 2); ctx.fill();
+    }
+    // Vignette
+    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
+
   } else if (bgId === 'winter') {
-    ctx.fillStyle = '#5a3a25'; ctx.fillRect(0, 0, w, h * 0.55);
-    ctx.fillStyle = '#8ab4d8'; ctx.fillRect(w * 0.6, h * 0.05, w * 0.3, h * 0.3);
-    ctx.fillStyle = '#3a2515'; ctx.fillRect(0, h * 0.55, w, h * 0.45);
+    // Warm wall
+    const wall = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+    wall.addColorStop(0, '#4a3525'); wall.addColorStop(1, '#6a4a35');
+    ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h * 0.5);
+    // Window with crossbar
+    const wx = w * 0.58, wy = h * 0.05, ww = w * 0.32, wh = h * 0.32;
+    ctx.fillStyle = '#8ab4d8'; ctx.fillRect(wx, wy, ww, wh);
+    ctx.strokeStyle = '#5a3a20'; ctx.lineWidth = 2;
+    ctx.strokeRect(wx, wy, ww, wh);
+    ctx.beginPath();
+    ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh);
+    ctx.moveTo(wx, wy + wh / 2); ctx.lineTo(wx + ww, wy + wh / 2);
+    ctx.stroke();
+    // Snow on windowsill
+    ctx.fillStyle = '#e8e8f0';
+    ctx.beginPath(); ctx.ellipse(wx + ww / 2, wy + wh, ww * 0.55, 3, 0, 0, Math.PI); ctx.fill();
+    // Snowflakes in window
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    const snowPos = [[0.15,0.15],[0.4,0.22],[0.65,0.1],[0.8,0.28],[0.3,0.08],[0.55,0.3]];
+    for (const [sx, sy] of snowPos) {
+      ctx.beginPath(); ctx.arc(wx + ww * sx, wy + wh * sy, 1.2, 0, Math.PI * 2); ctx.fill();
+    }
+    // Wood floor
+    const floor = ctx.createLinearGradient(0, h * 0.45, 0, h);
+    floor.addColorStop(0, '#5a3a22'); floor.addColorStop(1, '#3a2515');
+    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.45, w, h * 0.55);
+    // Floor plank lines
+    ctx.save(); ctx.globalAlpha = 0.06; ctx.strokeStyle = '#a08060'; ctx.lineWidth = 0.5;
+    for (let y = h * 0.5; y < h; y += 8) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    ctx.restore();
+    // Warm fireplace glow
+    const glow = ctx.createRadialGradient(12, h * 0.4, 0, 12, h * 0.4, w * 0.5);
+    glow.addColorStop(0, 'rgba(255,140,40,0.18)'); glow.addColorStop(1, 'rgba(255,140,40,0)');
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
+    // Indoor snowflakes drifting by window (cozy atmosphere)
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath(); ctx.arc(10 + i * 12, 8 + i * 10, 1, 0, Math.PI * 2); ctx.fill();
+    }
+    // Vignette
+    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+    ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
   }
 }
 
