@@ -375,7 +375,8 @@ function generateLevel(n) {
     document.getElementById('dogTier').textContent = cfg.tier;
     document.getElementById('dogOverlay').classList.add('show');
   } else if (isMouseLevel(n) && !G.isDailyChallenge) {
-    // Mouse hunt: whack-a-mole mini-game
+    // Mouse hunt: whack-a-mole mini-game — no ice in mini-games
+    G.frozenBalls = new Set();
     G.tubes = [];
     const mcfg = mouseConfig(n);
     G.timer = { active: false, endTime: 0, duration: mcfg.timer * 1000, _lastTick: -1 };
@@ -385,8 +386,9 @@ function generateLevel(n) {
     document.getElementById('mouseGameOverOverlay').classList.remove('show');
     showMouseOverlay(n);
   } else if (isTetrisLevel(n) && !G.isDailyChallenge) {
-    // Tetris round: replace normal puzzle with drop mode
+    // Tetris round: replace normal puzzle with drop mode — no ice in rain mode
     G.timer = null;
+    G.frozenBalls = new Set();
     const cfg = levelConfig(n);
     G.tubes = [];
     for (let i = 0; i < cfg.colors.length; i++) G.tubes.push([]);
