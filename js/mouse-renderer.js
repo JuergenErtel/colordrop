@@ -380,11 +380,16 @@ export function renderMouseGame(ctx, ts, cw, ch) {
 
 export function mouseHitTest(lx, ly, cw, ch) {
   const positions = holePositions(cw, ch);
-  const hitRadius = cw * 0.1 * 1.3; // generous tap area
+  const hitW = cw * 0.1 * 1.3;  // horizontal tap area
+  const mouseSize = cw * 0.1 * 0.7;
+  // Mouse body sits above the hole, so shift hit center upward
+  // and extend vertical hit area to cover the full mouse
+  const hitCenterOffset = mouseSize * 0.4;
+  const hitH = hitW + mouseSize * 0.8; // taller to cover mouse body above hole
   for (let i = 0; i < 9; i++) {
-    const dx = lx - positions[i].x;
-    const dy = ly - positions[i].y;
-    if (dx * dx + dy * dy < hitRadius * hitRadius) return i;
+    const dx = (lx - positions[i].x) / hitW;
+    const dy = (ly - (positions[i].y - hitCenterOffset)) / hitH;
+    if (dx * dx + dy * dy < 1) return i;
   }
   return -1;
 }
