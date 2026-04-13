@@ -2148,156 +2148,181 @@ function drawBgPreview(canvas, bgId) {
   const w = canvas.width, h = canvas.height;
 
   if (bgId === 'cafe') {
-    // Wall with warm gradient
+    // Wall — warm, bright
     const wall = ctx.createLinearGradient(0, 0, 0, h * 0.55);
-    wall.addColorStop(0, '#5a3828');
-    wall.addColorStop(0.4, '#7a5a45');
-    wall.addColorStop(1, '#8a6a55');
+    wall.addColorStop(0, '#9a7a60');
+    wall.addColorStop(1, '#b89878');
     ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h * 0.55);
     // Wall texture stripes
-    ctx.save(); ctx.globalAlpha = 0.08;
+    ctx.save(); ctx.globalAlpha = 0.07;
     for (let y = 3; y < h * 0.55; y += 6) {
-      ctx.fillStyle = y % 12 === 0 ? '#ffe8d0' : '#3a1a08';
+      ctx.fillStyle = y % 12 === 0 ? '#ffe8d0' : '#6a4020';
       ctx.fillRect(0, y, w, 0.5);
     }
     ctx.restore();
-    // Floor
+    // Warm spotlight from top-left
+    const spot = ctx.createRadialGradient(w * 0.25, 0, 0, w * 0.25, 0, h * 0.65);
+    spot.addColorStop(0, 'rgba(255,230,180,0.25)'); spot.addColorStop(1, 'rgba(255,230,180,0)');
+    ctx.fillStyle = spot; ctx.fillRect(0, 0, w, h);
+    // Baseboard
+    ctx.fillStyle = 'rgba(60,30,15,0.5)'; ctx.fillRect(0, h * 0.54, w, 2);
+    ctx.fillStyle = 'rgba(255,220,180,0.2)'; ctx.fillRect(0, h * 0.53, w, 1);
+    // Floor — warm brown, not too dark
     const floor = ctx.createLinearGradient(0, h * 0.55, 0, h);
-    floor.addColorStop(0, '#4a3020'); floor.addColorStop(1, '#2a1a10');
+    floor.addColorStop(0, '#6a4a30'); floor.addColorStop(1, '#4a3020');
     ctx.fillStyle = floor; ctx.fillRect(0, h * 0.55, w, h * 0.45);
     // Floor grain
-    ctx.save(); ctx.globalAlpha = 0.08; ctx.strokeStyle = '#b08860'; ctx.lineWidth = 0.5;
+    ctx.save(); ctx.globalAlpha = 0.1; ctx.strokeStyle = '#c0a070'; ctx.lineWidth = 0.5;
     for (let i = 0; i < 5; i++) {
       ctx.beginPath(); ctx.moveTo(i * (w / 4), h); ctx.lineTo(w * 0.5 + (i * (w / 4) - w * 0.5) * 0.3, h * 0.55); ctx.stroke();
     }
     ctx.restore();
-    // Baseboard
-    ctx.fillStyle = 'rgba(30,15,5,0.5)'; ctx.fillRect(0, h * 0.55 - 1, w, 2);
-    ctx.fillStyle = 'rgba(255,220,180,0.15)'; ctx.fillRect(0, h * 0.55 - 2, w, 1);
-    // Table
+    // Table — bright oval
     ctx.save();
-    ctx.beginPath(); ctx.ellipse(w * 0.5, h * 0.72, w * 0.4, h * 0.08, 0, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.ellipse(w * 0.5, h * 0.72, w * 0.38, h * 0.09, 0, 0, Math.PI * 2);
     const tg = ctx.createRadialGradient(w * 0.4, h * 0.7, 0, w * 0.5, h * 0.72, w * 0.4);
-    tg.addColorStop(0, 'rgba(180,140,100,0.4)'); tg.addColorStop(1, 'rgba(120,80,50,0.15)');
+    tg.addColorStop(0, 'rgba(210,170,120,0.5)'); tg.addColorStop(1, 'rgba(160,120,70,0.2)');
     ctx.fillStyle = tg; ctx.fill(); ctx.restore();
-    // Spotlight
-    const spot = ctx.createRadialGradient(w * 0.3, 0, 0, w * 0.3, 0, h * 0.7);
-    spot.addColorStop(0, 'rgba(255,220,160,0.18)'); spot.addColorStop(1, 'rgba(255,220,160,0)');
-    ctx.fillStyle = spot; ctx.fillRect(0, 0, w, h);
     // Lamp glow bottom
-    const lamp = ctx.createRadialGradient(w * 0.5, h, 0, w * 0.5, h, h * 0.4);
-    lamp.addColorStop(0, 'rgba(235,170,90,0.18)'); lamp.addColorStop(1, 'rgba(235,170,90,0)');
+    const lamp = ctx.createRadialGradient(w * 0.5, h + 5, 0, w * 0.5, h + 5, h * 0.45);
+    lamp.addColorStop(0, 'rgba(245,190,100,0.2)'); lamp.addColorStop(1, 'rgba(245,190,100,0)');
     ctx.fillStyle = lamp; ctx.fillRect(0, 0, w, h);
     // Dust motes
-    ctx.fillStyle = 'rgba(255,225,180,0.35)';
+    ctx.fillStyle = 'rgba(255,230,180,0.5)';
     for (let i = 0; i < 5; i++) {
-      ctx.beginPath(); ctx.arc(15 + i * 22, 12 + (i * 17) % (h * 0.6), 1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(15 + i * 22, 10 + (i * 17) % (h * 0.5), 1.2, 0, Math.PI * 2); ctx.fill();
     }
-    // Vignette
-    const vig = ctx.createRadialGradient(w / 2, h * 0.4, h * 0.15, w / 2, h * 0.4, w * 0.8);
-    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(20,10,3,0.4)');
+    // Light vignette — just subtle edge darkening
+    const vig = ctx.createRadialGradient(w / 2, h * 0.4, w * 0.4, w / 2, h * 0.4, w * 0.9);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(20,10,3,0.2)');
     ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
 
   } else if (bgId === 'garden') {
-    // Sky
+    // Bright sky
     const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    sky.addColorStop(0, '#87CEEB'); sky.addColorStop(1, '#B0E0D0');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.5);
+    sky.addColorStop(0, '#7EC8E8'); sky.addColorStop(1, '#A8DCC8');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.55);
+    // Sun glow
+    const sun = ctx.createRadialGradient(w - 15, 12, 3, w - 15, 12, 25);
+    sun.addColorStop(0, 'rgba(255,245,140,0.9)'); sun.addColorStop(0.3, 'rgba(255,230,80,0.35)'); sun.addColorStop(1, 'rgba(255,230,80,0)');
+    ctx.fillStyle = sun; ctx.fillRect(0, 0, w, h * 0.5);
     // Clouds
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    const clouds = [[20, 14], [55, 10], [90, 16]];
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    const clouds = [[18, 14], [58, 9], [95, 16]];
     for (const [cx, cy] of clouds) {
       ctx.beginPath();
-      ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-      ctx.arc(cx + 7, cy - 3, 6, 0, Math.PI * 2);
-      ctx.arc(cx + 13, cy, 7, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+      ctx.arc(cx + 8, cy - 3, 7, 0, Math.PI * 2);
+      ctx.arc(cx + 14, cy, 8, 0, Math.PI * 2);
       ctx.fill();
     }
     // Grass
     const grass = ctx.createLinearGradient(0, h * 0.45, 0, h);
-    grass.addColorStop(0, '#5B8C3E'); grass.addColorStop(1, '#3D6B2E');
+    grass.addColorStop(0, '#6BA04A'); grass.addColorStop(1, '#4A7A32');
     ctx.fillStyle = grass; ctx.fillRect(0, h * 0.45, w, h * 0.55);
-    // Flowers
-    const fColors = ['#FF6B8A', '#FFD700', '#FF8C42', '#E066FF', '#FF6B8A', '#FFD700'];
+    // Flowers — bigger and brighter
+    const fColors = ['#FF5580', '#FFD700', '#FF7030', '#D050FF', '#FF5580', '#FFD700'];
     for (let i = 0; i < 6; i++) {
-      const fx = 10 + i * 20;
-      const fy = h * 0.48 + Math.sin(i * 2.1) * 5;
+      const fx = 10 + i * 19;
+      const fy = h * 0.49 + Math.sin(i * 2.1) * 5;
+      // Stem
+      ctx.strokeStyle = '#3A6A20'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(fx, fy + 3); ctx.lineTo(fx, fy + 10); ctx.stroke();
+      // Petals
       ctx.fillStyle = fColors[i];
       for (let p = 0; p < 5; p++) {
         const pa = (Math.PI * 2 * p) / 5;
-        ctx.beginPath(); ctx.arc(fx + Math.cos(pa) * 2.5, fy + Math.sin(pa) * 2.5, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(fx + Math.cos(pa) * 3, fy + Math.sin(pa) * 3, 2.5, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.fillStyle = '#FFD700';
-      ctx.beginPath(); ctx.arc(fx, fy, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#FFE040';
+      ctx.beginPath(); ctx.arc(fx, fy, 1.8, 0, Math.PI * 2); ctx.fill();
     }
     // Butterflies
-    ctx.save(); ctx.globalAlpha = 0.5;
+    ctx.save(); ctx.globalAlpha = 0.7;
     ctx.fillStyle = '#FFD700';
-    ctx.beginPath(); ctx.ellipse(35, h * 0.35, 3, 2, -0.3, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(38, h * 0.35, 3, 2, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(32, h * 0.33, 3.5, 2, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(36, h * 0.33, 3.5, 2, 0.4, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#E066FF';
-    ctx.beginPath(); ctx.ellipse(85, h * 0.28, 2.5, 1.5, -0.3, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(87.5, h * 0.28, 2.5, 1.5, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(82, h * 0.26, 3, 1.8, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(85.5, h * 0.26, 3, 1.8, 0.4, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-    // Sun
-    ctx.save();
-    const sun = ctx.createRadialGradient(w - 18, 14, 2, w - 18, 14, 14);
-    sun.addColorStop(0, 'rgba(255,240,120,0.8)'); sun.addColorStop(0.3, 'rgba(255,220,80,0.3)'); sun.addColorStop(1, 'rgba(255,220,80,0)');
-    ctx.fillStyle = sun; ctx.fillRect(w - 32, 0, 32, 28);
-    ctx.restore();
-    // Vignette
-    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
-    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+    // Very subtle vignette
+    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.35, w / 2, h / 2, w * 0.85);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.15)');
     ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
 
   } else if (bgId === 'rooftop') {
-    // Sunset sky
-    const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    sky.addColorStop(0, '#1a1a3e'); sky.addColorStop(0.4, '#4a2c6a');
-    sky.addColorStop(0.7, '#c05050'); sky.addColorStop(1, '#e8a040');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.5);
-    // Stars
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    const stars = [[8,5],[25,8],[48,3],[72,10],[95,6],[110,4]];
+    // Sunset sky — vivid gradient
+    const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+    sky.addColorStop(0, '#1e1e50');
+    sky.addColorStop(0.35, '#6a3888');
+    sky.addColorStop(0.6, '#d06060');
+    sky.addColorStop(0.85, '#f0a848');
+    sky.addColorStop(1, '#f8cc60');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.55);
+    // Stars — brighter
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    const stars = [[8,5],[28,9],[52,4],[78,11],[100,6],[112,3]];
     for (const [sx, sy] of stars) {
-      ctx.beginPath(); ctx.arc(sx, sy, 0.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill();
     }
     // City silhouette
-    ctx.fillStyle = '#1a1a2e';
-    const bldgs = [[0,0.38,14],[16,0.30,12],[30,0.42,10],[43,0.35,15],[60,0.28,12],[74,0.40,14],[90,0.33,10],[102,0.45,12],[115,0.30,5]];
+    ctx.fillStyle = '#222244';
+    const bldgs = [[0,0.36,14],[15,0.28,13],[29,0.40,11],[42,0.33,16],[60,0.26,13],[75,0.38,15],[92,0.31,11],[104,0.43,13],[118,0.28,6]];
     for (const [bx, hf, bw] of bldgs) {
-      ctx.fillRect(bx, h * 0.5 - h * hf, bw, h * hf);
+      ctx.fillRect(bx, h * 0.55 - h * hf, bw, h * hf);
     }
-    // Lit windows
-    ctx.fillStyle = 'rgba(255,200,80,0.6)';
-    const wins = [[5,h*0.32],[8,h*0.36],[22,h*0.3],[35,h*0.2],[48,h*0.28],[65,h*0.34],[78,h*0.22],[80,h*0.28],[95,h*0.24],[106,h*0.15],[108,h*0.22]];
-    for (const [wx, wy] of wins) { ctx.fillRect(wx, wy, 2, 2.5); }
-    // Rooftop floor
-    const floor = ctx.createLinearGradient(0, h * 0.5, 0, h);
-    floor.addColorStop(0, '#4a4040'); floor.addColorStop(1, '#2a2020');
-    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.5, w, h * 0.5);
-    // String lights
-    ctx.strokeStyle = 'rgba(255,215,0,0.4)'; ctx.lineWidth = 0.5;
-    ctx.beginPath(); ctx.moveTo(0, h * 0.48);
-    for (let lx = 0; lx <= w; lx += 2) ctx.lineTo(lx, h * 0.48 + Math.sin(lx * 0.08) * 3);
+    // Lit windows — brighter, more visible
+    ctx.fillStyle = 'rgba(255,210,80,0.85)';
+    const wins = [[4,h*0.34],[7,h*0.38],[20,h*0.32],[34,h*0.22],[36,h*0.28],[50,h*0.36],[64,h*0.3],[79,h*0.24],[82,h*0.30],[97,h*0.28],[108,h*0.18],[110,h*0.25]];
+    for (const [wx, wy] of wins) { ctx.fillRect(wx, wy, 2.5, 3); }
+    // Rooftop floor — lighter
+    const floor = ctx.createLinearGradient(0, h * 0.55, 0, h);
+    floor.addColorStop(0, '#5a5050'); floor.addColorStop(1, '#3a3030');
+    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.55, w, h * 0.45);
+    // String lights — bright and festive
+    ctx.strokeStyle = 'rgba(255,215,0,0.5)'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(0, h * 0.53);
+    for (let lx = 0; lx <= w; lx += 2) ctx.lineTo(lx, h * 0.53 + Math.sin(lx * 0.07) * 3);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(255,220,100,0.7)';
-    for (let lx = 8; lx < w; lx += 16) {
-      ctx.beginPath(); ctx.arc(lx, h * 0.48 + Math.sin(lx * 0.08) * 3 + 2, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,100,0.9)';
+    for (let lx = 8; lx < w; lx += 14) {
+      const ly = h * 0.53 + Math.sin(lx * 0.07) * 3 + 2;
+      ctx.beginPath(); ctx.arc(lx, ly, 2.2, 0, Math.PI * 2); ctx.fill();
+      // Glow around bulb
+      ctx.save();
+      const bg = ctx.createRadialGradient(lx, ly, 0, lx, ly, 6);
+      bg.addColorStop(0, 'rgba(255,220,80,0.2)'); bg.addColorStop(1, 'rgba(255,220,80,0)');
+      ctx.fillStyle = bg; ctx.fillRect(lx - 6, ly - 6, 12, 12);
+      ctx.restore();
     }
-    // Vignette
-    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
-    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.35)');
+    // Very subtle vignette — just corners
+    const vig = ctx.createRadialGradient(w / 2, h * 0.45, w * 0.35, w / 2, h * 0.45, w * 0.85);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.18)');
     ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
 
   } else if (bgId === 'winter') {
-    // Warm wall
+    // Warm wall — brighter
     const wall = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    wall.addColorStop(0, '#4a3525'); wall.addColorStop(1, '#6a4a35');
+    wall.addColorStop(0, '#6a4a38'); wall.addColorStop(1, '#8a6a50');
     ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h * 0.5);
-    // Window with crossbar
-    const wx = w * 0.58, wy = h * 0.05, ww = w * 0.32, wh = h * 0.32;
-    ctx.fillStyle = '#8ab4d8'; ctx.fillRect(wx, wy, ww, wh);
+    // Window — bigger, brighter blue, centered higher
+    const wx = w * 0.52, wy = h * 0.04, ww = w * 0.38, wh = h * 0.38;
+    // Window glow
+    ctx.save();
+    const wGlow = ctx.createRadialGradient(wx + ww / 2, wy + wh / 2, 0, wx + ww / 2, wy + wh / 2, ww);
+    wGlow.addColorStop(0, 'rgba(140,190,230,0.2)'); wGlow.addColorStop(1, 'rgba(140,190,230,0)');
+    ctx.fillStyle = wGlow; ctx.fillRect(0, 0, w, h * 0.5);
+    ctx.restore();
+    // Window pane
+    ctx.fillStyle = '#9AC8E8'; ctx.fillRect(wx, wy, ww, wh);
+    // Snowflakes in window
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    const snowPos = [[0.2,0.2],[0.45,0.55],[0.7,0.15],[0.85,0.65],[0.3,0.75],[0.6,0.4]];
+    for (const [sx, sy] of snowPos) {
+      ctx.beginPath(); ctx.arc(wx + ww * sx, wy + wh * sy, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+    // Window frame & crossbar
     ctx.strokeStyle = '#5a3a20'; ctx.lineWidth = 2;
     ctx.strokeRect(wx, wy, ww, wh);
     ctx.beginPath();
@@ -2305,36 +2330,31 @@ function drawBgPreview(canvas, bgId) {
     ctx.moveTo(wx, wy + wh / 2); ctx.lineTo(wx + ww, wy + wh / 2);
     ctx.stroke();
     // Snow on windowsill
-    ctx.fillStyle = '#e8e8f0';
-    ctx.beginPath(); ctx.ellipse(wx + ww / 2, wy + wh, ww * 0.55, 3, 0, 0, Math.PI); ctx.fill();
-    // Snowflakes in window
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    const snowPos = [[0.15,0.15],[0.4,0.22],[0.65,0.1],[0.8,0.28],[0.3,0.08],[0.55,0.3]];
-    for (const [sx, sy] of snowPos) {
-      ctx.beginPath(); ctx.arc(wx + ww * sx, wy + wh * sy, 1.2, 0, Math.PI * 2); ctx.fill();
-    }
-    // Wood floor
-    const floor = ctx.createLinearGradient(0, h * 0.45, 0, h);
-    floor.addColorStop(0, '#5a3a22'); floor.addColorStop(1, '#3a2515');
-    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.45, w, h * 0.55);
-    // Floor plank lines
-    ctx.save(); ctx.globalAlpha = 0.06; ctx.strokeStyle = '#a08060'; ctx.lineWidth = 0.5;
-    for (let y = h * 0.5; y < h; y += 8) {
+    ctx.fillStyle = '#eaeaf4';
+    ctx.beginPath(); ctx.ellipse(wx + ww / 2, wy + wh + 1, ww * 0.6, 4, 0, 0, Math.PI); ctx.fill();
+    // Wood floor — warmer, not too dark
+    const floor = ctx.createLinearGradient(0, h * 0.5, 0, h);
+    floor.addColorStop(0, '#6a4a2a'); floor.addColorStop(1, '#4a3018');
+    ctx.fillStyle = floor; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+    // Plank lines
+    ctx.save(); ctx.globalAlpha = 0.08; ctx.strokeStyle = '#b09060'; ctx.lineWidth = 0.5;
+    for (let y = h * 0.55; y < h; y += 8) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
     }
     ctx.restore();
-    // Warm fireplace glow
-    const glow = ctx.createRadialGradient(12, h * 0.4, 0, 12, h * 0.4, w * 0.5);
-    glow.addColorStop(0, 'rgba(255,140,40,0.18)'); glow.addColorStop(1, 'rgba(255,140,40,0)');
+    // Warm fireplace glow — left side, strong
+    const glow = ctx.createRadialGradient(8, h * 0.45, 0, 8, h * 0.45, w * 0.55);
+    glow.addColorStop(0, 'rgba(255,150,50,0.3)'); glow.addColorStop(0.5, 'rgba(255,130,40,0.1)'); glow.addColorStop(1, 'rgba(255,130,40,0)');
     ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
-    // Indoor snowflakes drifting by window (cozy atmosphere)
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    for (let i = 0; i < 4; i++) {
-      ctx.beginPath(); ctx.arc(10 + i * 12, 8 + i * 10, 1, 0, Math.PI * 2); ctx.fill();
-    }
-    // Vignette
-    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
-    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+    // Hint of fireplace
+    ctx.fillStyle = '#4a3020'; ctx.fillRect(0, h * 0.35, 14, h * 0.2);
+    ctx.fillStyle = '#ff8030';
+    ctx.beginPath(); ctx.arc(7, h * 0.48, 4, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#ffaa40';
+    ctx.beginPath(); ctx.arc(7, h * 0.48, 2.5, Math.PI, 0); ctx.fill();
+    // Subtle vignette
+    const vig = ctx.createRadialGradient(w / 2, h / 2, w * 0.35, w / 2, h / 2, w * 0.9);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.15)');
     ctx.fillStyle = vig; ctx.fillRect(0, 0, w, h);
   }
 }
