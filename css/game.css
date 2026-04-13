@@ -59,9 +59,9 @@
 /* Cost badge */
 .hud-hint-cost {
     position: absolute;
-    bottom: -6px; right: -8px;
+    bottom: -4px; right: -4px;
     font-family: var(--f-head);
-    font-size: .5rem;
+    font-size: .45rem;
     font-weight: 700;
     line-height: 1;
     padding: 2px 4px;
@@ -76,8 +76,11 @@
 
 .hud-level {
     font-family: var(--f-head);
-    font-size: 1.1rem;
-    letter-spacing: .08em;
+    font-size: .95rem;
+    letter-spacing: .06em;
+    flex: 1;
+    text-align: center;
+    min-width: 0;
     background: linear-gradient(180deg, #FFD700, #d4873f);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

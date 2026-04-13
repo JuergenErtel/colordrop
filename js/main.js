@@ -850,7 +850,7 @@ function checkAchievements(achCtx) {
   const threeStarCount = Object.values(progress).filter(v => v >= 3).length;
 
   check('first_solve',    true);
-  check('cat_nap',        false); // TODO: streak tracking by date
+  check('cat_nap',        loadStreak().current >= 7);
   check('paw_print',      wonCount >= 20);
   check('pride_of_lions', wonCount >= 50);
   check('cat_king',       achCtx.levelNum >= 30);
@@ -892,7 +892,7 @@ function getAchievementProgress() {
 
   const currentMap = {
     first_solve:    Math.min(wonCount, 1),
-    cat_nap:        0, // TODO: streak-by-date not yet tracked
+    cat_nap:        Math.min(loadStreak().current, 7),
     paw_print:      Math.min(wonCount, 20),
     pride_of_lions: Math.min(wonCount, 50),
     cat_king:       Math.min(maxLevel, 30),
@@ -927,7 +927,7 @@ function updateNextGoalWidget() {
   if (!widget) return;
 
   const all       = getAchievementProgress();
-  const remaining = all.filter(a => !a.unlocked && a.id !== 'cat_nap');
+  const remaining = all.filter(a => !a.unlocked);
   remaining.sort((a, b) => b.percent - a.percent);
 
   if (remaining.length === 0) {
@@ -956,7 +956,7 @@ function updateNextGoalWidget() {
 
 function buildWinAchProgress() {
   const all       = getAchievementProgress();
-  const remaining = all.filter(a => !a.unlocked && a.id !== 'cat_nap');
+  const remaining = all.filter(a => !a.unlocked);
   remaining.sort((a, b) => b.percent - a.percent);
   const top3 = remaining.slice(0, 3);
 
@@ -2276,8 +2276,15 @@ function showCatDetail(cat) {
 // ── Serie Display ────────────────────────────────────────────
 function updateSerieDisplay() {
   const streak = loadStreak();
+  const display = document.getElementById('serieDisplay');
   const el = document.getElementById('serieCount');
-  if (el) el.textContent = streak.current || 0;
+  if (!display || !el) return;
+  if (streak.current > 0) {
+    el.textContent = streak.current;
+    display.style.display = '';
+  } else {
+    display.style.display = 'none';
+  }
 }
 
 // ── Premium ──────────────────────────────────────────────────
@@ -2285,6 +2292,9 @@ document.getElementById('premiumBtn').addEventListener('click', () => {
   setPremium(true);
   updatePremiumBanner();
   alert('Premium aktiviert! Danke!');
+});
+document.getElementById('premiumDismiss').addEventListener('click', () => {
+  document.getElementById('premiumBanner').classList.add('hidden');
 });
 document.getElementById('adPremiumBtn').addEventListener('click', () => {
   document.getElementById('adOverlay').classList.remove('show');
