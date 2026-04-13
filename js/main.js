@@ -312,6 +312,8 @@ function resizeCanvas() {
 
 function generateLevel(n) {
   resetUndos();
+  G.isDailyChallenge = false;
+  G.dailyModifier = null;
   LEVEL.current = n;
   const cfg     = levelConfig(n);
 
@@ -1507,6 +1509,8 @@ document.getElementById('resetBtn').addEventListener('click', () =>
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
   playSound('click');
   hideOverlay();
+  G.isDailyChallenge = false;
+  G.dailyModifier = null;
   processPendingUnlocks(() => { generateLevel(LEVEL.current + 1); invalidateRoomDecorCache(); });
 });
 document.getElementById('menuBtn').addEventListener('click', () => {
