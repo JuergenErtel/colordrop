@@ -1,7 +1,7 @@
 'use strict';
 
 import { REWARDS, COSTS, HINT_COSTS } from './constants.js';
-import { loadEconomy, saveEconomy, loadPremium, savePremium } from './storage.js';
+import { loadEconomy, saveEconomy, loadSubscription, saveSubscription } from './storage.js';
 
 // ── Balance ───────────────────────────────────────────────────────────────────
 export function getBalance() {
@@ -27,13 +27,44 @@ export function canAfford(amount) {
   return getBalance() >= amount;
 }
 
-// ── Premium ───────────────────────────────────────────────────────────────────
-export function isPremium() {
-  return loadPremium();
+// ── Premium (delegates to subscription) ──────────────────────────────────
+function subIsActive() {
+  const sub = loadSubscription();
+  if (!sub || !sub.active) return false;
+  if (sub.lifetime) return true;
+  if (sub.expiresAt && new Date(sub.expiresAt) < new Date()) {
+    sub.active = false;
+    saveSubscription(sub);
+    return false;
+  }
+  return true;
 }
 
+export function isPremium() {
+  return subIsActive();
+}
+
+/**
+ * Legacy shim. Only used for dev/debug; real grants go via billing.js.
+ * If called with `true`, creates a lifetime founder subscription.
+ */
 export function setPremium(val) {
-  savePremium(!!val);
+  if (val) {
+    const existing = loadSubscription();
+    if (existing && existing.active) return;
+    saveSubscription({
+      tier:      'founder',
+      since:     new Date().toISOString(),
+      lifetime:  true,
+      active:    true,
+      trialEnd:  null,
+      expiresAt: null,
+      stripeCustomerId: null,
+    });
+  } else {
+    const sub = loadSubscription();
+    if (sub) { sub.active = false; saveSubscription(sub); }
+  }
 }
 
 // ── Win rewards ───────────────────────────────────────────────────────────────
