@@ -1689,12 +1689,53 @@ function openLevelSelect() {
   updateMenuPremiumSignals();
   checkSeasonEndTrigger();
   updatePassBtnTimer();
+  startMenuAmbient();
   // Don't auto-scroll — let the player scroll manually
 }
 
 function closeLevelSelect() {
   document.getElementById('levelSelect').classList.remove('show');
+  stopMenuAmbient();
   hideSplash();
+}
+
+// ── Menu ambient gold-dust particles ───────────────────────────────────
+let _menuAmbientRaf = 0;
+function startMenuAmbient() {
+  const canvas = document.getElementById('menuAmbient');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width  = canvas.offsetWidth || 420;
+  const H = canvas.height = canvas.offsetHeight || 600;
+
+  const particles = Array.from({ length: 14 }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.15,
+    vy: -0.08 - Math.random() * 0.12,
+    r: 0.8 + Math.random() * 2.2,
+    alpha: 0.12 + Math.random() * 0.3,
+    phase: Math.random() * Math.PI * 2,
+  }));
+
+  if (_menuAmbientRaf) cancelAnimationFrame(_menuAmbientRaf);
+  function step(t) {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx + Math.sin(t * 0.001 + p.phase) * 0.08;
+      p.y += p.vy;
+      if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+      ctx.fillStyle = `rgba(255,215,0,${p.alpha})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    });
+    _menuAmbientRaf = requestAnimationFrame(step);
+  }
+  _menuAmbientRaf = requestAnimationFrame(step);
+}
+function stopMenuAmbient() {
+  if (_menuAmbientRaf) { cancelAnimationFrame(_menuAmbientRaf); _menuAmbientRaf = 0; }
+  const canvas = document.getElementById('menuAmbient');
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // ── Stats Screen ─────────────────────────────────────────────────────────

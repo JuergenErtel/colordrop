@@ -1061,3 +1061,22 @@
   padding: .25rem 0; text-align: center;
   color: rgba(255,255,255,.3); font-size: .7rem;
 }
+
+/* ── Menu felt-texture overlay ───────────────────────────── */
+.ls-inner::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.15 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+  opacity: .1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+.ls-inner > * { position: relative; z-index: 1; }
+
+.menu-ambient {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
+  opacity: .35;
+}
