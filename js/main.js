@@ -15,7 +15,7 @@ import {
   canUndo, trackUndo, resetUndos,
   canUseHint, spendHint, getHintCost,
 } from './economy.js';
-import { initPaywallUI, showPaywall } from './paywall.js';
+import { initPaywallUI, showPaywall, maybeShowPaywall } from './paywall.js';
 import { handleStripeReturn, isFounder } from './billing.js';
 
 import {
@@ -111,6 +111,7 @@ const G = {
 // ══════════════════════════════════════════════════════════════════════════
 
 const FISHBONE_ICON = '<i class="fishbone"></i>';
+let _hintPaidCount = 0;
 
 function updateBonesDisplay() {
   const el = document.getElementById('bonesDisplay');
@@ -205,6 +206,7 @@ function showLivesEmpty(retryFn) {
     setTimeout(() => showPaywall(), 200);
   };
   document.getElementById('livesCancelBtn').onclick = closeLivesEmpty;
+  setTimeout(() => maybeShowPaywall('lives0'), 1500);
 }
 
 function closeLivesEmpty() {
@@ -531,6 +533,10 @@ function updateDailyStreak() {
   if (!streak.calendar) streak.calendar = {};
   streak.calendar[today] = true;
   saveStreak(streak);
+  const newStreak = streak.current;
+  if (newStreak === 7 || newStreak === 14 || newStreak === 30) {
+    setTimeout(() => maybeShowPaywall('streak7'), 1200);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -774,6 +780,14 @@ function showHintAction() {
   updateBonesDisplay();
   updateHintCostBadge();
 
+  if (!isPremium()) {
+    _hintPaidCount += 1;
+    if (_hintPaidCount >= 3) {
+      setTimeout(() => maybeShowPaywall('hint3rd'), 500);
+      _hintPaidCount = 0;
+    }
+  }
+
   let move;
   try {
     move = solveHint(G.tubes, G.jokerUsed);
@@ -1001,6 +1015,11 @@ function showWin() {
   } else {
     const _xpAmount = (stars >= 3 ? XP.threeStarLevel : XP.levelSolve);
     addXp(_xpAmount, 'level' + (stars >= 3 ? '-3star' : ''));
+  }
+  if (!G.isDailyChallenge) {
+    const _levelJustSolved = LEVEL.current;
+    if (_levelJustSolved === 5)  setTimeout(() => maybeShowPaywall('level5'),  1800);
+    if (_levelJustSolved === 15) setTimeout(() => maybeShowPaywall('level15'), 1800);
   }
   updateBonesDisplay();
   tickAdLevel();
@@ -1509,6 +1528,18 @@ function buildLevelSelect() {
   });
 }
 
+function checkSeasonEndTrigger() {
+  try {
+    const season = getCurrentSeason();
+    if (!season) return;
+    const end = new Date(season.endsAt).getTime();
+    const daysLeft = Math.floor((end - Date.now()) / 86400000);
+    if (daysLeft <= 3 && daysLeft >= 0) {
+      maybeShowPaywall('seasonEnd3d');
+    }
+  } catch (e) {}
+}
+
 function openLevelSelect() {
   G.isDailyChallenge = false;
   G.dailyModifier = null;
@@ -1545,6 +1576,7 @@ function openLevelSelect() {
   playBtn.textContent = nextLevel <= 1 ? '▶ Spiel starten' : '▶ Level ' + nextLevel;
   document.getElementById('levelSelect').classList.add('show');
   updateMenuPremiumSignals();
+  checkSeasonEndTrigger();
   updatePassBtnTimer();
   // Don't auto-scroll — let the player scroll manually
 }
