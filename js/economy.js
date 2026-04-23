@@ -117,13 +117,25 @@ const FREE_UNDOS = 3;
 
 let _undosUsed = 0;
 
+function _freeUndoTokens() {
+  return parseInt(localStorage.getItem('catsort_free_undos') || '0', 10);
+}
+
 export function canUndo(historyLen) {
   if (historyLen <= 0) return false;
   if (isPremium()) return true;
+  if (_freeUndoTokens() > 0) return true;
   return _undosUsed < FREE_UNDOS;
 }
 
 export function trackUndo() {
+  if (isPremium()) return;
+  // Consume free undo token before counting against FREE_UNDOS
+  const tokens = _freeUndoTokens();
+  if (tokens > 0) {
+    localStorage.setItem('catsort_free_undos', String(tokens - 1));
+    return;
+  }
   _undosUsed += 1;
 }
 
@@ -148,6 +160,12 @@ export function canUseHint(tierName = 'EASY') {
 
 export function spendHint(tierName = 'EASY') {
   if (isPremium()) return true;
+  // Consume free hint token from Season Pass rewards before bones
+  const freeHints = parseInt(localStorage.getItem('catsort_free_hints') || '0', 10);
+  if (freeHints > 0) {
+    localStorage.setItem('catsort_free_hints', String(freeHints - 1));
+    return true;
+  }
   return spend(getHintCost(tierName));
 }
 
