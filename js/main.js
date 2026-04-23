@@ -58,6 +58,7 @@ import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
+import { addXp, XP } from './season.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -772,6 +773,7 @@ function showWin() {
     levelNum: actualLevel, stars, stats, progress,
     isDaily: G.isDailyChallenge, isBlitz,
   });
+  for (const achId of newAchs) { addXp(XP.achievement, 'ach-' + achId); }
 
   // Milestone check
   const milestone = checkMilestone(LEVEL.current);
@@ -790,6 +792,15 @@ function showWin() {
   // ── Economy: award fish bones ──
   const reward = calcWinReward(stars, G.isDailyChallenge, isBlitz);
   earn(reward);
+  // ── Season XP ──
+  if (G.isDailyChallenge) {
+    addXp(XP.dailyChallenge, 'daily');
+  } else if (isBlitz) {
+    addXp(XP.blitzWin, 'blitz');
+  } else {
+    const _xpAmount = (stars >= 3 ? XP.threeStarLevel : XP.levelSolve);
+    addXp(_xpAmount, 'level' + (stars >= 3 ? '-3star' : ''));
+  }
   updateBonesDisplay();
   tickAdLevel();
 
@@ -2567,6 +2578,7 @@ function loop(ts) {
           G.won = true;
           TETRIS.landing = null;
           endTetris();
+          addXp(XP.miniGameWin, 'minigame');
 
           // Win celebration effects
           ANIM.screenShake = { startTime: performance.now(), duration: 350, amplitude: 8 };
@@ -2641,6 +2653,7 @@ function loop(ts) {
         saveStars(LEVEL.current, stars);
         const reward = calcWinReward(stars, false, false);
         earn(reward + bonus);
+        addXp(XP.miniGameWin, 'minigame');
         updateBonesDisplay();
         playSound('win');
         setTimeout(() => showWin(), 800);
