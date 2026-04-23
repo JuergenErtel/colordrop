@@ -159,6 +159,11 @@
 
 /* ── Fish bone counter ─────────────────────────────────── */
 .hud-bones { font-family: var(--f-head); font-size: .75rem; color: var(--gold); letter-spacing: .05em; }
+.hud-bones.premium {
+  background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,140,0,.08));
+  border-color: rgba(255,215,0,.35);
+  box-shadow: inset 0 0 10px rgba(255,215,0,.15);
+}
 
 /* ── Fishbone icon (inline SVG) ──────────────────────── */
 .fishbone {

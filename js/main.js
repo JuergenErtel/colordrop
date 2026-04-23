@@ -107,7 +107,12 @@ const G = {
 const FISHBONE_ICON = '<i class="fishbone"></i>';
 
 function updateBonesDisplay() {
-  document.getElementById('bonesDisplay').innerHTML = FISHBONE_ICON + ' ' + getBalance();
+  const el = document.getElementById('bonesDisplay');
+  if (!el) return;
+  const isP = isPremium();
+  const crown = isP ? '<span class="hud-crown">👑</span>' : '';
+  el.innerHTML = crown + FISHBONE_ICON + ' ' + getBalance();
+  el.classList.toggle('premium', isP);
 }
 
 function updateHintCostDisplay() {
