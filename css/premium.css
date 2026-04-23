@@ -1,0 +1,246 @@
+/* ══════════════════════════════════════════════════════════════════════
+   PREMIUM — Paywall, Celebration, Gold-Foil CTAs, Status Signals
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Paywall Screen ─────────────────────────────────────── */
+.paywall-screen {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,12,30,.88);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  z-index: 9600;
+}
+.paywall-card {
+  width: 100%; max-width: 420px;
+  background: linear-gradient(180deg, #2a1f2e 0%, #1a1020 100%);
+  border: 1px solid rgba(255,215,0,.22);
+  border-radius: 20px;
+  padding: 1.6rem 1.3rem 1.3rem;
+  position: relative;
+  box-shadow: 0 10px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,215,0,.12);
+  max-height: 92vh; overflow-y: auto;
+}
+.paywall-close {
+  position: absolute; top: .8rem; right: 1rem;
+  background: none; border: none; color: rgba(255,255,255,.4);
+  font-size: 1.2rem; cursor: pointer;
+}
+.paywall-header { text-align: center; margin-bottom: 1.2rem; }
+.paywall-crown {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 0 14px rgba(255,215,0,.6));
+  margin-bottom: .2rem;
+}
+.paywall-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.35rem; font-weight: 700; letter-spacing: .15em;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+.paywall-subtitle {
+  font-size: .78rem; color: rgba(255,255,255,.6);
+  margin: .3rem 0 0;
+}
+
+/* ── Tier Cards ─────────────────────────────────────────── */
+.paywall-tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .5rem; margin-bottom: 1rem;
+}
+.paywall-tier {
+  position: relative;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: .8rem .4rem;
+  cursor: pointer; text-align: center;
+  transition: transform .15s, border-color .15s, background .15s;
+  font-family: 'Fredoka', sans-serif;
+  color: rgba(255,255,255,.85);
+}
+.paywall-tier:hover { transform: translateY(-2px); border-color: rgba(255,215,0,.3); }
+.paywall-tier.selected {
+  border-color: rgba(255,215,0,.7);
+  background: linear-gradient(180deg, rgba(255,215,0,.12), rgba(255,140,0,.06));
+  box-shadow: 0 0 16px rgba(255,215,0,.25);
+}
+.paywall-tier--highlight {
+  border-color: rgba(255,215,0,.5);
+  background: linear-gradient(180deg, rgba(255,215,0,.08), rgba(255,140,0,.03));
+}
+.paywall-tier-badge {
+  position: absolute; top: -.5rem; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FFD700, #FF8C00);
+  color: #4a2000; font-size: .55rem; font-weight: 700;
+  padding: .15rem .55rem; border-radius: 100px;
+  letter-spacing: .1em; white-space: nowrap;
+}
+.paywall-tier-label {
+  font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.6); margin-bottom: .2rem;
+}
+.paywall-tier-price {
+  font-size: 1.1rem; font-weight: 700;
+  color: #FFD700;
+}
+.paywall-tier-cycle {
+  font-size: .58rem; color: rgba(255,255,255,.5);
+  margin-top: .1rem;
+}
+
+/* ── Feature list ───────────────────────────────────────── */
+.paywall-features {
+  list-style: none; padding: 0; margin: .8rem 0;
+  font-size: .8rem; color: rgba(255,255,255,.8);
+}
+.paywall-features li {
+  padding: .25rem 0; padding-left: .2rem;
+}
+
+/* ── Buy Button + Gold-Foil ─────────────────────────────── */
+.premium-cta {
+  position: relative; overflow: hidden;
+}
+.paywall-buy {
+  width: 100%; padding: 1rem;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1rem; font-weight: 700; letter-spacing: .1em;
+  border: none; border-radius: 100px;
+  background: linear-gradient(110deg, #FFD700 0%, #FFF8DC 45%, #FFD700 50%, #FFB800 55%, #FFD700 100%);
+  background-size: 200% 100%;
+  color: #4a2000; cursor: pointer;
+  box-shadow: 0 4px 0 #B8860B, 0 6px 18px rgba(0,0,0,.35);
+  animation: shimmer 3s linear infinite;
+  text-transform: uppercase;
+}
+.paywall-buy:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #B8860B, 0 8px 22px rgba(0,0,0,.4); }
+.paywall-buy:active { transform: translateY(2px); box-shadow: 0 2px 0 #B8860B; }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.paywall-footnote {
+  text-align: center; font-size: .65rem;
+  color: rgba(255,255,255,.4);
+  margin: .8rem 0 0;
+}
+
+/* ── Celebration Overlay ────────────────────────────────── */
+.celebration-overlay {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(8,4,20,.94);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  z-index: 9700;
+  overflow: hidden;
+}
+.celebration-flash {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(255,215,0,.35) 0%, transparent 60%);
+  opacity: 0; pointer-events: none;
+  animation: celebrationFlash 1.2s ease-out forwards;
+}
+.celebration-overlay.show .celebration-flash { animation: celebrationFlash 1.2s ease-out; }
+@keyframes celebrationFlash {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.celebration-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 2rem 1rem;
+  max-width: 400px;
+}
+.celebration-crown {
+  font-size: 4.5rem;
+  filter: drop-shadow(0 0 24px rgba(255,215,0,.8));
+  animation: crownDrop .6s cubic-bezier(.2,1.8,.4,1) .3s both;
+  opacity: 0;
+}
+@keyframes crownDrop {
+  0%   { transform: translateY(-200px) scale(.5); opacity: 0; }
+  60%  { transform: translateY(20px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.celebration-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.6rem; font-weight: 700;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: .8rem 0 .3rem;
+  animation: fadeInUp .6s ease-out 1.8s both;
+}
+.celebration-sub {
+  font-size: .95rem; color: rgba(255,255,255,.85);
+  margin: .3rem 0 1rem;
+  animation: fadeInUp .6s ease-out 2s both;
+}
+.celebration-bones {
+  font-size: 1.1rem; color: #FFD700;
+  font-weight: 700;
+  margin: .6rem 0;
+  animation: fadeInUp .6s ease-out 2.2s both;
+}
+.celebration-cats {
+  display: flex; gap: .4rem; justify-content: center;
+  margin: 1rem 0;
+  min-height: 80px;
+}
+.celebration-cat {
+  width: 72px; height: 72px;
+  opacity: 0;
+  animation: catFlyIn .6s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes catFlyIn {
+  0%   { transform: translateX(200px) scale(.3); opacity: 0; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes fadeInUp {
+  0%   { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.celebration-actions {
+  display: flex; flex-direction: column; gap: .5rem;
+  margin-top: 1.2rem; width: 100%;
+  animation: fadeInUp .6s ease-out 3s both;
+}
+
+/* ── Premium Status Signals (used from Phase 3, defined here) ─── */
+.hud-crown {
+  display: inline-block;
+  font-size: .9rem; margin-right: .3rem;
+  filter: drop-shadow(0 0 4px rgba(255,215,0,.6));
+  animation: crownPulse 3s ease-in-out infinite;
+}
+@keyframes crownPulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255,215,0,.6)); }
+  50%      { filter: drop-shadow(0 0 10px rgba(255,215,0,.9)); }
+}
+.premium-gold-tint {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 20%, rgba(255,215,0,.08) 0%, transparent 60%);
+  z-index: 1;
+}
+.founder-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #C0C0C0, #E8E8E8);
+  color: #333;
+  font-size: .55rem; font-weight: 700;
+  padding: .15rem .55rem; border-radius: 100px;
+  letter-spacing: .1em; margin-left: .3rem;
+}
+.club-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #FFD700, #FF8C00);
+  color: #4a2000;
+  font-size: .55rem; font-weight: 700;
+  padding: .15rem .55rem; border-radius: 100px;
+  letter-spacing: .1em; margin-left: .3rem;
+}
