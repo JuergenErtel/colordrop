@@ -182,10 +182,42 @@ export const TUTORIAL_TUBES = [
 ];
 
 export const REWARDS = {
-  levelWin: 5, threeStarWin: 10, dailyWin: 25,
-  blitzWin: 3, rewardedAd: 20,
+  levelWin:     2,    // rebalanced from 5
+  threeStarWin: 5,    // rebalanced from 10
+  dailyWin:     15,   // rebalanced from 25
+  blitzWin:     3,
+  rewardedAd:   20,
 };
+
+export const HINT_COSTS = {
+  EASY:   10,
+  MEDIUM: 20,
+  HARD:   35,
+  EXPERT: 60,
+  MASTER: 100,
+};
+
+// Legacy single-value cost (used until hint call sites adopt getHintCost)
 export const COSTS = { hint: 15, extraUndo: 10 };
+
+// ── Billing mode (flip to 'stripe' at launch) ────────────────────────────
+export const BILLING_MODE = 'preview';    // 'preview' | 'stripe' | 'native'
+
+export const STRIPE_LINKS = {
+  monthly:  '',   // fill at launch
+  yearly:   '',
+  lifetime: '',
+};
+
+// ── Subscription-tier constants ──────────────────────────────────────────
+export const SUB_TIERS = {
+  monthly:  { price: '3,99€',   priceNum: 3.99,  cycle: 'month',    label: 'Monatlich' },
+  yearly:   { price: '29,99€',  priceNum: 29.99, cycle: 'year',     label: 'Jährlich',   highlight: '-37%' },
+  lifetime: { price: '39,99€',  priceNum: 39.99, cycle: 'lifetime', label: 'Forever' },
+};
+
+export const WELCOME_BONUS_BONES = 500;
+export const TRIAL_DAYS          = 7;
 
 export const TUTORIAL_SCRIPT = [
   {
