@@ -174,3 +174,21 @@
 @media (prefers-reduced-motion: reduce) {
     .splash-flare, .splash-logo, .cat-tail, .cat-chest, .cat-eyelid { animation: none !important; }
 }
+
+.splash-welcome {
+  position: absolute;
+  bottom: 24vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: .75rem;
+  color: rgba(255,215,0,.85);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 6px rgba(0,0,0,.6), 0 0 12px rgba(255,215,0,.3);
+  z-index: 11;
+  animation: splashWelcomeIn 1s ease-out 1.2s both;
+}
+@keyframes splashWelcomeIn {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

@@ -1,6 +1,9 @@
 'use strict';
 
 import { drawMascotCat, CAT_PARAMS } from './cat-renderer.js';
+import { isPremium } from './economy.js';
+import { isFounder } from './billing.js';
+import { loadSubscription } from './storage.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  SPLASH SCREEN — Particles, Yarn interactions, entrance animation
@@ -163,7 +166,27 @@ function animateEntrance() {
 
 // ── Public API ───────────────────────────────────────────────────────────
 
+// ── Premium Welcome ──────────────────────────────────────────────────────
+
+function injectPremiumWelcome() {
+  const host = document.querySelector('.splash-content');
+  if (!host || host.querySelector('.splash-welcome')) return;
+  if (!isPremium()) return;
+
+  const el = document.createElement('p');
+  el.className = 'splash-welcome';
+  if (isFounder()) {
+    el.textContent = 'Willkommen zurück, Founder';
+  } else {
+    const sub = loadSubscription();
+    const since = sub?.since ? new Date(sub.since).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : '';
+    el.textContent = 'Willkommen zurück, Club-Mitglied seit ' + since;
+  }
+  host.appendChild(el);
+}
+
 export function initSplash() {
+  injectPremiumWelcome();
   initParticles();
   initYarnInteractions();
   animateEntrance();
