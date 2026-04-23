@@ -60,7 +60,7 @@ import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
 import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier, checkSeasonRollover } from './season.js';
-import { computeRanking, ensureLeaderboardId, getWeekScore, checkWeeklyRollover } from './leaderboard.js';
+import { computeRanking, ensureLeaderboardId, getWeekScore, addWeekScore, checkWeeklyRollover } from './leaderboard.js';
 import {
   getLivesCount as _livesCount, hasLife, consumeLife, refillWithBones, refillWithAd,
   msUntilNextLife as _livesMsUntil, formatTimeLeft as _livesFmt
@@ -1111,11 +1111,14 @@ function showWin() {
   // ── Season XP ──
   if (G.isDailyChallenge) {
     addXp(XP.dailyChallenge, 'daily');
+    addWeekScore(10);
   } else if (isBlitz) {
     addXp(XP.blitzWin, 'blitz');
+    addWeekScore(3);
   } else {
     const _xpAmount = (stars >= 3 ? XP.threeStarLevel : XP.levelSolve);
     addXp(_xpAmount, 'level' + (stars >= 3 ? '-3star' : ''));
+    addWeekScore(stars >= 3 ? 3 : 1);
   }
   if (!G.isDailyChallenge) {
     const _levelJustSolved = LEVEL.current;
@@ -1560,6 +1563,13 @@ function updateDailyBtn() {
     btn.textContent = '\uD83D\uDCC5 Tages-Challenge';
     btn.disabled    = false;
   }
+}
+
+function showWeeklyResultOverlay(r) {
+  // Placeholder — Phase 9 Task 9.4 replaces this with proper overlay
+  console.log('[leaderboard] weekly result:', r);
+  // Simple alert for now — will be replaced by styled overlay in Phase 9
+  alert('Wochen-Ergebnis: Platz ' + r.rank + ' mit ' + r.prevScore + ' Punkten → ' + r.reward + ' Fischgräten!');
 }
 
 // ── Level Select ─────────────────────────────────────────────────────────
@@ -2928,6 +2938,7 @@ function loop(ts) {
           TETRIS.landing = null;
           endTetris();
           addXp(XP.miniGameWin, 'minigame');
+          addWeekScore(5);
 
           // Win celebration effects
           ANIM.screenShake = { startTime: performance.now(), duration: 350, amplitude: 8 };
@@ -3003,6 +3014,7 @@ function loop(ts) {
         const reward = calcWinReward(stars, false, false);
         earn(reward + bonus);
         addXp(XP.miniGameWin, 'minigame');
+        addWeekScore(5);
         updateBonesDisplay();
         playSound('win');
         setTimeout(() => showWin(), 800);
@@ -3064,6 +3076,12 @@ const __seasonRollover = checkSeasonRollover();
 if (__seasonRollover.rolled) {
   console.log('[season] rolled over to:', __seasonRollover.newSeasonName);
   window._seasonRollover = __seasonRollover.newSeasonName;
+}
+
+// Weekly leaderboard rollover check
+const __weeklyRollover = checkWeeklyRollover();
+if (__weeklyRollover) {
+  setTimeout(() => showWeeklyResultOverlay(__weeklyRollover), 1500);
 }
 
 const __stripeReturn = handleStripeReturn();
