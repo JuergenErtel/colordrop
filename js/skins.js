@@ -12,10 +12,11 @@ export const SKIN_DEFS = {
 
 // ── Background definitions ───────────────────────────────────────────────
 export const BG_DEFS = {
-  cafe:    { name: 'Katzencafé',  cost: 0,   milestone: null },
-  garden:  { name: 'Garten',           cost: 250, milestone: 50 },
-  rooftop: { name: 'Dachterrasse',     cost: 450, milestone: 100 },
-  winter:  { name: 'Winterstube',      cost: 650, milestone: 200 },
+  cafe:         { name: 'Katzencafé',  cost: 0,   milestone: null },
+  garden:       { name: 'Garten',       cost: 250, milestone: 50 },
+  rooftop:      { name: 'Dachterrasse', cost: 450, milestone: 100 },
+  winter:       { name: 'Winterstube',  cost: 650, milestone: 200 },
+  kirschbluete: { name: 'Kirschblüte',  cost: 0,   milestone: null, season: '2026-05' },
 };
 
 // ── Skin state ───────────────────────────────────────────────────────────
