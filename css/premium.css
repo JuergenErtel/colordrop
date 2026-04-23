@@ -274,3 +274,37 @@
 .lives-empty-actions {
   display: flex; flex-direction: column; gap: .5rem;
 }
+
+/* ── Weekly Result Overlay ──────────────────────────────── */
+.weekly-result-card {
+  max-width: 400px;
+  background: linear-gradient(180deg, #2a2014 0%, #1a1008 100%);
+  border: 1px solid rgba(255,215,0,.3);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.weekly-result-trophy {
+  font-size: 3.5rem;
+  filter: drop-shadow(0 0 18px rgba(255,215,0,.6));
+  animation: trophyBounce .8s ease-out;
+}
+@keyframes trophyBounce {
+  0%   { transform: scale(0) rotate(-30deg); }
+  60%  { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1)   rotate(0); }
+}
+.weekly-result-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.3rem; color: #FFD700;
+  margin: .3rem 0;
+}
+.weekly-result-rank {
+  font-size: 2rem; font-weight: 700;
+  color: #fff; margin: .5rem 0;
+}
+.weekly-result-score, .weekly-result-reward {
+  font-size: 1rem; color: rgba(255,255,255,.85);
+  margin: .3rem 0;
+}
+.weekly-result-reward { color: #FFD700; font-weight: 600; }

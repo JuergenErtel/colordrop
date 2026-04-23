@@ -1566,10 +1566,22 @@ function updateDailyBtn() {
 }
 
 function showWeeklyResultOverlay(r) {
-  // Placeholder — Phase 9 Task 9.4 replaces this with proper overlay
-  console.log('[leaderboard] weekly result:', r);
-  // Simple alert for now — will be replaced by styled overlay in Phase 9
-  alert('Wochen-Ergebnis: Platz ' + r.rank + ' mit ' + r.prevScore + ' Punkten → ' + r.reward + ' Fischgräten!');
+  const rankEl   = document.getElementById('weeklyResultRank');
+  const scoreEl  = document.getElementById('weeklyResultScore');
+  const rewardEl = document.getElementById('weeklyResultReward');
+  const overlay  = document.getElementById('weeklyResultOverlay');
+  if (!overlay || !rankEl || !scoreEl || !rewardEl) return;
+  rankEl.textContent   = r.rank;
+  scoreEl.textContent  = r.prevScore;
+  rewardEl.textContent = r.reward;
+  overlay.classList.remove('hidden');
+  overlay.classList.add('show');
+  playSound('cat_unlock');
+  updateBonesDisplay();
+  document.getElementById('weeklyResultClose').onclick = () => {
+    overlay.classList.remove('show');
+    setTimeout(() => overlay.classList.add('hidden'), 250);
+  };
 }
 
 // ── Level Select ─────────────────────────────────────────────────────────
