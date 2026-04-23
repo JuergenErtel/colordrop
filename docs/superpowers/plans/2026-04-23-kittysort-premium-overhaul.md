@@ -131,12 +131,12 @@ export function spendHint(tierName = 'EASY') {
 
 - [ ] **Step 2: Update HUD hint cost display in `js/main.js`**
 
-Find the block that sets the hint button cost (search for `hintCost`). Replace the static `15` with a function that reads the current tier from `G.tier` (the active difficulty).
+Find the block that sets the hint button cost (search for `hintCost`). Replace the static `15` with a function that reads the current tier from `G.theme` (the active difficulty).
 
-Search for `hintCost` references and update each so the label uses `getHintCost(G.tier || 'EASY')`:
+Search for `hintCost` references and update each so the label uses `getHintCost(G.theme || 'EASY')`:
 ```javascript
 function updateHintCostDisplay() {
-  const tier = G.tier || 'EASY';
+  const tier = G.theme || 'EASY';
   const cost = getHintCost(tier);
   const el = document.getElementById('hintCost');
   if (el) el.innerHTML = '<i class="fishbone"></i>' + cost;
@@ -153,14 +153,14 @@ import {
 } from './economy.js';
 ```
 
-Call `updateHintCostDisplay()` at every tier change (search for `G.tier =` assignments and after each, call it) and on HUD init.
+Call `updateHintCostDisplay()` at every tier change (search for `G.theme =` assignments and after each, call it) and on HUD init.
 
 - [ ] **Step 3: Update all `spendHint()`/`canUseHint()` call sites to pass tier**
 
 In main.js, find calls to `spendHint()` and `canUseHint()`. Replace with:
 ```javascript
-spendHint(G.tier || 'EASY')
-canUseHint(G.tier || 'EASY')
+spendHint(G.theme || 'EASY')
+canUseHint(G.theme || 'EASY')
 ```
 
 - [ ] **Step 4: Manual test — start dev server**
