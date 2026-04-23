@@ -2,7 +2,7 @@
 
 import { SUB_TIERS, BILLING_MODE, WELCOME_BONUS_BONES } from './constants.js';
 import { purchase, isActiveSubscription } from './billing.js';
-import { loadSubscription } from './storage.js';
+import { loadSubscription, loadPaywallState, savePaywallState } from './storage.js';
 import { getBalance } from './economy.js';
 import { playSound } from './audio.js';
 
@@ -174,4 +174,52 @@ export function initPaywallUI() {
       document.getElementById('seasonPassBtn')?.click();
     }, 250);
   });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  CONTEXTUAL TRIGGERS
+// ══════════════════════════════════════════════════════════════════════
+
+const MIN_HINT3RD_INTERVAL_MS = 72 * 60 * 60 * 1000;
+const MIN_LIVES0_INTERVAL_MS  = 60 * 60 * 1000;
+
+export const TRIGGERS = {
+  level5:      { once: true,  interval: 0 },
+  level15:     { once: true,  interval: 0 },
+  hint3rd:     { once: false, interval: MIN_HINT3RD_INTERVAL_MS, stateKey: 'lastHint3rd' },
+  streak7:     { once: true,  interval: 0 },
+  lives0:      { once: false, interval: MIN_LIVES0_INTERVAL_MS,  stateKey: 'lastLives0' },
+  seasonEnd3d: { once: true,  interval: 0 },
+};
+
+const TRIGGER_COPY = {
+  level5:      { title: 'Du hast Talent! 🐾',          sub: 'Probier den Kittysort Club 7 Tage gratis und entdecke die Saison-Katzen.' },
+  level15:     { title: 'Drei Katzen warten auf dich', sub: 'Die Kirschblüte-Saison hat exklusive Katzen nur für Club-Mitglieder.' },
+  hint3rd:     { title: 'Brauchst du öfter Hilfe?',    sub: 'Im Club sind Hints unbegrenzt kostenlos.' },
+  streak7:     { title: '7 Tage in Folge — stark!',    sub: 'Du spielst sowieso jeden Tag. Hol dir den Club und vermisse keine Saison.' },
+  lives0:      { title: 'Keine Wartezeit mit dem Club',sub: 'Unbegrenzte Lives + alle Premium-Features.' },
+  seasonEnd3d: { title: 'Noch 3 Tage für die Saison-Katzen!', sub: 'Sakura, Tsubaki und Hoshi verschwinden am Monatsende.' },
+};
+
+export function maybeShowPaywall(triggerId) {
+  const cfg = TRIGGERS[triggerId];
+  if (!cfg) return false;
+
+  // Don't prompt already-premium users
+  const sub = loadSubscription();
+  if (sub && sub.active) return false;
+
+  const state = loadPaywallState();
+  if (cfg.once && state.shown.includes(triggerId)) return false;
+  if (cfg.stateKey) {
+    const last = state[cfg.stateKey] || 0;
+    if (Date.now() - last < cfg.interval) return false;
+  }
+
+  if (cfg.once) state.shown.push(triggerId);
+  if (cfg.stateKey) state[cfg.stateKey] = Date.now();
+  savePaywallState(state);
+
+  showPaywall({ triggerCopy: TRIGGER_COPY[triggerId] });
+  return true;
 }
