@@ -68,6 +68,7 @@
                         <span class="pass-btn-timer" id="passBtnTimer"></span>
                     </button>
                     <button id="shopBtn" class="ls-action-btn ls-action-btn--shop" type="button">🛒 Shop</button>
+                    <button id="leaderboardBtn" class="ls-action-btn ls-action-btn--rank" type="button">🏆 Wochen-Rangliste</button>
                 </div>
                 <div class="ls-actions-secondary">
                     <button id="statsBtn" class="ls-action-btn ls-action-btn--secondary" type="button">📊 Statistiken</button>
@@ -452,6 +453,17 @@
         <button class="win-btn" id="passBackBtn">← Zurück</button>
       </div>
     </div>
+
+    <!-- Leaderboard -->
+<div id="leaderboardScreen" class="screen-overlay sheet-panel hidden">
+  <div class="album-card">
+    <h2 class="stats-title">WOCHEN-RANGLISTE</h2>
+    <p class="lb-timer" id="lbTimer">Woche endet in ...</p>
+    <div class="lb-user-banner" id="lbUserBanner"></div>
+    <div class="lb-list" id="lbList"></div>
+    <button class="win-btn" id="lbBackBtn">← Zurück</button>
+  </div>
+</div>
 
     <!-- Lives Empty Overlay -->
     <div id="livesEmptyOverlay" class="screen-overlay sheet-panel hidden">

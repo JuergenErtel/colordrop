@@ -1013,3 +1013,51 @@
     color: rgba(255,255,255,.4);
     cursor: default;
 }
+
+/* ── Leaderboard ────────────────────────────────────────── */
+.ls-action-btn--rank {
+  background: linear-gradient(135deg, #FFD54F, #FFA000);
+  color: #3a2000;
+  box-shadow: 0 4px 0 #8a6400, 0 6px 16px rgba(0,0,0,.35);
+}
+.lb-timer {
+  text-align: center; font-size: .75rem;
+  color: rgba(255,255,255,.55);
+  margin: 0 0 1rem;
+}
+.lb-user-banner {
+  background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,140,0,.08));
+  border: 1px solid rgba(255,215,0,.3);
+  border-radius: 12px;
+  padding: .8rem 1rem;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .85rem;
+  margin-bottom: .8rem;
+}
+.lb-user-banner .lb-rank  { font-size: 1.3rem; font-weight: 700; color: #FFD700; }
+.lb-user-banner .lb-nick  { color: rgba(255,255,255,.9); font-weight: 600; }
+.lb-user-banner .lb-score { color: rgba(255,255,255,.7); }
+
+.lb-list { display: flex; flex-direction: column; gap: .25rem; max-height: 55vh; overflow-y: auto; }
+.lb-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 60px;
+  padding: .45rem .6rem;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.05);
+  border-radius: 8px;
+  font-size: .75rem;
+  align-items: center;
+}
+.lb-row.user {
+  background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,140,0,.06));
+  border-color: rgba(255,215,0,.4);
+}
+.lb-rank-col  { text-align: center; font-weight: 700; color: rgba(255,255,255,.7); }
+.lb-nick-col  { color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-score-col { text-align: right; color: rgba(255,255,255,.75); font-variant-numeric: tabular-nums; }
+.lb-row.top3 .lb-rank-col { color: #FFD700; }
+.lb-separator {
+  padding: .25rem 0; text-align: center;
+  color: rgba(255,255,255,.3); font-size: .7rem;
+}

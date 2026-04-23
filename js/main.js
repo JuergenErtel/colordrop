@@ -60,6 +60,7 @@ import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
 import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier, checkSeasonRollover } from './season.js';
+import { computeRanking, ensureLeaderboardId, getWeekScore, checkWeeklyRollover } from './leaderboard.js';
 import {
   getLivesCount as _livesCount, hasLife, consumeLife, refillWithBones, refillWithAd,
   msUntilNextLife as _livesMsUntil, formatTimeLeft as _livesFmt
@@ -159,6 +160,65 @@ function closeSeasonPass() {
   if (!screen) return;
   screen.classList.remove('show');
   setTimeout(() => screen.classList.add('hidden'), 250);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LEADERBOARD UI
+// ══════════════════════════════════════════════════════════════
+
+function openLeaderboard() {
+  ensureLeaderboardId();
+  renderLeaderboard();
+  const s = document.getElementById('leaderboardScreen');
+  if (!s) return;
+  s.classList.remove('hidden'); s.classList.add('show');
+}
+function closeLeaderboard() {
+  const s = document.getElementById('leaderboardScreen');
+  if (!s) return;
+  s.classList.remove('show');
+  setTimeout(() => s.classList.add('hidden'), 250);
+}
+
+function renderLeaderboard() {
+  const userMax = parseInt(localStorage.getItem('catsort_max_level') || '1', 10);
+  const { rank, entries, userNick } = computeRanking(userMax);
+
+  // Timer to next Monday 00:00
+  const now = new Date();
+  const nextMonday = new Date(now);
+  nextMonday.setDate(now.getDate() + ((8 - now.getDay()) % 7 || 7));
+  nextMonday.setHours(0, 0, 0, 0);
+  const msLeft = nextMonday.getTime() - now.getTime();
+  const d = Math.floor(msLeft / 86400000);
+  const h = Math.floor((msLeft % 86400000) / 3600000);
+  document.getElementById('lbTimer').textContent = 'Woche endet in ' + d + 'd ' + h + 'h';
+
+  document.getElementById('lbUserBanner').innerHTML =
+    '<span class="lb-rank">#' + rank + '</span>' +
+    '<span class="lb-nick">' + userNick + '</span>' +
+    '<span class="lb-score">' + getWeekScore() + ' Punkte</span>';
+
+  const list = document.getElementById('lbList');
+  list.innerHTML = '';
+  const top10 = entries.slice(0, 10);
+  top10.forEach((e, i) => list.appendChild(_renderLbRow(e, i + 1)));
+
+  if (rank > 15) {
+    list.insertAdjacentHTML('beforeend', '<div class="lb-separator">· · ·</div>');
+    const from = Math.max(10, rank - 3), to = Math.min(entries.length, rank + 2);
+    for (let i = from; i < to; i++) list.appendChild(_renderLbRow(entries[i], i + 1));
+  }
+}
+
+function _renderLbRow(entry, rank) {
+  const row = document.createElement('div');
+  row.className = 'lb-row' + (entry.isUser ? ' user' : '') + (rank <= 3 ? ' top3' : '');
+  row.innerHTML =
+    '<div class="lb-rank-col">' + rank + '</div>' +
+    '<div class="lb-nick-col">' + entry.nick + (entry.isUser ? ' (du)' : '') + '</div>' +
+    '<div class="lb-score-col">' + entry.score + '</div>';
+  return row;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1955,6 +2015,8 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
 document.getElementById('statsBtn').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
 document.getElementById('seasonPassBtn')?.addEventListener('click', openSeasonPass);
 document.getElementById('passBackBtn')?.addEventListener('click', closeSeasonPass);
+document.getElementById('leaderboardBtn')?.addEventListener('click', openLeaderboard);
+document.getElementById('lbBackBtn')?.addEventListener('click', closeLeaderboard);
 document.getElementById('passUpgradeBtn')?.addEventListener('click', () => {
   closeSeasonPass();
   setTimeout(() => showPaywall(), 300);
