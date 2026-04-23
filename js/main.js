@@ -58,7 +58,8 @@ import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
-import { addXp, XP } from './season.js';
+import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier } from './season.js';
+import { getCurrentSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -114,6 +115,127 @@ function updateBonesDisplay() {
   const crown = isP ? '<span class="hud-crown">👑</span>' : '';
   el.innerHTML = crown + FISHBONE_ICON + ' ' + getBalance();
   el.classList.toggle('premium', isP);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  SEASON PASS UI
+// ══════════════════════════════════════════════════════════════════════
+
+function openSeasonPass() {
+  const screen = document.getElementById('seasonPassScreen');
+  if (!screen) return;
+  renderSeasonPass();
+  screen.classList.remove('hidden');
+  screen.classList.add('show');
+}
+
+function closeSeasonPass() {
+  const screen = document.getElementById('seasonPassScreen');
+  if (!screen) return;
+  screen.classList.remove('show');
+  setTimeout(() => screen.classList.add('hidden'), 250);
+}
+
+function renderSeasonPass() {
+  const season = getCurrentSeason();
+  if (!season) return;
+  const p = getProgress();
+  const tier = tierFromXp(p.xp);
+  const maxXp = xpForTier(50);
+
+  document.getElementById('passSeasonEmoji').textContent = season.emoji;
+  document.getElementById('passSeasonName').textContent  = season.name;
+
+  const end = new Date(season.endsAt);
+  const msLeft = Math.max(0, end.getTime() - Date.now());
+  const daysLeft = Math.floor(msLeft / 86400000);
+  const hoursLeft = Math.floor((msLeft % 86400000) / 3600000);
+  document.getElementById('passSeasonTimer').textContent =
+    'Endet in ' + daysLeft + 'd ' + hoursLeft + 'h';
+
+  document.getElementById('passXpNow').textContent   = p.xp;
+  document.getElementById('passXpMax').textContent   = maxXp;
+  document.getElementById('passTierNow').textContent = tier;
+  document.getElementById('passXpFill').style.width  = Math.min(100, (p.xp / maxXp) * 100) + '%';
+
+  const isP = isPremium();
+  document.getElementById('passStatusLabel').textContent =
+    isP ? 'CLUB-MITGLIED · PREMIUM-TRACK AKTIV' : 'FREE TRACK';
+  const upgradeBtn = document.getElementById('passUpgradeBtn');
+  if (upgradeBtn) upgradeBtn.style.display = isP ? 'none' : '';
+
+  const list = document.getElementById('passTiersList');
+  list.innerHTML = '';
+  for (let t = 1; t <= 50; t++) {
+    const row = document.createElement('div');
+    row.className = 'pass-tier-row' + (t <= tier ? ' reached' : '');
+    row.innerHTML = `
+      <div class="pass-tier-number">${t}</div>
+      ${_renderPassReward(season.rewards[t - 1].free,    t, 'free',    p, tier, isP)}
+      ${_renderPassReward(season.rewards[t - 1].premium, t, 'premium', p, tier, isP)}
+    `;
+    list.appendChild(row);
+  }
+
+  list.querySelectorAll('.pass-reward.claimable').forEach(el => {
+    el.addEventListener('click', () => {
+      const t2 = +el.dataset.tier;
+      const track = el.dataset.track;
+      const result = claimTier(t2, track);
+      if (result.ok) {
+        playSound('cat_unlock');
+        updateBonesDisplay();
+        renderSeasonPass();
+      } else {
+        playSound('invalid');
+      }
+    });
+  });
+}
+
+function _renderPassReward(def, tier, track, progress, reachedTier, isP) {
+  if (!def) {
+    return `<div class="pass-reward empty"><span class="pass-reward-label">—</span></div>`;
+  }
+  const claimed = (track === 'premium' ? progress.claimedPremium : progress.claimedFree).includes(tier);
+  const canClaim = tier <= reachedTier && !claimed && (track === 'free' || isP);
+  const locked = track === 'premium' && !isP;
+
+  const classes = ['pass-reward'];
+  if (track === 'premium') classes.push('premium-reward');
+  if (claimed)  classes.push('claimed');
+  if (canClaim) classes.push('claimable');
+  if (locked && !claimed) classes.push('locked');
+
+  const icon = _passIconFor(def);
+  return `<div class="${classes.join(' ')}" data-tier="${tier}" data-track="${track}">
+    <span class="pass-reward-icon">${icon}</span>
+    <span class="pass-reward-label">${def.label || ''}</span>
+  </div>`;
+}
+
+function _passIconFor(def) {
+  if (def.kind === 'bones')   return '🦴';
+  if (def.kind === 'cat')     return '🐱';
+  if (def.kind === 'skin')    return '🧶';
+  if (def.kind === 'bg')      return '🖼️';
+  if (def.kind === 'frame')   return '🏆';
+  if (def.kind === 'hint')    return '💡';
+  if (def.kind === 'undo')    return '↩️';
+  if (def.kind === 'ad_skip') return '📺';
+  if (def.kind === 'bundle')  return '🎁';
+  return '⭐';
+}
+
+function updatePassBtnTimer() {
+  const season = getCurrentSeason();
+  const el = document.getElementById('passBtnTimer');
+  if (!season || !el) return;
+  const end = new Date(season.endsAt);
+  const ms = Math.max(0, end.getTime() - Date.now());
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
+  el.textContent = 'Saison endet in ' + d + 'd ' + h + 'h';
 }
 
 function updateHintCostDisplay() {
@@ -1344,6 +1466,7 @@ function openLevelSelect() {
   playBtn.textContent = nextLevel <= 1 ? '▶ Spiel starten' : '▶ Level ' + nextLevel;
   document.getElementById('levelSelect').classList.add('show');
   updateMenuPremiumSignals();
+  updatePassBtnTimer();
   // Don't auto-scroll — let the player scroll manually
 }
 
@@ -1678,6 +1801,12 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
 });
 
 document.getElementById('statsBtn').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
+document.getElementById('seasonPassBtn')?.addEventListener('click', openSeasonPass);
+document.getElementById('passBackBtn')?.addEventListener('click', closeSeasonPass);
+document.getElementById('passUpgradeBtn')?.addEventListener('click', () => {
+  closeSeasonPass();
+  setTimeout(() => showPaywall(), 300);
+});
 document.getElementById('nextGoalWidget').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
 document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
 
@@ -2696,6 +2825,7 @@ updateBonesDisplay();
 updateHintCostDisplay();
 updatePremiumBanner();
 updateMenuPremiumSignals();
+updatePassBtnTimer();
 
 resizeCanvas();
 requestAnimationFrame(loop);
