@@ -200,8 +200,8 @@ function showCatUnlockCelebration(cat) {
 let confettiParticles = [];
 let confettiAnim = null;
 
-function startConfetti() {
-  const canvas = document.getElementById('confettiCanvas');
+function startConfetti(canvasId = 'confettiCanvas') {
+  const canvas = document.getElementById(canvasId);
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
@@ -276,15 +276,19 @@ function startConfetti() {
   animateConfetti(performance.now());
 }
 
-function stopConfetti() {
+function stopConfetti(canvasId = 'confettiCanvas') {
   if (confettiAnim) { cancelAnimationFrame(confettiAnim); confettiAnim = null; }
   confettiParticles = [];
-  const canvas = document.getElementById('confettiCanvas');
+  const canvas = document.getElementById(canvasId);
   if (canvas) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 }
+
+// Expose for paywall celebration (uses id 'celebrationConfetti')
+window.startConfetti = startConfetti;
+window.stopConfetti  = stopConfetti;
 
 function updateDailyStreak() {
   const streak = loadStreak();
