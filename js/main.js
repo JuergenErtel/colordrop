@@ -59,6 +59,10 @@ import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
 import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier, checkSeasonRollover } from './season.js';
+import {
+  getLivesCount as _livesCount, hasLife, consumeLife, refillWithBones, refillWithAd,
+  msUntilNextLife as _livesMsUntil, formatTimeLeft as _livesFmt
+} from './lives.js';
 import { getCurrentSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 
@@ -115,6 +119,25 @@ function updateBonesDisplay() {
   const crown = isP ? '<span class="hud-crown">👑</span>' : '';
   el.innerHTML = crown + FISHBONE_ICON + ' ' + getBalance();
   el.classList.toggle('premium', isP);
+}
+
+function updateLivesDisplay() {
+  const el  = document.getElementById('livesDisplay');
+  const cnt = document.getElementById('livesCount');
+  if (!el || !cnt) return;
+
+  if (isPremium()) {
+    cnt.textContent = '∞';
+    el.className = 'hud-lives premium';
+    return;
+  }
+
+  const n = _livesCount();
+  if (n >= 5)       cnt.textContent = n;
+  else if (n === 0) cnt.textContent = '0 · ' + _livesFmt(_livesMsUntil());
+  else              cnt.textContent = n + ' · ' + _livesFmt(_livesMsUntil());
+
+  el.className = 'hud-lives' + (n === 0 ? ' empty' : n <= 2 ? ' low' : '');
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2822,10 +2845,14 @@ setSfxEnabled(savedSettings.sfxEnabled);
 
 // Economy & premium init
 updateBonesDisplay();
+updateLivesDisplay();
 updateHintCostDisplay();
 updatePremiumBanner();
 updateMenuPremiumSignals();
 updatePassBtnTimer();
+
+// Lives timer tick (regen countdown in HUD)
+setInterval(updateLivesDisplay, 1000);
 
 resizeCanvas();
 requestAnimationFrame(loop);

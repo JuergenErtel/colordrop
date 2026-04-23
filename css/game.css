@@ -267,3 +267,29 @@
 /* ── Weekly dots ─────────────────────────────────────── */
 .weekly-dot { display:inline-block; width:20px; height:20px; border-radius:50%; border:2px solid #FFD700; }
 .weekly-dot.done { background: #FFD700; }
+
+/* ── Lives Display (HUD) ──────────────────────────────────── */
+.hud-lives {
+  display: inline-flex; align-items: center; gap: .25rem;
+  padding: .25rem .55rem;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 100px;
+  font-size: .7rem; font-weight: 600;
+  color: rgba(255,255,255,.85);
+}
+.hud-lives.low {
+  color: #F5A3B5;
+  border-color: rgba(245,163,181,.3);
+}
+.hud-lives.empty {
+  color: #E67388;
+  border-color: rgba(230,115,136,.4);
+  animation: livesEmptyPulse 1.5s ease-in-out infinite;
+}
+@keyframes livesEmptyPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(230,115,136,.3); }
+  50%      { box-shadow: 0 0 10px rgba(230,115,136,.5); }
+}
+.hud-lives .paw { font-size: .8rem; }
+.hud-lives.premium .paw { filter: drop-shadow(0 0 4px rgba(255,215,0,.5)); }
