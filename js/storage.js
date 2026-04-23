@@ -213,3 +213,117 @@ export function loadWeekly() {
 export function saveWeekly(data) {
   saveJSON(key('weekly'), data);
 }
+
+// ── Subscription ────────────────────────────────────────────────────────
+const KEY_SUBSCRIPTION = 'catsort_subscription';
+
+export function loadSubscription() {
+  try {
+    const raw = localStorage.getItem(KEY_SUBSCRIPTION);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+export function saveSubscription(sub) {
+  try {
+    localStorage.setItem(KEY_SUBSCRIPTION, JSON.stringify(sub));
+  } catch { /* quota */ }
+}
+
+export function clearSubscription() {
+  try { localStorage.removeItem(KEY_SUBSCRIPTION); } catch {}
+}
+
+// ── Paywall trigger state ───────────────────────────────────────────────
+const KEY_PAYWALL = 'catsort_paywall_state';
+
+export function loadPaywallState() {
+  try {
+    const raw = localStorage.getItem(KEY_PAYWALL);
+    if (!raw) return { shown: [], lastHint3rd: 0, lastLives0: 0 };
+    return JSON.parse(raw);
+  } catch { return { shown: [], lastHint3rd: 0, lastLives0: 0 }; }
+}
+
+export function savePaywallState(s) {
+  try { localStorage.setItem(KEY_PAYWALL, JSON.stringify(s)); } catch {}
+}
+
+// ── Lives ───────────────────────────────────────────────────────────────
+const KEY_LIVES = 'catsort_lives';
+
+export function loadLives() {
+  try {
+    const raw = localStorage.getItem(KEY_LIVES);
+    if (!raw) return { count: 5, lastRegen: new Date().toISOString() };
+    return JSON.parse(raw);
+  } catch { return { count: 5, lastRegen: new Date().toISOString() }; }
+}
+
+export function saveLives(state) {
+  try { localStorage.setItem(KEY_LIVES, JSON.stringify(state)); } catch {}
+}
+
+// ── Season progress ─────────────────────────────────────────────────────
+const KEY_SEASON = 'catsort_season';
+
+export function loadSeasonProgress() {
+  try {
+    const raw = localStorage.getItem(KEY_SEASON);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+export function saveSeasonProgress(state) {
+  try { localStorage.setItem(KEY_SEASON, JSON.stringify(state)); } catch {}
+}
+
+// ── Leaderboard ─────────────────────────────────────────────────────────
+const KEY_LB_ID      = 'catsort_leaderboard_id';
+const KEY_LB_HISTORY = 'catsort_leaderboard_history';
+
+export function loadLeaderboardId() {
+  try {
+    const raw = localStorage.getItem(KEY_LB_ID);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+export function saveLeaderboardId(obj) {
+  try { localStorage.setItem(KEY_LB_ID, JSON.stringify(obj)); } catch {}
+}
+
+export function loadLeaderboardHistory() {
+  try {
+    const raw = localStorage.getItem(KEY_LB_HISTORY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch { return []; }
+}
+
+export function saveLeaderboardHistory(arr) {
+  try { localStorage.setItem(KEY_LB_HISTORY, JSON.stringify(arr)); } catch {}
+}
+
+// ── Migration: legacy premium → subscription (Founder tier) ─────────────
+export function migrateToSubscriptionModel() {
+  if (loadSubscription()) return; // already migrated or fresh install with new model
+  const legacy = localStorage.getItem('catsort-premium') || localStorage.getItem('catsort_premium');
+  if (legacy === 'true' || legacy === true) {
+    saveSubscription({
+      tier:      'founder',
+      since:     new Date().toISOString(),
+      lifetime:  true,
+      active:    true,
+      trialEnd:  null,
+      expiresAt: null,
+      stripeCustomerId: null,
+    });
+  }
+}
+
+// Run migration once per page load
+migrateToSubscriptionModel();
