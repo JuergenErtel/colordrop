@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 import { loadSkins, saveSkins, loadBackgrounds, saveBackgrounds } from './storage.js';
 
