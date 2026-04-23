@@ -1,21 +1,21 @@
-'use strict';
+﻿'use strict';
 
 import { loadSkins, saveSkins, loadBackgrounds, saveBackgrounds } from './storage.js';
 
 // ── Skin definitions ─────────────────────────────────────────────────────
 export const SKIN_DEFS = {
-  default:  { name: 'Wollkn\u00e4uel', cost: 0,   milestone: null },
-  glitter:  { name: 'Glitzer',         cost: 50,  milestone: 150 },
-  crystal:  { name: 'Kristall',        cost: 80,  milestone: null },
-  gold:     { name: 'Goldfaden',       cost: 100, milestone: 300 },
+  default:  { name: 'Wollknäuel', cost: 0,   milestone: null },
+  glitter:  { name: 'Glitzer',         cost: 120, milestone: 150 },
+  crystal:  { name: 'Kristall',        cost: 200, milestone: null },
+  gold:     { name: 'Goldfaden',       cost: 350, milestone: 300 },
 };
 
 // ── Background definitions ───────────────────────────────────────────────
 export const BG_DEFS = {
-  cafe:    { name: 'Katzencaf\u00e9',  cost: 0,   milestone: null },
-  garden:  { name: 'Garten',           cost: 100, milestone: 50 },
-  rooftop: { name: 'Dachterrasse',     cost: 150, milestone: 100 },
-  winter:  { name: 'Winterstube',      cost: 200, milestone: 200 },
+  cafe:    { name: 'Katzencafé',  cost: 0,   milestone: null },
+  garden:  { name: 'Garten',           cost: 250, milestone: 50 },
+  rooftop: { name: 'Dachterrasse',     cost: 450, milestone: 100 },
+  winter:  { name: 'Winterstube',      cost: 650, milestone: 200 },
 };
 
 // ── Skin state ───────────────────────────────────────────────────────────
@@ -71,3 +71,4 @@ export function setActiveBg(id) {
   data.active = id;
   saveBackgrounds(data);
 }
+
