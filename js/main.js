@@ -15,6 +15,8 @@ import {
   canUndo, trackUndo, resetUndos,
   canUseHint, spendHint, getHintCost,
 } from './economy.js';
+import { initPaywallUI, showPaywall } from './paywall.js';
+import { handleStripeReturn, isFounder } from './billing.js';
 
 import {
   loadProgress, saveStars, maxUnlockedLevel,
@@ -2485,22 +2487,18 @@ function updateSerieDisplay() {
   }
 }
 
-// ── Premium ──────────────────────────────────────────────────
-document.getElementById('premiumBtn').addEventListener('click', () => {
-  setPremium(true);
-  updatePremiumBanner();
-  alert('Premium aktiviert! Danke!');
+// ── Premium entry points (all route to paywall) ─────────────────────
+document.getElementById('premiumBtn')?.addEventListener('click', () => {
+  showPaywall();
 });
-document.getElementById('premiumDismiss').addEventListener('click', () => {
-  document.getElementById('premiumBanner').classList.add('hidden');
+document.getElementById('premiumDismiss')?.addEventListener('click', () => {
+  document.getElementById('premiumBanner')?.classList.add('hidden');
 });
-document.getElementById('adPremiumBtn').addEventListener('click', () => {
+document.getElementById('adPremiumBtn')?.addEventListener('click', () => {
   document.getElementById('adOverlay').classList.remove('show');
-  setPremium(true);
-  updatePremiumBanner();
-  alert('Premium aktiviert!');
+  showPaywall();
 });
-document.getElementById('adSkipBtn').addEventListener('click', () => {
+document.getElementById('adSkipBtn')?.addEventListener('click', () => {
   document.getElementById('adOverlay').classList.remove('show');
   document.getElementById('overlay').classList.add('show');
 });
@@ -2655,6 +2653,11 @@ requestAnimationFrame(loop);
 // ── Hint badge & splash init ─────────────────────────────────────────────
 updateHintCostBadge();
 initSplash();
+initPaywallUI();
+const __stripeReturn = handleStripeReturn();
+if (__stripeReturn && __stripeReturn.ok) {
+  import('./paywall.js').then(({ showCelebration }) => showCelebration(__stripeReturn));
+}
 
 document.getElementById('splashPlayBtn').addEventListener('click', async () => {
   playSound('tap');
