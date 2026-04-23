@@ -447,3 +447,67 @@ function darkenHex(hex, amount) {
   const b = Math.max(0, (n & 0xFF) - amount);
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+//  AVATAR FRAMES (Season Pass rewards)
+// ══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Hanami frame — gold circle with 4 sakura blossom motifs orbiting slowly.
+ * Call AFTER drawing the cat portrait.
+ */
+export function drawHanamiFrame(ctx, cx, cy, r, t) {
+  ctx.save();
+  // Outer gold ring
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 6, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 4 sakura blossoms orbiting the ring
+  const angles = [0, 0.25, 0.5, 0.75];
+  angles.forEach((a) => {
+    const rad = a * Math.PI * 2 + t * 0.0008;
+    const x = cx + Math.cos(rad) * (r + 6);
+    const y = cy + Math.sin(rad) * (r + 6);
+    _drawTinyHanamiBlossom(ctx, x, y, r * 0.12);
+  });
+  ctx.restore();
+}
+
+function _drawTinyHanamiBlossom(ctx, cx, cy, size) {
+  ctx.fillStyle = '#FFB7C5';
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.ellipse(
+      cx + Math.cos(a) * size * 0.4,
+      cy + Math.sin(a) * size * 0.4,
+      size * 0.3, size * 0.55, a, 0, Math.PI * 2
+    );
+    ctx.fill();
+  }
+  ctx.fillStyle = '#FFD700';
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.18, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Helper: does the player own a given frame id?
+ */
+export function hasFrame(id) {
+  try {
+    const frames = JSON.parse(localStorage.getItem('catsort_frames') || '[]');
+    return frames.includes(id);
+  } catch { return false; }
+}
+
+export function getActiveFrame() {
+  const frames = JSON.parse(localStorage.getItem('catsort_frames') || '[]');
+  const active = localStorage.getItem('catsort_active_frame');
+  if (active && frames.includes(active)) return active;
+  if (frames.length > 0) return frames[0];
+  return null;
+}

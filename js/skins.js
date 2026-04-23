@@ -8,6 +8,7 @@ export const SKIN_DEFS = {
   glitter:  { name: 'Glitzer',         cost: 120, milestone: 150 },
   crystal:  { name: 'Kristall',        cost: 200, milestone: null },
   gold:     { name: 'Goldfaden',       cost: 350, milestone: 300 },
+  sakura:   { name: 'Sakura',          cost: 0,   milestone: null, season: '2026-05' },
 };
 
 // ── Background definitions ───────────────────────────────────────────────

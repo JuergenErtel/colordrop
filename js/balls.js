@@ -157,6 +157,35 @@ export function drawBall(ctx, cx, cy, colorId, floating, ts, frozen = false) {
         ctx.stroke();
       }
       ctx.restore();
+    } else if (skin === 'sakura' && colorId !== 'joker') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.9, 0, Math.PI * 2);
+      ctx.clip();
+      // 4 small sakura blossom motifs revolving slowly
+      const seed = cx * 13 + cy * 7;
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2 + ts * 0.0005 + seed * 0.001;
+        const px = cx + Math.cos(angle) * R * 0.55;
+        const py = cy + Math.sin(angle) * R * 0.55;
+        const size = R * 0.16;
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        for (let p = 0; p < 5; p++) {
+          const a = (p / 5) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.ellipse(
+            px + Math.cos(a) * size * 0.4,
+            py + Math.sin(a) * size * 0.4,
+            size * 0.3, size * 0.55, a, 0, Math.PI * 2
+          );
+          ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(232,115,136,0.95)';
+        ctx.beginPath();
+        ctx.arc(px, py, size * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
 
   // ── Layer 3: Cat face (or joker shimmer) ─────────────────────────────────
