@@ -96,6 +96,33 @@
     text-align: center;
     margin-top: -.75rem;
 }
+.ls-club-badge {
+    text-align: center;
+    font-size: .65rem;
+    letter-spacing: .15em;
+    margin-top: -.3rem;
+    margin-bottom: .3rem;
+    font-weight: 700;
+}
+.ls-club-badge.founder {
+    color: #C0C0C0;
+    text-shadow: 0 0 8px rgba(192,192,192,.4);
+}
+.ls-club-badge.club {
+    color: #FFD700;
+    text-shadow: 0 0 8px rgba(255,215,0,.5);
+    animation: clubPulse 3s ease-in-out infinite;
+}
+@keyframes clubPulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(255,215,0,.5); }
+    50%      { text-shadow: 0 0 14px rgba(255,215,0,.8); }
+}
+.ls-inner.premium::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 20%, rgba(255,215,0,.06) 0%, transparent 65%);
+    pointer-events: none; z-index: -1;
+}
 
 .ls-tier {
     display: flex; flex-direction: column; align-items: center; gap: .6rem;

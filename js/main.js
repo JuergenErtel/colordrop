@@ -126,6 +126,29 @@ function updatePremiumBanner() {
   document.getElementById('premiumBanner').classList.toggle('hidden', isPremium());
 }
 
+function updateMenuPremiumSignals() {
+  const badge = document.getElementById('lsClubBadge');
+  const inner = document.querySelector('.ls-inner');
+  if (!badge || !inner) return;
+
+  if (isFounder()) {
+    badge.textContent = 'FOUNDER · DANKE FÜR DIE UNTERSTÜTZUNG';
+    badge.className = 'ls-club-badge founder';
+    badge.style.display = '';
+    inner.classList.add('premium');
+  } else if (isPremium()) {
+    const sub = JSON.parse(localStorage.getItem('catsort_subscription') || '{}');
+    const since = sub.since ? new Date(sub.since).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : '';
+    badge.textContent = 'KLUB-MITGLIED SEIT ' + since.toUpperCase();
+    badge.className = 'ls-club-badge club';
+    badge.style.display = '';
+    inner.classList.add('premium');
+  } else {
+    badge.style.display = 'none';
+    inner.classList.remove('premium');
+  }
+}
+
 function updateMascotParams() {
   const id = loadMascot();
   G.mascotParams = (id && id !== 'default') ? (CAT_PARAMS.find(p => p.id === id) || null) : null;
@@ -1309,6 +1332,7 @@ function openLevelSelect() {
   const playBtn = document.getElementById('playBtn');
   playBtn.textContent = nextLevel <= 1 ? '▶ Spiel starten' : '▶ Level ' + nextLevel;
   document.getElementById('levelSelect').classList.add('show');
+  updateMenuPremiumSignals();
   // Don't auto-scroll — let the player scroll manually
 }
 
@@ -2655,6 +2679,7 @@ setSfxEnabled(savedSettings.sfxEnabled);
 updateBonesDisplay();
 updateHintCostDisplay();
 updatePremiumBanner();
+updateMenuPremiumSignals();
 
 resizeCanvas();
 requestAnimationFrame(loop);
