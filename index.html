@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/overlays.css">
     <link rel="stylesheet" href="css/panels.css">
     <link rel="stylesheet" href="css/splash.css">
+    <link rel="stylesheet" href="css/premium.css">
 
     <style>/* All styles extracted to css/ directory */</style>
 </head>
@@ -420,6 +421,75 @@
       </div>
     </div>
 
+    <!-- Paywall Screen -->
+    <div id="paywallScreen" class="screen-overlay sheet-panel hidden paywall-screen">
+      <div class="paywall-card">
+        <button class="paywall-close" id="paywallCloseBtn" aria-label="Schließen">✕</button>
+
+        <div class="paywall-header">
+          <div class="paywall-crown">👑</div>
+          <h2 class="paywall-title">KITTYSORT CLUB</h2>
+          <p class="paywall-subtitle">Neue Katzen, neue Saisons, jeden Monat</p>
+        </div>
+
+        <div class="paywall-tiers">
+          <button class="paywall-tier" data-tier="monthly">
+            <div class="paywall-tier-label">Monatlich</div>
+            <div class="paywall-tier-price">3,99€</div>
+            <div class="paywall-tier-cycle">/ Monat</div>
+          </button>
+          <button class="paywall-tier paywall-tier--highlight" data-tier="yearly">
+            <div class="paywall-tier-badge">BELIEBT · -37%</div>
+            <div class="paywall-tier-label">Jährlich</div>
+            <div class="paywall-tier-price">29,99€</div>
+            <div class="paywall-tier-cycle">= 2,50€ / Monat</div>
+          </button>
+          <button class="paywall-tier" data-tier="lifetime">
+            <div class="paywall-tier-label">Forever</div>
+            <div class="paywall-tier-price">39,99€</div>
+            <div class="paywall-tier-cycle">einmalig</div>
+          </button>
+        </div>
+
+        <ul class="paywall-features">
+          <li>✓ Saison-Pass — jeden Monat neu</li>
+          <li>✓ Exklusive Saison-Katzen</li>
+          <li>✓ Keine Werbung</li>
+          <li>✓ Unbegrenzte Hints &amp; Undos</li>
+          <li>✓ 2× Fischgräten</li>
+          <li>✓ Premium Avatar-Rahmen</li>
+          <li>✓ Unbegrenzte Lives</li>
+        </ul>
+
+        <button class="paywall-buy premium-cta" id="paywallBuyBtn">
+          <span id="paywallBuyLabel">7 TAGE KOSTENLOS TESTEN</span>
+        </button>
+
+        <p class="paywall-footnote" id="paywallFootnote">
+          Preview-Modus — Premium wird ohne Zahlung aktiviert
+        </p>
+      </div>
+    </div>
+
+    <!-- Premium Celebration -->
+    <div id="premiumCelebration" class="screen-overlay celebration-overlay hidden">
+      <canvas id="celebrationConfetti" class="confetti-canvas"></canvas>
+      <div class="celebration-flash"></div>
+      <div class="celebration-content">
+        <div class="celebration-crown">👑</div>
+        <h2 class="celebration-title" id="celebrationTitle">Willkommen im Club!</h2>
+        <p class="celebration-sub" id="celebrationSub"></p>
+        <div class="celebration-bones" id="celebrationBones">
+          <i class="fishbone"></i> <span id="celebrationBonesCount">0</span> Willkommens-Fischgräten
+        </div>
+        <div class="celebration-cats" id="celebrationCats"></div>
+        <div class="celebration-actions">
+          <button class="win-btn" id="celebrationPassBtn">Zum Season Pass</button>
+          <button class="win-btn win-btn--secondary" id="celebrationSkipBtn">Erst mal weiterspielen</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Premium Banner -->
     <div class="premium-banner" id="premiumBanner">
       <span>🐾 Kittysort Premium — Keine Werbung, unbegrenzte Hints & Undos</span>
@@ -435,7 +505,7 @@
         <p class="win-sub">Werbefrei spielen mit Premium!</p>
         <div class="win-actions">
           <button class="win-btn" id="adSkipBtn" type="button">Weiter →</button>
-          <button class="win-btn win-btn--secondary" id="adPremiumBtn" type="button">Premium 4,99€</button>
+          <button class="win-btn win-btn--secondary premium-cta" id="adPremiumBtn" type="button">Zum Club</button>
         </div>
       </div>
     </div>
