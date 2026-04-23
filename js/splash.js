@@ -190,6 +190,22 @@ export function initSplash() {
   initParticles();
   initYarnInteractions();
   animateEntrance();
+  enableSplashSkip();
+}
+
+function enableSplashSkip() {
+  const splash = document.getElementById('splashScreen');
+  if (!splash || splash.__skipWired) return;
+  splash.__skipWired = true;
+  splash.addEventListener('click', (e) => {
+    // Don't interfere with real buttons (play, tut, etc.)
+    if (e.target.closest('button')) return;
+    splash.classList.add('fast-forward');
+    // Collapse delays on fade-in/welcome animation
+    splash.querySelectorAll('.splash-welcome').forEach(el => {
+      el.style.animationDelay = '0.1s';
+    });
+  }, { once: true });
 }
 
 export function hideSplash() {

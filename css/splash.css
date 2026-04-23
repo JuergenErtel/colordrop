@@ -22,6 +22,13 @@
 .splash-bg {
     position: absolute; inset: 0; z-index: 0;
     background: url('../img/splash-bg.png') center center / cover no-repeat;
+    animation: kenBurns 6s ease-out forwards;
+    transform-origin: 50% 40%;
+}
+.splash.fast-forward .splash-bg { animation-duration: .2s; }
+@keyframes kenBurns {
+    0%   { transform: scale(1.0)  translate(0, 0); }
+    100% { transform: scale(1.08) translate(-2%, -1%); }
 }
 /* Soft darkening overlay so text pops */
 .splash-bg::before {
