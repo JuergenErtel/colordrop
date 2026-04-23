@@ -1,6 +1,6 @@
 'use strict';
 
-import { REWARDS, COSTS } from './constants.js';
+import { REWARDS, COSTS, HINT_COSTS } from './constants.js';
 import { loadEconomy, saveEconomy, loadPremium, savePremium } from './storage.js';
 
 // ── Balance ───────────────────────────────────────────────────────────────────
@@ -105,15 +105,19 @@ export function getUndosLeft() {
   return Math.max(0, FREE_UNDOS - _undosUsed);
 }
 
-// ── Hints ─────────────────────────────────────────────────────────────────────
-export function canUseHint() {
-  if (isPremium()) return true;
-  return canAfford(COSTS.hint);
+// ── Hints ─────────────────────────────────────────────────────────────────
+export function getHintCost(tierName) {
+  return HINT_COSTS[tierName] ?? COSTS.hint;
 }
 
-export function spendHint() {
+export function canUseHint(tierName = 'EASY') {
   if (isPremium()) return true;
-  return spend(COSTS.hint);
+  return canAfford(getHintCost(tierName));
+}
+
+export function spendHint(tierName = 'EASY') {
+  if (isPremium()) return true;
+  return spend(getHintCost(tierName));
 }
 
 // ── Endless limits ────────────────────────────────────────────────────────────

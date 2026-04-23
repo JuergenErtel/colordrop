@@ -13,7 +13,7 @@ import {
   getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
   shouldShowAd, markAdShown, tickAdLevel,
   canUndo, trackUndo, resetUndos,
-  canUseHint, spendHint,
+  canUseHint, spendHint, getHintCost,
 } from './economy.js';
 
 import {
@@ -106,6 +106,13 @@ const FISHBONE_ICON = '<i class="fishbone"></i>';
 
 function updateBonesDisplay() {
   document.getElementById('bonesDisplay').innerHTML = FISHBONE_ICON + ' ' + getBalance();
+}
+
+function updateHintCostDisplay() {
+  const tier = G.theme || 'EASY';
+  const cost = getHintCost(tier);
+  const el = document.getElementById('hintCost');
+  if (el) el.innerHTML = '<i class="fishbone"></i>' + cost;
 }
 
 function updatePremiumBanner() {
@@ -323,6 +330,7 @@ function generateLevel(n) {
     G.themePrev = G.theme;
     G.theme     = newTheme;
     G.themeFade = G.themePrev ? 0 : 1;
+    updateHintCostDisplay();
   }
 
   G.tubes        = generateTubes(n);
@@ -511,7 +519,7 @@ function updateHintCostBadge() {
     el.classList.add('hidden');
   } else {
     el.classList.remove('hidden');
-    el.innerHTML = `${FISHBONE_ICON}${COSTS.hint}`;
+    el.innerHTML = `${FISHBONE_ICON}${getHintCost(G.theme || 'EASY')}`;
   }
 }
 
@@ -521,7 +529,7 @@ function showHintAction() {
 
   // Economy check — hints cost fish bones (free for premium)
   playSound('hint');
-  if (!spendHint()) {
+  if (!spendHint(G.theme || 'EASY')) {
     setHintIcon(FISHBONE_ICON + '\u2753');  // fishbone + ❓
     btn.disabled = true;
     setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
@@ -1571,6 +1579,7 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
     G.themePrev = G.theme;
     G.theme     = tier;
     G.themeFade = G.themePrev ? 0 : 1;
+    updateHintCostDisplay();
   }
 
   G.tubes        = generateDailyTubes(override);
@@ -2637,6 +2646,7 @@ setSfxEnabled(savedSettings.sfxEnabled);
 
 // Economy & premium init
 updateBonesDisplay();
+updateHintCostDisplay();
 updatePremiumBanner();
 
 resizeCanvas();
