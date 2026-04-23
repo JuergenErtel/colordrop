@@ -2437,6 +2437,9 @@ function buildAlbumScreen() {
       + (!isOwned ? ' locked' : '')
       + (!isOwned && cat.premium ? ' premium-locked' : '')
       + (isOwned && cat.id === currentMascot ? ' mascot' : '');
+    if (isOwned && cat.premium) cell.classList.add('premium-unlocked');
+    if (isOwned && cat.premium && isFounder()) cell.classList.add('founder-cat');
+    if (isOwned && cat.season)  cell.classList.add('season-cat');
 
     if (isOwned) {
       // Draw cat portrait on a small canvas

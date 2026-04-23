@@ -449,6 +449,26 @@
     border: 2px solid rgba(255,200,50,.8);
     box-shadow: 0 0 8px rgba(255,200,50,.3);
 }
+.album-cell.premium-unlocked {
+  border-color: rgba(255,215,0,.5);
+  background: linear-gradient(180deg, rgba(255,215,0,.08), rgba(255,140,0,.04));
+  box-shadow: 0 0 12px rgba(255,215,0,.2);
+}
+.album-cell.founder-cat {
+  position: relative;
+}
+.album-cell.founder-cat::after {
+  content: 'FOUNDER';
+  position: absolute; top: 4px; right: 4px;
+  background: linear-gradient(135deg, #C0C0C0, #E8E8E8);
+  color: #333; font-size: .5rem; font-weight: 700;
+  padding: 2px 6px; border-radius: 100px;
+  letter-spacing: .1em;
+}
+.album-cell.season-cat {
+  background: linear-gradient(180deg, rgba(255,183,197,.1), rgba(255,105,180,.05));
+  border-color: rgba(255,183,197,.5);
+}
 
 .mascot-btn {
     display: block;
