@@ -58,7 +58,7 @@ import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
-import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier } from './season.js';
+import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier, checkSeasonRollover } from './season.js';
 import { getCurrentSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 
@@ -2834,6 +2834,14 @@ requestAnimationFrame(loop);
 updateHintCostBadge();
 initSplash();
 initPaywallUI();
+
+// Season rollover check (archive unclaimed, start new season if needed)
+const __seasonRollover = checkSeasonRollover();
+if (__seasonRollover.rolled) {
+  console.log('[season] rolled over to:', __seasonRollover.newSeasonName);
+  window._seasonRollover = __seasonRollover.newSeasonName;
+}
+
 const __stripeReturn = handleStripeReturn();
 if (__stripeReturn && __stripeReturn.ok) {
   import('./paywall.js').then(({ showCelebration }) => showCelebration(__stripeReturn));
