@@ -45,6 +45,11 @@ export const CAT_PARAMS = [
   { id: 'imperial', furColor: '#8B7355', furLight: '#B8A080', furDark: '#4A3520', eyeColor: '#FFD54F', earType: 'pointed', markings: 'tabby',  expression: 'proud' },
   { id: 'galaxy',   furColor: '#6A6A6A', furLight: '#909090', furDark: '#3A3A3A', eyeColor: '#FFD54F', earType: 'pointed', markings: 'spots',  expression: 'curious' },
   { id: 'diamond',  furColor: '#FFFFFF', furLight: '#FFFFFF', furDark: '#E8E0D8', eyeColor: '#42A5F5', earType: 'pointed', markings: 'none',   expression: 'proud' },
+  // ── Season 2026-05 Kirschblüte ─────────────────────────────────────────
+  { id: 'mochi-sakura', furColor: '#FDEBF0', furLight: '#FFFFFF', furDark: '#E8B0C0', eyeColor: '#7EBDCB', earType: 'folded',  markings: 'spots',  expression: 'happy' },
+  { id: 'sakura',       furColor: '#FFE4E9', furLight: '#FFFFFF', furDark: '#C87888', eyeColor: '#D4B891', earType: 'pointed', markings: 'calico', expression: 'playful' },
+  { id: 'tsubaki',      furColor: '#FFFFFF', furLight: '#FFFFFF', furDark: '#C0392B', eyeColor: '#4DA6D1', earType: 'pointed', markings: 'calico', expression: 'curious' },
+  { id: 'hoshi',        furColor: '#3A3F4B', furLight: '#5A5F6B', furDark: '#1F242F', eyeColor: '#FFD54F', earType: 'pointed', markings: 'spots',  expression: 'proud' },
 ];
 
 // ── drawCatPortrait ─────────────────────────────────────────────────────────
