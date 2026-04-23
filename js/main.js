@@ -159,6 +159,62 @@ function closeSeasonPass() {
   setTimeout(() => screen.classList.add('hidden'), 250);
 }
 
+// ══════════════════════════════════════════════════════════════
+//  LIVES GATING (mini-games + blitz)
+// ══════════════════════════════════════════════════════════════
+
+function tryStartGatedMode(startFn) {
+  if (isPremium() || hasLife()) {
+    consumeLife();
+    updateLivesDisplay();
+    startFn();
+  } else {
+    showLivesEmpty(startFn);
+  }
+}
+
+let _livesEmptyTick = 0;
+function showLivesEmpty(retryFn) {
+  const overlay = document.getElementById('livesEmptyOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  overlay.classList.add('show');
+
+  if (_livesEmptyTick) clearInterval(_livesEmptyTick);
+  _livesEmptyTick = setInterval(() => {
+    const el = document.getElementById('livesEmptyTimer');
+    if (el) el.textContent = 'Nächstes Leben in ' + _livesFmt(_livesMsUntil());
+    if (!overlay.classList.contains('show')) {
+      clearInterval(_livesEmptyTick); _livesEmptyTick = 0;
+    }
+  }, 500);
+
+  document.getElementById('livesAdBtn').onclick = () => {
+    refillWithAd();
+    closeLivesEmpty();
+    consumeLife(); updateLivesDisplay(); retryFn();
+  };
+  document.getElementById('livesBonesBtn').onclick = () => {
+    const r = refillWithBones();
+    if (!r.ok) { playSound('invalid'); return; }
+    closeLivesEmpty();
+    consumeLife(); updateLivesDisplay(); updateBonesDisplay(); retryFn();
+  };
+  document.getElementById('livesClubBtn').onclick = () => {
+    closeLivesEmpty();
+    setTimeout(() => showPaywall(), 200);
+  };
+  document.getElementById('livesCancelBtn').onclick = closeLivesEmpty;
+}
+
+function closeLivesEmpty() {
+  const overlay = document.getElementById('livesEmptyOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('show');
+  setTimeout(() => overlay.classList.add('hidden'), 250);
+  if (_livesEmptyTick) { clearInterval(_livesEmptyTick); _livesEmptyTick = 0; }
+}
+
 function renderSeasonPass() {
   const season = getCurrentSeason();
   if (!season) return;
@@ -1834,12 +1890,14 @@ document.getElementById('nextGoalWidget').addEventListener('click', () => { play
 document.getElementById('statsBackBtn').addEventListener('click', hideStatsScreen);
 
 document.getElementById('blitzStartBtn').addEventListener('click', () => {
-  playSound('click');
-  document.getElementById('blitzOverlay').classList.remove('show');
-  G.timer.active  = true;
-  G.timer.endTime = performance.now() + G.timer.duration;
-  ANIM.busy       = false;
-  document.getElementById('timerBar').classList.add('visible');
+  tryStartGatedMode(() => {
+    playSound('click');
+    document.getElementById('blitzOverlay').classList.remove('show');
+    G.timer.active  = true;
+    G.timer.endTime = performance.now() + G.timer.duration;
+    ANIM.busy       = false;
+    document.getElementById('timerBar').classList.add('visible');
+  });
 });
 
 document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
@@ -1850,13 +1908,15 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
 
 // ── Mouse hunt handlers ─────────────────────────────────
 document.getElementById('mouseStartBtn').addEventListener('click', () => {
-  playSound('click');
-  document.getElementById('mouseOverlay').classList.remove('show');
-  startMouse(LEVEL.current);
-  G.timer.active  = true;
-  G.timer.endTime = performance.now() + G.timer.duration;
-  ANIM.busy       = false;
-  document.getElementById('timerBar').classList.add('visible');
+  tryStartGatedMode(() => {
+    playSound('click');
+    document.getElementById('mouseOverlay').classList.remove('show');
+    startMouse(LEVEL.current);
+    G.timer.active  = true;
+    G.timer.endTime = performance.now() + G.timer.duration;
+    ANIM.busy       = false;
+    document.getElementById('timerBar').classList.add('visible');
+  });
 });
 
 document.getElementById('mouseRetryBtn').addEventListener('click', () => {
@@ -1903,14 +1963,16 @@ document.getElementById('dogStartBtn').addEventListener('click', () => {
 
 // ── Tetris handlers ─────────────────────────────────────────
 document.getElementById('tetrisStartBtn').addEventListener('click', () => {
-  playSound('click');
-  document.getElementById('tetrisOverlay').classList.remove('show');
-  startTetris(LEVEL.current);
-  // Safeguard: ensure G.tubes matches TETRIS.numTubes
-  while (G.tubes.length < TETRIS.numTubes) G.tubes.push([]);
-  if (G.tubes.length > TETRIS.numTubes) G.tubes.length = TETRIS.numTubes;
-  TETRIS.dropStart = performance.now(); // reset so ball starts falling NOW
-  ANIM.busy = false;
+  tryStartGatedMode(() => {
+    playSound('click');
+    document.getElementById('tetrisOverlay').classList.remove('show');
+    startTetris(LEVEL.current);
+    // Safeguard: ensure G.tubes matches TETRIS.numTubes
+    while (G.tubes.length < TETRIS.numTubes) G.tubes.push([]);
+    if (G.tubes.length > TETRIS.numTubes) G.tubes.length = TETRIS.numTubes;
+    TETRIS.dropStart = performance.now(); // reset so ball starts falling NOW
+    ANIM.busy = false;
+  });
 });
 document.getElementById('tetrisRetryBtn').addEventListener('click', () => {
   document.getElementById('tetrisGameOverOverlay').classList.remove('show');

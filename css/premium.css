@@ -244,3 +244,33 @@
   padding: .15rem .55rem; border-radius: 100px;
   letter-spacing: .1em; margin-left: .3rem;
 }
+
+/* ── Lives-Empty Modal ───────────────────────────────────── */
+.lives-empty-card {
+  background: linear-gradient(180deg, #2a1822 0%, #1a1020 100%);
+  border: 1px solid rgba(245,163,181,.3);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  max-width: 400px;
+  text-align: center;
+}
+.lives-empty-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 16px rgba(245,163,181,.5));
+  margin-bottom: .6rem;
+}
+.lives-empty-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.3rem; font-weight: 700;
+  color: #F5A3B5;
+  margin: 0 0 .3rem;
+}
+.lives-empty-sub {
+  color: rgba(255,255,255,.7);
+  font-size: .85rem;
+  margin: 0 0 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.lives-empty-actions {
+  display: flex; flex-direction: column; gap: .5rem;
+}
