@@ -278,6 +278,48 @@ export const CATS = [
     unlock: { type: 'premium', value: true },
     premium: true,
   },
+
+  // ── Season 2026-05 "Kirschblüte" ──────────────────────────────────────
+  {
+    id: 'mochi-sakura',
+    name: 'Mochi-Sakura',
+    breed: 'Schottische Faltohr (Sakura-Variante)',
+    emoji: '🌸',
+    fact: 'Diese Kirschblüten-Variante von Mochi erscheint nur im Mai — ihr cremeweißes Fell zeigt rosa Blüten-Muster wie echte Sakura.',
+    unlock: { type: 'season', value: '2026-05-free-15' },
+    premium: false,
+    season: '2026-05',
+  },
+  {
+    id: 'sakura',
+    name: 'Sakura',
+    breed: 'Japanisch Bobtail',
+    emoji: '🌸',
+    fact: 'Japanische Bobtails galten im Kaiserreich als Glücksbringer — ihre kurzen Schwänze sollen Dämonen fernhalten.',
+    unlock: { type: 'season', value: '2026-05-premium-30' },
+    premium: true,
+    season: '2026-05',
+  },
+  {
+    id: 'tsubaki',
+    name: 'Tsubaki',
+    breed: 'Kurilian Bobtail',
+    emoji: '🌸',
+    fact: 'Kurilian Bobtails sind natürliche Schwimmer und jagen Fische aus sibirischen Flüssen — benannt nach der Kamelie.',
+    unlock: { type: 'season', value: '2026-05-premium-40' },
+    premium: true,
+    season: '2026-05',
+  },
+  {
+    id: 'hoshi',
+    name: 'Hoshi',
+    breed: 'Japanisch Langhaar',
+    emoji: '🌟',
+    fact: '"Hoshi" bedeutet "Stern" — diese Katzen haben oft sternförmige Markierungen auf der Stirn.',
+    unlock: { type: 'season', value: '2026-05-premium-50' },
+    premium: true,
+    season: '2026-05',
+  },
 ];
 
 /**
@@ -311,6 +353,9 @@ export function checkCatUnlocks(owned, state) {
         break;
       case 'premium':
         shouldUnlock = isPremium === true;
+        break;
+      case 'season':
+        shouldUnlock = false;  // season cats are granted via claimTier, not auto-unlock
         break;
     }
 
