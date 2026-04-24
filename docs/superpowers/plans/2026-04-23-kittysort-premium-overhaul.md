@@ -1596,7 +1596,7 @@ git commit -m "premium: splash shows 'Willkommen zurück, Club-Mitglied seit X'"
 - Create: `js/season.js`
 - Create: `js/season-content.js`
 
-- [ ] **Step 1: Create `js/season-content.js` with the Kirschblüte definition + skeletons**
+- [x] **Step 1: Create `js/season-content.js` with the Kirschblüte definition + skeletons**
 
 ```javascript
 'use strict';
@@ -1697,7 +1697,7 @@ export function getCurrentSeason(now = new Date()) {
 }
 ```
 
-- [ ] **Step 2: Create `js/season.js`**
+- [x] **Step 2: Create `js/season.js`**
 
 ```javascript
 'use strict';
@@ -1841,14 +1841,14 @@ export function consumeHintToken()     {
 }
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 ```bash
 node --check js/season.js
 node --check js/season-content.js
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/season.js js/season-content.js
@@ -1862,13 +1862,13 @@ git commit -m "season: data model, XP tables, Kirschblüte content, claim engine
 **Files:**
 - Modify: `js/main.js` (add XP calls at level win, daily win, mini-game win, achievement unlock)
 
-- [ ] **Step 1: Import season functions at top of main.js**
+- [x] **Step 1: Import season functions at top of main.js**
 
 ```javascript
 import { addXp, XP } from './season.js';
 ```
 
-- [ ] **Step 2: Add XP call at every reward point**
+- [x] **Step 2: Add XP call at every reward point**
 
 Find the `onWin` / level-solved handler (search for `calcWinReward(` or `earn(reward)`). After `earn(reward)`:
 
@@ -1882,7 +1882,7 @@ Find blitz win → `addXp(XP.blitzWin, 'blitz');`
 Find mini-game win (tetris/mouse success) → `addXp(XP.miniGameWin, 'minigame');`
 Find achievement unlock → `addXp(XP.achievement, 'ach-' + achId);`
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Play one level → DevTools:
 ```javascript
@@ -1890,7 +1890,7 @@ JSON.parse(localStorage.getItem('catsort_season'));
 // → { xp: 10 (or 20 for 3-star), ... }
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/main.js
@@ -1905,7 +1905,7 @@ git commit -m "season: hook XP accrual into level/daily/blitz/mini-game/achievem
 - Modify: `index.html` (add #seasonPassScreen + #seasonPassBtn in menu)
 - Create: `css/season.css`
 
-- [ ] **Step 1: Add to `index.html` — new button in level-select actions-modes**
+- [x] **Step 1: Add to `index.html` — new button in level-select actions-modes**
 
 In the `.ls-actions-modes` div (around line 60), add below dailyChallengeBtn:
 ```html
@@ -1915,7 +1915,7 @@ In the `.ls-actions-modes` div (around line 60), add below dailyChallengeBtn:
 </button>
 ```
 
-- [ ] **Step 2: Add the Season Pass screen (near other screen-overlays, e.g. after shopScreen):**
+- [x] **Step 2: Add the Season Pass screen (near other screen-overlays, e.g. after shopScreen):**
 
 ```html
 <!-- Season Pass -->
@@ -1944,13 +1944,13 @@ In the `.ls-actions-modes` div (around line 60), add below dailyChallengeBtn:
 </div>
 ```
 
-- [ ] **Step 3: Link the new stylesheet in `<head>`**
+- [x] **Step 3: Link the new stylesheet in `<head>`**
 
 ```html
 <link rel="stylesheet" href="css/season.css">
 ```
 
-- [ ] **Step 4: Create `css/season.css`**
+- [x] **Step 4: Create `css/season.css`**
 
 ```css
 /* ══════════════════════════════════════════════════════════════
@@ -2102,7 +2102,7 @@ In the `.ls-actions-modes` div (around line 60), add below dailyChallengeBtn:
 }
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add index.html css/season.css
@@ -2116,7 +2116,7 @@ git commit -m "season: pass screen HTML + CSS shell"
 **Files:**
 - Modify: `js/main.js` (or new `js/season-ui.js` — simpler to inline in main.js for this codebase style)
 
-- [ ] **Step 1: Add these functions to main.js**
+- [x] **Step 1: Add these functions to main.js**
 
 ```javascript
 import { getProgress, xpForTier, tierFromXp, claimTier, XP } from './season.js';
@@ -2233,7 +2233,7 @@ function iconFor(def) {
 }
 ```
 
-- [ ] **Step 2: Wire the menu button**
+- [x] **Step 2: Wire the menu button**
 
 ```javascript
 document.getElementById('seasonPassBtn')?.addEventListener('click', openSeasonPass);
@@ -2244,7 +2244,7 @@ document.getElementById('passUpgradeBtn')?.addEventListener('click', () => {
 });
 ```
 
-- [ ] **Step 3: Update menu-button timer display**
+- [x] **Step 3: Update menu-button timer display**
 
 Add a function that updates `#passBtnTimer` when menu opens:
 ```javascript
@@ -2262,11 +2262,11 @@ function updatePassBtnTimer() {
 
 Call `updatePassBtnTimer()` wherever the menu is shown.
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 Open menu → Season Pass button shows timer. Click → pass screen opens, shows current XP/tier, rewards list. Play some levels to earn XP, reopen → updated.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add js/main.js
@@ -2280,7 +2280,7 @@ git commit -m "season: pass screen rendering + claim interactions"
 **Files:**
 - Modify: `js/season.js` (already has archive logic in `getProgress`, but add boot-time check)
 
-- [ ] **Step 1: Add `checkSeasonRollover()` exported helper to `js/season.js`**
+- [x] **Step 1: Add `checkSeasonRollover()` exported helper to `js/season.js`**
 
 Near the end:
 ```javascript
@@ -2301,7 +2301,7 @@ export function checkSeasonRollover() {
 }
 ```
 
-- [ ] **Step 2: In main.js boot sequence, call after storage init**
+- [x] **Step 2: In main.js boot sequence, call after storage init**
 
 ```javascript
 import { checkSeasonRollover } from './season.js';
@@ -2315,7 +2315,7 @@ if (rollover.rolled) {
 }
 ```
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 In DevTools:
 ```javascript
@@ -2328,7 +2328,7 @@ JSON.parse(localStorage.getItem('catsort_season'));
 // → fresh with current seasonKey, xp 0
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/season.js js/main.js
@@ -2343,7 +2343,7 @@ git commit -m "season: month-boundary rollover with unclaimed-reward archive"
 - Modify: `js/economy.js` (consume free tokens before bones)
 - Modify: `js/main.js` (HUD hint badge when token available)
 
-- [ ] **Step 1: Update `spendHint` in `js/economy.js`**
+- [x] **Step 1: Update `spendHint` in `js/economy.js`**
 
 ```javascript
 import { consumeHintToken } from './season.js';
@@ -2357,7 +2357,7 @@ export function spendHint(tierName = 'EASY') {
 
 Similar for undos: expose `consumeUndoToken()` in season.js (pattern identical to `consumeHintToken`), then in main.js find the undo-spend branch and prefer the token.
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 Claim a Free Hint from Season Pass → DevTools:
 ```javascript
@@ -2365,7 +2365,7 @@ localStorage.getItem('catsort_free_hints');  // → "1"
 ```
 Use a hint in game → counter decrements, bones unchanged.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add js/economy.js js/main.js js/season.js
@@ -2376,13 +2376,13 @@ git commit -m "season: free hint/undo tokens consume before bones"
 
 ### Phase 4 Checkpoint
 
-- [ ] Season Pass button appears in menu with endsIn timer
-- [ ] Pass screen shows correct XP / tier / progress bar
-- [ ] Free-track rewards claimable at milestones (5/10/15/20/25/30/35/40/45/50)
-- [ ] Premium-track rewards visible but locked (blurred) for free users
-- [ ] Premium users can claim all tiers
-- [ ] Month rollover archives unclaimed and starts fresh
-- [ ] Free hint/undo tokens consume before bones
+- [x] Season Pass button appears in menu with endsIn timer
+- [x] Pass screen shows correct XP / tier / progress bar
+- [x] Free-track rewards claimable at milestones (5/10/15/20/25/30/35/40/45/50)
+- [x] Premium-track rewards visible but locked (blurred) for free users
+- [x] Premium users can claim all tiers
+- [x] Month rollover archives unclaimed and starts fresh
+- [x] Free hint/undo tokens consume before bones
 
 ---
 
