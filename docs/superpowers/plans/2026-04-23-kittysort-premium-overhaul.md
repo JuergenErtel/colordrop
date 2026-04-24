@@ -2395,7 +2395,7 @@ git commit -m "season: free hint/undo tokens consume before bones"
 **Files:**
 - Modify: `js/cats.js` (add 4 new entries, new unlock type 'season')
 
-- [ ] **Step 1: Extend `js/cats.js` `CATS` array. Add before the closing `];` (after `premium: true` block ending around line 280):**
+- [x] **Step 1: Extend `js/cats.js` `CATS` array. Add before the closing `];` (after `premium: true` block ending around line 280):**
 
 ```javascript
   // ── Season 2026-05 "Kirschblüte" ──────────────────────────────────────
@@ -2441,7 +2441,7 @@ git commit -m "season: free hint/undo tokens consume before bones"
   },
 ```
 
-- [ ] **Step 2: Update `checkCatUnlocks` to handle `'season'` unlock type (no-op — unlocked via claim flow directly, not by milestone check). Just ensure the switch case exists but does nothing:**
+- [x] **Step 2: Update `checkCatUnlocks` to handle `'season'` unlock type (no-op — unlocked via claim flow directly, not by milestone check). Just ensure the switch case exists but does nothing:**
 
 In `js/cats.js`, inside the switch statement in `checkCatUnlocks`:
 ```javascript
@@ -2450,7 +2450,7 @@ In `js/cats.js`, inside the switch statement in `checkCatUnlocks`:
         break;
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add js/cats.js
@@ -2464,9 +2464,9 @@ git commit -m "content: register 4 Kirschblüte cats (mochi-sakura, sakura, tsub
 **Files:**
 - Modify: `js/cat-renderer.js` (add CAT_PARAMS entries for new cats)
 
-- [ ] **Step 1: Locate the CAT_PARAMS array in cat-renderer.js (`grep -n "CAT_PARAMS" js/cat-renderer.js`)**
+- [x] **Step 1: Locate the CAT_PARAMS array in cat-renderer.js (`grep -n "CAT_PARAMS" js/cat-renderer.js`)**
 
-- [ ] **Step 2: Add 4 new entries. Each follows the existing shape (furColor, patternColor, eyeColor, etc. — use an existing Mochi-like entry as template). Example:**
+- [x] **Step 2: Add 4 new entries. Each follows the existing shape (furColor, patternColor, eyeColor, etc. — use an existing Mochi-like entry as template). Example:**
 
 ```javascript
 {
@@ -2511,7 +2511,7 @@ git commit -m "content: register 4 Kirschblüte cats (mochi-sakura, sakura, tsub
 },
 ```
 
-- [ ] **Step 3: Extend pattern-draw logic in `cat-renderer.js`**
+- [x] **Step 3: Extend pattern-draw logic in `cat-renderer.js`**
 
 Find the pattern-drawing switch (`grep -n "params.pattern" js/cat-renderer.js`). Add cases:
 ```javascript
@@ -2568,7 +2568,7 @@ function drawPatches(ctx, cx, cy, size, count) {
 }
 ```
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 In DevTools:
 ```javascript
@@ -2580,7 +2580,7 @@ location.reload();
 ```
 Open Album → 4 new cats rendered with their patterns.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add js/cat-renderer.js
@@ -2595,7 +2595,7 @@ git commit -m "content: cat-renderer params + sakura/star/patches patterns"
 - Modify: `js/background.js` (add drawKirschbluteBg + register)
 - Modify: `js/skins.js` (add 'kirschbluete' to BG_DEFS)
 
-- [ ] **Step 1: Add to `js/skins.js` `BG_DEFS` (or within a SEASON_BG_DEFS map — simplest: extend BG_DEFS)**
+- [x] **Step 1: Add to `js/skins.js` `BG_DEFS` (or within a SEASON_BG_DEFS map — simplest: extend BG_DEFS)**
 
 ```javascript
 export const BG_DEFS = {
@@ -2609,7 +2609,7 @@ export const BG_DEFS = {
 
 `cost: -1` means not buyable with bones — only via Season Pass.
 
-- [ ] **Step 2: Add `drawKirschbluteBg(ctx, w, h, t)` to `js/background.js`**
+- [x] **Step 2: Add `drawKirschbluteBg(ctx, w, h, t)` to `js/background.js`**
 
 Follow the existing pattern used by `drawGardenBg`/`drawRooftopBg`. Key visual layers:
 1. Sky gradient: soft cream → peach (dawn tones)
@@ -2717,14 +2717,14 @@ function drawSakuraPetal(ctx, x, y, size, rot) {
 }
 ```
 
-- [ ] **Step 3: Register in the background router**
+- [x] **Step 3: Register in the background router**
 
 Find the `drawBackground` switch (`grep -n "drawBackground" js/background.js`). Add:
 ```javascript
     case 'kirschbluete': drawKirschbluteBg(ctx, w, h, t); break;
 ```
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 ```javascript
 const bg = JSON.parse(localStorage.getItem('catsort_backgrounds') || '{"owned":["cafe"],"active":"cafe"}');
@@ -2735,7 +2735,7 @@ location.reload();
 ```
 Start a level → pink blossom background visible with falling petals.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add js/skins.js js/background.js
@@ -2751,7 +2751,7 @@ git commit -m "content: Kirschblüte background (pagoda + cherry tree + petal sh
 - Modify: `js/balls.js` (add sakura rendering variant)
 - Modify: `js/cat-renderer.js` (add Hanami frame when drawing mascot/cat with frame)
 
-- [ ] **Step 1: Extend `SKIN_DEFS` in `js/skins.js`**
+- [x] **Step 1: Extend `SKIN_DEFS` in `js/skins.js`**
 
 ```javascript
 export const SKIN_DEFS = {
@@ -2763,7 +2763,7 @@ export const SKIN_DEFS = {
 };
 ```
 
-- [ ] **Step 2: Add 'sakura' rendering to `js/balls.js`**
+- [x] **Step 2: Add 'sakura' rendering to `js/balls.js`**
 
 Find the skin switch in the draw function (grep for `'glitter'` in balls.js). Add:
 ```javascript
@@ -2822,7 +2822,7 @@ function shade(hex, amt) {
 }
 ```
 
-- [ ] **Step 3: Hanami frame — frame-rendering function**
+- [x] **Step 3: Hanami frame — frame-rendering function**
 
 Add to `js/cat-renderer.js`:
 ```javascript
@@ -2868,7 +2868,7 @@ In the mascot/cat-portrait draw in main.js, after drawing the cat:
 if (currentFrame() === 'hanami') drawHanamiFrame(ctx, x, y, radius, performance.now());
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/skins.js js/balls.js js/cat-renderer.js js/main.js
@@ -2879,11 +2879,11 @@ git commit -m "content: Sakura ball skin + Hanami avatar frame"
 
 ### Phase 5 Checkpoint
 
-- [ ] 4 Kirschblüte cats appear in album with unique patterns
-- [ ] Kirschblüte background renders correctly (pagoda, tree, petals)
-- [ ] Sakura ball skin paints blossom dots on balls
-- [ ] Hanami frame appears around mascot portrait when unlocked
-- [ ] All content granted via Season Pass claim flow actually works end-to-end
+- [x] 4 Kirschblüte cats appear in album with unique patterns
+- [x] Kirschblüte background renders correctly (pagoda, tree, petals)
+- [x] Sakura ball skin paints blossom dots on balls
+- [x] Hanami frame appears around mascot portrait when unlocked
+- [x] All content granted via Season Pass claim flow actually works end-to-end
 
 ---
 
