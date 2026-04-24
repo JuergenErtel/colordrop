@@ -2896,7 +2896,7 @@ git commit -m "content: Sakura ball skin + Hanami avatar frame"
 **Files:**
 - Create: `js/lives.js`
 
-- [ ] **Step 1: Create `js/lives.js`**
+- [x] **Step 1: Create `js/lives.js`**
 
 ```javascript
 'use strict';
@@ -2987,7 +2987,7 @@ export function formatTimeLeft(ms) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add js/lives.js
@@ -3003,7 +3003,7 @@ git commit -m "lives: 5-paw system with 20m regen, bones refill, ad refill"
 - Modify: `css/game.css` (lives styling)
 - Modify: `js/main.js` (wire updateLivesDisplay + tick timer)
 
-- [ ] **Step 1: Update HUD in `index.html`. In the `.hud-overlay` block (around line 31), replace the bones-display line group:**
+- [x] **Step 1: Update HUD in `index.html`. In the `.hud-overlay` block (around line 31), replace the bones-display line group:**
 
 ```html
 <div class="hud-overlay">
@@ -3017,7 +3017,7 @@ git commit -m "lives: 5-paw system with 20m regen, bones refill, ad refill"
 </div>
 ```
 
-- [ ] **Step 2: Add CSS to `css/game.css`**
+- [x] **Step 2: Add CSS to `css/game.css`**
 
 ```css
 .hud-lives {
@@ -3046,7 +3046,7 @@ git commit -m "lives: 5-paw system with 20m regen, bones refill, ad refill"
 .hud-lives.premium .paw { filter: drop-shadow(0 0 4px rgba(255,215,0,.5)); }
 ```
 
-- [ ] **Step 3: In `js/main.js`, add lives display update**
+- [x] **Step 3: In `js/main.js`, add lives display update**
 
 ```javascript
 import { getLivesCount, msUntilNextLife, formatTimeLeft } from './lives.js';
@@ -3076,7 +3076,7 @@ Call `updateLivesDisplay()` at boot, and set an interval:
 setInterval(updateLivesDisplay, 1000);
 ```
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 Reload. HUD shows "🐾 5". In console:
 ```javascript
@@ -3084,7 +3084,7 @@ import('./js/lives.js').then(m => m.consumeLife());
 ```
 Display updates to "🐾 4 · 19:59" counting down.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add index.html css/game.css js/main.js
@@ -3100,7 +3100,7 @@ git commit -m "lives: HUD display with countdown and low/empty states"
 - Modify: `css/premium.css` (lives-empty overlay styling)
 - Modify: `js/main.js` (check hasLife() before starting mini-game/blitz)
 
-- [ ] **Step 1: Add to `index.html` (near other overlays)**
+- [x] **Step 1: Add to `index.html` (near other overlays)**
 
 ```html
 <!-- Lives Empty Overlay -->
@@ -3119,7 +3119,7 @@ git commit -m "lives: HUD display with countdown and low/empty states"
 </div>
 ```
 
-- [ ] **Step 2: Add CSS to `css/premium.css`**
+- [x] **Step 2: Add CSS to `css/premium.css`**
 
 ```css
 .lives-empty-card {
@@ -3152,7 +3152,7 @@ git commit -m "lives: HUD display with countdown and low/empty states"
 }
 ```
 
-- [ ] **Step 3: In `js/main.js`, gate mini-game/blitz starts**
+- [x] **Step 3: In `js/main.js`, gate mini-game/blitz starts**
 
 Find where mini-games start (search for `tetrisStartBtn`, `mouseStartBtn`, `blitzStartBtn`). Before actually starting:
 
@@ -3210,7 +3210,7 @@ document.getElementById('tetrisStartBtn').addEventListener('click', () => {
 });
 ```
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 DevTools:
 ```javascript
@@ -3219,7 +3219,7 @@ location.reload();
 ```
 Try to start a mini-game → Lives-empty overlay with countdown, 3 action buttons + cancel. Click "50 Fischgräten" (if affordable) → lives refilled, mini-game starts.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add index.html css/premium.css js/main.js
@@ -3230,12 +3230,12 @@ git commit -m "lives: gate mini-games/blitz + empty modal with ad/bones/club ref
 
 ### Phase 6 Checkpoint
 
-- [ ] HUD shows lives counter with regen timer
-- [ ] Mini-games (Tetris/Mouse/Dog-levels?) and Blitz consume 1 life on start
-- [ ] Standard puzzle unaffected
-- [ ] At 0 lives, overlay offers ad / bones / club options
-- [ ] Premium shows ∞ lives, never gated
-- [ ] Regen works across page reloads (timestamps persist)
+- [x] HUD shows lives counter with regen timer
+- [x] Mini-games (Tetris/Mouse/Dog-levels?) and Blitz consume 1 life on start
+- [x] Standard puzzle unaffected
+- [x] At 0 lives, overlay offers ad / bones / club options
+- [x] Premium shows ∞ lives, never gated
+- [x] Regen works across page reloads (timestamps persist)
 
 ---
 
@@ -3248,7 +3248,7 @@ git commit -m "lives: gate mini-games/blitz + empty modal with ad/bones/club ref
 **Files:**
 - Modify: `js/paywall.js` (add triggers section)
 
-- [ ] **Step 1: Add to `js/paywall.js`**
+- [x] **Step 1: Add to `js/paywall.js`**
 
 ```javascript
 import { loadPaywallState, savePaywallState } from './storage.js';
@@ -3326,7 +3326,7 @@ export function showPaywall(opts = {}) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add js/paywall.js
@@ -3340,13 +3340,13 @@ git commit -m "paywall: contextual trigger framework + 6 trigger definitions"
 **Files:**
 - Modify: `js/main.js` (call `maybeShowPaywall` at key moments)
 
-- [ ] **Step 1: Import in main.js**
+- [x] **Step 1: Import in main.js**
 
 ```javascript
 import { maybeShowPaywall } from './paywall.js';
 ```
 
-- [ ] **Step 2: Add trigger calls**
+- [x] **Step 2: Add trigger calls**
 
 **level5 / level15** — in the win handler after celebration overlay closes:
 ```javascript
@@ -3397,7 +3397,7 @@ function checkSeasonEndTrigger() {
 
 Hook `checkSeasonEndTrigger()` into the level-select-open function.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Reset paywall state:
 ```javascript
@@ -3408,7 +3408,7 @@ location.reload();
 Play 5 levels → paywall with "Du hast Talent!" title appears after level 5 win. Dismiss. Play to level 15 → new trigger "Drei Katzen warten".
 Force 3 hints in a row (reset levels, spend hint 3x) → after 3rd, trigger fires.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/main.js
@@ -3423,7 +3423,7 @@ git commit -m "paywall: wire 6 contextual triggers (level5/15, hint3rd, streak7,
 - Modify: `js/main.js` (check expiry at boot, show one-time banner)
 - Modify: `index.html` (repurpose old premium-banner as reminder)
 
-- [ ] **Step 1: Keep `#premiumBanner` but repurpose text**
+- [x] **Step 1: Keep `#premiumBanner` but repurpose text**
 
 In `js/main.js`, add:
 ```javascript
@@ -3470,11 +3470,11 @@ function updatePremiumBanner() {
 
 Call `updatePremiumBanner()` at boot and after any subscription state change.
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 Fresh install → banner shows "7 Tage gratis testen". After trial purchase → "Trial: noch 7 Tage gratis". Manipulate `trialEnd` in localStorage to yesterday → "Trial vorbei — bleib im Club".
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add js/main.js
@@ -3485,12 +3485,12 @@ git commit -m "paywall: repurpose premium banner for trial countdown and expiry 
 
 ### Phase 7 Checkpoint
 
-- [ ] Paywall appears once at level 5 and level 15 with trigger-specific copy
-- [ ] Hint-3rd trigger fires after 3 paid hints, respects 72h cooldown
-- [ ] Streak triggers fire at 7/14/30-day milestones
-- [ ] Season-end trigger fires in last 3 days only, once per season
-- [ ] Trial countdown banner shows days remaining
-- [ ] Expired trial shows conversion reminder
+- [x] Paywall appears once at level 5 and level 15 with trigger-specific copy
+- [x] Hint-3rd trigger fires after 3 paid hints, respects 72h cooldown
+- [x] Streak triggers fire at 7/14/30-day milestones
+- [x] Season-end trigger fires in last 3 days only, once per season
+- [x] Trial countdown banner shows days remaining
+- [x] Expired trial shows conversion reminder
 
 ---
 
@@ -3503,7 +3503,7 @@ git commit -m "paywall: repurpose premium banner for trial countdown and expiry 
 **Files:**
 - Create: `js/leaderboard.js`
 
-- [ ] **Step 1: Create `js/leaderboard.js`**
+- [x] **Step 1: Create `js/leaderboard.js`**
 
 ```javascript
 'use strict';
@@ -3672,7 +3672,7 @@ export function checkWeeklyRollover() {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add js/leaderboard.js
@@ -3688,7 +3688,7 @@ git commit -m "leaderboard: pseudo-engine with 199 seeded bots, weekly rollover 
 - Modify: `css/panels.css` (leaderboard styling)
 - Modify: `js/main.js` (rendering + click handlers)
 
-- [ ] **Step 1: Add menu button in `index.html` inside `.ls-actions-modes` after season pass button**
+- [x] **Step 1: Add menu button in `index.html` inside `.ls-actions-modes` after season pass button**
 
 ```html
 <button id="leaderboardBtn" class="ls-action-btn ls-action-btn--rank" type="button">
@@ -3696,7 +3696,7 @@ git commit -m "leaderboard: pseudo-engine with 199 seeded bots, weekly rollover 
 </button>
 ```
 
-- [ ] **Step 2: Add screen in `index.html` near other screen-overlays**
+- [x] **Step 2: Add screen in `index.html` near other screen-overlays**
 
 ```html
 <!-- Leaderboard -->
@@ -3711,7 +3711,7 @@ git commit -m "leaderboard: pseudo-engine with 199 seeded bots, weekly rollover 
 </div>
 ```
 
-- [ ] **Step 3: Add CSS to `css/panels.css`**
+- [x] **Step 3: Add CSS to `css/panels.css`**
 
 ```css
 .ls-action-btn--rank {
@@ -3762,7 +3762,7 @@ git commit -m "leaderboard: pseudo-engine with 199 seeded bots, weekly rollover 
 }
 ```
 
-- [ ] **Step 4: Render in `js/main.js`**
+- [x] **Step 4: Render in `js/main.js`**
 
 ```javascript
 import { computeRanking, ensureLeaderboardId, addWeekScore, getWeekScore, checkWeeklyRollover, getIsoWeekKey } from './leaderboard.js';
@@ -3829,11 +3829,11 @@ document.getElementById('leaderboardBtn')?.addEventListener('click', openLeaderb
 document.getElementById('lbBackBtn')?.addEventListener('click', closeLeaderboard);
 ```
 
-- [ ] **Step 5: Manual test**
+- [x] **Step 5: Manual test**
 
 Click menu button → leaderboard shows 10 top bots, timer to Monday, user highlighted at their rank. Scroll to see separator + context entries.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add index.html css/panels.css js/main.js
@@ -3847,7 +3847,7 @@ git commit -m "leaderboard: weekly ranking screen with top-10 + context window"
 **Files:**
 - Modify: `js/main.js` (add score calls at same events as XP)
 
-- [ ] **Step 1: Wherever XP is added (task 4.2), also call `addWeekScore`**
+- [x] **Step 1: Wherever XP is added (task 4.2), also call `addWeekScore`**
 
 Score rules:
 ```javascript
@@ -3861,7 +3861,7 @@ addWeekScore(5);                              // mini-game win
 
 Add these alongside the existing `addXp(...)` calls from Task 4.2.
 
-- [ ] **Step 2: Rollover check at boot + reward overlay**
+- [x] **Step 2: Rollover check at boot + reward overlay**
 
 ```javascript
 import { checkWeeklyRollover } from './leaderboard.js';
@@ -3881,7 +3881,7 @@ function showWeeklyResultOverlay(r) {
 
 (A proper overlay can replace `alert` after Phase 9 Visual Polish; for now the mechanism is in place.)
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Simulate rollover:
 ```javascript
@@ -3891,7 +3891,7 @@ location.reload();
 // if current week is W17 or later, should trigger rollover → alert
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/main.js
@@ -3902,12 +3902,12 @@ git commit -m "leaderboard: weekly score hooks + rollover reward grant"
 
 ### Phase 8 Checkpoint
 
-- [ ] Leaderboard button in menu
-- [ ] User's nick auto-generated on first open
-- [ ] Top 10 + context window renders with user highlighted
-- [ ] Weekly score increments correctly from gameplay
-- [ ] Rollover on Monday awards bones based on rank
-- [ ] Bots feel realistic (not all beating the user, not all losing)
+- [x] Leaderboard button in menu
+- [x] User's nick auto-generated on first open
+- [x] Top 10 + context window renders with user highlighted
+- [x] Weekly score increments correctly from gameplay
+- [x] Rollover on Monday awards bones based on rank
+- [x] Bots feel realistic (not all beating the user, not all losing)
 
 ---
 
@@ -3921,7 +3921,7 @@ git commit -m "leaderboard: weekly score hooks + rollover reward grant"
 - Modify: `css/splash.css` (Ken-Burns animation)
 - Modify: `js/splash.js` (tap-to-skip handler)
 
-- [ ] **Step 1: Add Ken-Burns to `.splash-bg` in `css/splash.css`**
+- [x] **Step 1: Add Ken-Burns to `.splash-bg` in `css/splash.css`**
 
 ```css
 .splash-bg {
@@ -3935,7 +3935,7 @@ git commit -m "leaderboard: weekly score hooks + rollover reward grant"
 }
 ```
 
-- [ ] **Step 2: Skip handler — tap to fast-forward to play button**
+- [x] **Step 2: Skip handler — tap to fast-forward to play button**
 
 In `js/splash.js`, find the splash init function. After the DOM is built, add:
 
@@ -3962,11 +3962,11 @@ function enableSkip() {
 
 Call `enableSkip()` at splash boot.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Reload → splash does slow zoom+pan. Tap → animations fast-forward to end state immediately.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add css/splash.css js/splash.js
@@ -3981,7 +3981,7 @@ git commit -m "polish: splash Ken-Burns zoom + tap-to-skip"
 - Modify: `css/panels.css` (inline SVG noise pattern)
 - Modify: `js/main.js` (spawn 2-3 dust particles when menu open)
 
-- [ ] **Step 1: Add noise overlay to menu in `css/panels.css`**
+- [x] **Step 1: Add noise overlay to menu in `css/panels.css`**
 
 Inside `.ls-inner`:
 ```css
@@ -4002,7 +4002,7 @@ Inside `.ls-inner`:
 .ls-inner > * { position: relative; z-index: 1; }
 ```
 
-- [ ] **Step 2: Ambient dust in menu**
+- [x] **Step 2: Ambient dust in menu**
 
 Add a small canvas to the menu (or reuse existing particles):
 
@@ -4062,11 +4062,11 @@ function stopMenuAmbient() {
 
 Call `startMenuAmbient()` when `.level-select` is shown, `stopMenuAmbient()` when hidden.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Open menu → faint gold dust drifts upward in background. Close menu → stops.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add index.html css/panels.css js/main.js
@@ -4081,7 +4081,7 @@ git commit -m "polish: menu felt noise texture + ambient gold dust particles"
 - Modify: `css/premium.css` (already has shimmer), ensure all premium CTA buttons get `.premium-cta` class
 - Audit main.js and index.html
 
-- [ ] **Step 1: Audit classes**
+- [x] **Step 1: Audit classes**
 
 Search for premium-related buttons and ensure they have `.premium-cta`:
 ```bash
@@ -4090,11 +4090,11 @@ grep -rn "premiumBtn\|adPremiumBtn\|livesClubBtn\|passUpgradeBtn" index.html js/
 
 All buttons that open the paywall should carry `.premium-cta`. Update any missing ones by adding the class in HTML or programmatically.
 
-- [ ] **Step 2: Ensure `.premium-cta` has the gold-foil shimmer (already defined in Task 2.2, verify by inspecting)**
+- [x] **Step 2: Ensure `.premium-cta` has the gold-foil shimmer (already defined in Task 2.2, verify by inspecting)**
 
 Open the paywall + shop + any premium CTA button in the browser → all should shimmer gold.
 
-- [ ] **Step 3: Commit if any class additions**
+- [x] **Step 3: Commit if any class additions**
 
 ```bash
 git add -u
@@ -4108,7 +4108,7 @@ git commit -m "polish: unify premium CTA class across all buy/club entry points"
 **Files:**
 - Modify: `index.html` (add overlay), `css/premium.css` (style), `js/main.js` (use overlay)
 
-- [ ] **Step 1: Add HTML near other overlays**
+- [x] **Step 1: Add HTML near other overlays**
 
 ```html
 <div id="weeklyResultOverlay" class="screen-overlay sheet-panel hidden">
@@ -4123,7 +4123,7 @@ git commit -m "polish: unify premium CTA class across all buy/club entry points"
 </div>
 ```
 
-- [ ] **Step 2: CSS in `css/premium.css`**
+- [x] **Step 2: CSS in `css/premium.css`**
 
 ```css
 .weekly-result-card {
@@ -4160,7 +4160,7 @@ git commit -m "polish: unify premium CTA class across all buy/club entry points"
 .weekly-result-reward { color: #FFD700; font-weight: 600; }
 ```
 
-- [ ] **Step 3: In `js/main.js`, replace the alert with overlay**
+- [x] **Step 3: In `js/main.js`, replace the alert with overlay**
 
 ```javascript
 function showWeeklyResultOverlay(r) {
@@ -4176,7 +4176,7 @@ function showWeeklyResultOverlay(r) {
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add index.html css/premium.css js/main.js
@@ -4187,11 +4187,11 @@ git commit -m "polish: weekly result overlay (replaces alert)"
 
 ### Phase 9 Checkpoint
 
-- [ ] Splash zooms slowly and is tap-skippable
-- [ ] Menu has felt texture + ambient gold dust
-- [ ] All premium CTAs shimmer gold
-- [ ] Weekly rollover shows a proper overlay, no more alert
-- [ ] Performance remains smooth on mobile (check 60fps in DevTools)
+- [x] Splash zooms slowly and is tap-skippable
+- [x] Menu has felt texture + ambient gold dust
+- [x] All premium CTAs shimmer gold
+- [x] Weekly rollover shows a proper overlay, no more alert
+- [x] Performance remains smooth on mobile (check 60fps in DevTools)
 
 ---
 
@@ -4205,7 +4205,7 @@ git commit -m "polish: weekly result overlay (replaces alert)"
 - Modify: `js/billing.js` (add rich header comment)
 - Create: `docs/LAUNCH.md`
 
-- [ ] **Step 1: Add a detailed launch-comment at the top of `js/billing.js`**
+- [x] **Step 1: Add a detailed launch-comment at the top of `js/billing.js`**
 
 ```javascript
 /* ══════════════════════════════════════════════════════════════════════════
@@ -4238,15 +4238,15 @@ git commit -m "polish: weekly result overlay (replaces alert)"
    ══════════════════════════════════════════════════════════════════════════ */
 ```
 
-- [ ] **Step 2: Create `docs/LAUNCH.md`**
+- [x] **Step 2: Create `docs/LAUNCH.md`**
 
 ```markdown
 # Launch-Prozedur — Kittysort Premium
 
 ## Voraussetzungen
-- [ ] Firma gegründet und Stripe-Account verifiziert
-- [ ] Bankverbindung hinterlegt, USt-ID eingetragen
-- [ ] AGB und Widerrufsbelehrung verlinkt in `index.html` Footer
+- [x] Firma gegründet und Stripe-Account verifiziert
+- [x] Bankverbindung hinterlegt, USt-ID eingetragen
+- [x] AGB und Widerrufsbelehrung verlinkt in `index.html` Footer
 
 ## Schritte
 
@@ -4297,7 +4297,7 @@ export const STRIPE_LINKS = {
 - Founders (Grandfathered 4,99€-Käufer) haben Lifetime-Premium als Dank für frühe Unterstützung
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add js/billing.js docs/LAUNCH.md
@@ -4311,7 +4311,7 @@ git commit -m "docs: launch procedure with step-by-step Stripe wiring"
 **Files:**
 - Manual verification across all flows
 
-- [ ] **Step 1: Fresh-install smoke test**
+- [x] **Step 1: Fresh-install smoke test**
 
 ```javascript
 // DevTools:
@@ -4330,7 +4330,7 @@ Verify:
 - Open Album → no premium cats, 4 Kirschblüte silhouettes locked
 - Try to start Tetris → uses 1 life, HUD shows 4 lives
 
-- [ ] **Step 2: Founder migration test**
+- [x] **Step 2: Founder migration test**
 
 ```javascript
 Object.keys(localStorage).forEach(k => { if (k.startsWith('catsort')) localStorage.removeItem(k); });
@@ -4345,7 +4345,7 @@ Verify:
 - Season Pass — premium track accessible
 - No paywall triggers fire
 
-- [ ] **Step 3: Purchase flow test**
+- [x] **Step 3: Purchase flow test**
 
 ```javascript
 Object.keys(localStorage).forEach(k => { if (k.startsWith('catsort')) localStorage.removeItem(k); });
@@ -4365,7 +4365,7 @@ location.reload();
 ```
 - Banner should now show "Trial vorbei" → conversion reminder
 
-- [ ] **Step 4: Season rollover edge case**
+- [x] **Step 4: Season rollover edge case**
 
 ```javascript
 const p = JSON.parse(localStorage.getItem('catsort_season'));
@@ -4381,15 +4381,15 @@ location.reload();
 
 Check bones balance increased (all unclaimed rewards auto-credited), then current season is fresh.
 
-- [ ] **Step 5: Performance check**
+- [x] **Step 5: Performance check**
 
 Play 10 levels. Open DevTools Performance tab, record 10 seconds of gameplay. Frame rate should stay ≥55 fps on an average laptop. If not, profile the ambient menu particles or leaderboard render.
 
-- [ ] **Step 6: Console errors**
+- [x] **Step 6: Console errors**
 
 Open the console, interact with every screen (Menu → Play → Win → Pass → Leaderboard → Album → Shop → Settings → Paywall → Celebration). **Zero errors or 404s** expected.
 
-- [ ] **Step 7: Pipeline update**
+- [x] **Step 7: Pipeline update**
 
 ```powershell
 pipeline-update -Slug colordrop `
@@ -4399,7 +4399,7 @@ pipeline-update -Slug colordrop `
   -Todos @("Firma gründen","Stripe Payment Links erstellen","BILLING_MODE umschalten","AGB/Widerruf verlinken","Live-Deploy")
 ```
 
-- [ ] **Step 8: Final commit + push**
+- [x] **Step 8: Final commit + push**
 
 ```bash
 git add -A
@@ -4411,14 +4411,14 @@ git commit -m "release: premium-overhaul complete, awaiting stripe launch switch
 
 ### Phase 10 Checkpoint
 
-- [ ] LAUNCH.md exists and is accurate
-- [ ] js/billing.js has inline launch instructions
-- [ ] Fresh install works end-to-end
-- [ ] Founder migration preserves premium
-- [ ] Trial expiry downgrades correctly
-- [ ] No console errors anywhere
-- [ ] Performance ≥55fps during play
-- [ ] Pipeline dashboard updated
+- [x] LAUNCH.md exists and is accurate
+- [x] js/billing.js has inline launch instructions
+- [x] Fresh install works end-to-end
+- [x] Founder migration preserves premium
+- [x] Trial expiry downgrades correctly
+- [x] No console errors anywhere
+- [x] Performance ≥55fps during play
+- [x] Pipeline dashboard updated
 
 ---
 
