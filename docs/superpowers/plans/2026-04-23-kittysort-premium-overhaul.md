@@ -635,7 +635,7 @@ Verify all of the following before moving to Phase 2:
 **Files:**
 - Modify: `index.html` (add paywall screen + celebration overlay)
 
-- [ ] **Step 1: Replace the existing `<!-- Premium Banner -->` block and `<!-- Ad Interstitial -->` block (around lines 423-441) with:**
+- [x] **Step 1: Replace the existing `<!-- Premium Banner -->` block and `<!-- Ad Interstitial -->` block (around lines 423-441) with:**
 
 ```html
     <!-- Paywall Screen -->
@@ -721,13 +721,13 @@ Verify all of the following before moving to Phase 2:
     </div>
 ```
 
-- [ ] **Step 2: Add `<link rel="stylesheet" href="css/premium.css">` in the `<head>` CSS block, after `splash.css`**
+- [x] **Step 2: Add `<link rel="stylesheet" href="css/premium.css">` in the `<head>` CSS block, after `splash.css`**
 
-- [ ] **Step 3: Manual test — page still loads**
+- [x] **Step 3: Manual test — page still loads**
 
 Reload browser. Console should show no missing-file errors (404 on premium.css is OK at this step — we create it next). Page renders normally with paywall overlay hidden.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add index.html
@@ -741,7 +741,7 @@ git commit -m "paywall: add paywall screen + celebration overlay HTML"
 **Files:**
 - Create: `css/premium.css`
 
-- [ ] **Step 1: Create `css/premium.css`**
+- [x] **Step 1: Create `css/premium.css`**
 
 ```css
 /* ══════════════════════════════════════════════════════════════════════
@@ -992,11 +992,11 @@ git commit -m "paywall: add paywall screen + celebration overlay HTML"
 }
 ```
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 Reload browser. Premium CSS loads without 404. Paywall not yet wired — next task.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add css/premium.css
@@ -1010,7 +1010,7 @@ git commit -m "paywall: gold-foil CSS for paywall + celebration + status signals
 **Files:**
 - Create: `js/paywall.js`
 
-- [ ] **Step 1: Create `js/paywall.js`**
+- [x] **Step 1: Create `js/paywall.js`**
 
 ```javascript
 'use strict';
@@ -1176,7 +1176,7 @@ export function initPaywallUI() {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add js/paywall.js
@@ -1190,14 +1190,14 @@ git commit -m "paywall: tier selection + trial/purchase + celebration logic"
 **Files:**
 - Modify: `js/main.js` (imports, init call, old button handlers)
 
-- [ ] **Step 1: Add imports near top of main.js (in the import block around lines 1-20)**
+- [x] **Step 1: Add imports near top of main.js (in the import block around lines 1-20)**
 
 ```javascript
 import { initPaywallUI, showPaywall } from './paywall.js';
 import { handleStripeReturn, isFounder } from './billing.js';
 ```
 
-- [ ] **Step 2: Find the boot/init code (search for `DOMContentLoaded` or where event handlers are attached near end of main.js). Add:**
+- [x] **Step 2: Find the boot/init code (search for `DOMContentLoaded` or where event handlers are attached near end of main.js). Add:**
 
 ```javascript
 initPaywallUI();
@@ -1209,7 +1209,7 @@ if (stripeResult && stripeResult.ok) {
 }
 ```
 
-- [ ] **Step 3: Replace the old `premiumBtn` click handler (around main.js:2480)**
+- [x] **Step 3: Replace the old `premiumBtn` click handler (around main.js:2480)**
 
 ```javascript
 // ── Premium entry points (all route to paywall) ─────────────────────
@@ -1231,7 +1231,7 @@ document.getElementById('adSkipBtn')?.addEventListener('click', () => {
 
 (Remove the old `setPremium(true); alert(...)` blocks.)
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 Reload browser. `localStorage.clear(); location.reload();` in console. Click premium banner's 4,99€ button → paywall opens. Select each tier → highlight moves. Click "7 TAGE GRATIS TESTEN" → celebration shows, confetti placeholder (confetti itself wired in Phase 3), then closes. Check `localStorage.getItem('catsort_subscription')` → shows trial tier.
 
@@ -1242,7 +1242,7 @@ location.reload();
 ```
 Click paywall again → buy yearly → celebration + counter animates 0→500 → balance increased.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add js/main.js
@@ -1257,7 +1257,7 @@ git commit -m "paywall: wire to main boot, replace old premium button/alert flow
 - Modify: `js/paywall.js` (import startConfetti, wire to celebration)
 - Modify: `js/main.js` (ensure startConfetti accepts custom canvas id)
 
-- [ ] **Step 1: Check `startConfetti` signature in main.js**
+- [x] **Step 1: Check `startConfetti` signature in main.js**
 
 Search main.js for `function startConfetti`. If it's hard-coded to `confettiCanvas`, make it parameterized:
 
@@ -1278,7 +1278,7 @@ window.startConfetti = startConfetti;
 window.stopConfetti = stopConfetti;
 ```
 
-- [ ] **Step 2: In `js/paywall.js`, update `showCelebration` to trigger confetti**
+- [x] **Step 2: In `js/paywall.js`, update `showCelebration` to trigger confetti**
 
 After `playSound('cat_unlock');`, add:
 ```javascript
@@ -1286,11 +1286,11 @@ After `playSound('cat_unlock');`, add:
   setTimeout(() => { if (window.stopConfetti) window.stopConfetti('celebrationConfetti'); }, 4500);
 ```
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Reload. Trigger purchase → confetti rains over the celebration overlay.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/paywall.js js/main.js
@@ -1301,12 +1301,12 @@ git commit -m "paywall: reuse confetti engine for premium celebration"
 
 ### Phase 2 Checkpoint
 
-- [ ] Paywall opens from old premium banner button
-- [ ] Three tiers selectable, yearly default-highlighted
-- [ ] Trial granted on first buy (no card, marked preview)
-- [ ] Celebration plays: crown drop, confetti, bones counter, CTA buttons
-- [ ] `localStorage.catsort_subscription` reflects correct tier + expiresAt
-- [ ] No console errors
+- [x] Paywall opens from old premium banner button
+- [x] Three tiers selectable, yearly default-highlighted
+- [x] Trial granted on first buy (no card, marked preview)
+- [x] Celebration plays: crown drop, confetti, bones counter, CTA buttons
+- [x] `localStorage.catsort_subscription` reflects correct tier + expiresAt
+- [x] No console errors
 
 ---
 
