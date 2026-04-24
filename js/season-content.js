@@ -96,3 +96,9 @@ export function getCurrentSeason(now = new Date()) {
   const key = getCurrentSeasonKey(now);
   return SEASONS[key] || null;
 }
+
+export function getNextSeason(now = new Date()) {
+  return Object.values(SEASONS)
+    .filter(s => new Date(s.startsAt) > now)
+    .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))[0] || null;
+}

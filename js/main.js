@@ -65,7 +65,7 @@ import {
   getLivesCount as _livesCount, hasLife, consumeLife, refillWithBones, refillWithAd,
   msUntilNextLife as _livesMsUntil, formatTimeLeft as _livesFmt
 } from './lives.js';
-import { getCurrentSeason } from './season-content.js';
+import { getCurrentSeason, getNextSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -279,8 +279,13 @@ function closeLivesEmpty() {
 }
 
 function renderSeasonPass() {
+  const card = document.querySelector('#seasonPassScreen .pass-card');
   const season = getCurrentSeason();
-  if (!season) return;
+  if (!season) {
+    renderPassOffSeason(card);
+    return;
+  }
+  card?.classList.remove('off-season');
   const p = getProgress();
   const tier = tierFromXp(p.xp);
   const maxXp = xpForTier(50);
@@ -354,6 +359,25 @@ function _renderPassReward(def, tier, track, progress, reachedTier, isP) {
     <span class="pass-reward-icon">${icon}</span>
     <span class="pass-reward-label">${def.label || ''}</span>
   </div>`;
+}
+
+function renderPassOffSeason(card) {
+  const next = getNextSeason();
+  document.getElementById('passSeasonEmoji').textContent = next?.emoji || '🌙';
+  document.getElementById('passSeasonName').textContent  = next ? next.name + ' — bald' : 'Saison-Pause';
+  if (card) card.classList.add('off-season');
+
+  const timer = document.getElementById('passSeasonTimer');
+  if (next) {
+    const msLeft = new Date(next.startsAt).getTime() - Date.now();
+    const d = Math.floor(msLeft / 86400000);
+    const h = Math.floor((msLeft % 86400000) / 3600000);
+    timer.textContent = 'Startet in ' + d + 'd ' + h + 'h';
+  } else {
+    timer.textContent = 'Noch keine Saison geplant';
+  }
+
+  document.getElementById('passTiersList')?.replaceChildren();
 }
 
 function _passIconFor(def) {

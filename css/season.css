@@ -28,6 +28,13 @@
 }
 
 .pass-header { text-align: center; margin-bottom: 1rem; }
+
+/* Off-season placeholder: hide progress, status, tier list */
+.pass-card.off-season .pass-progress,
+.pass-card.off-season .pass-status,
+.pass-card.off-season .pass-tiers { display: none; }
+.pass-card.off-season .pass-header { margin-bottom: 1.6rem; }
+.pass-card.off-season .pass-season-timer { font-size: 1rem; color: #FFD700; }
 .pass-season-emoji { font-size: 2.2rem; }
 .pass-season-name {
   font-family: 'Fredoka', sans-serif; font-weight: 700;
