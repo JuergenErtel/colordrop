@@ -1320,7 +1320,7 @@ git commit -m "paywall: reuse confetti engine for premium celebration"
 - Modify: `js/main.js` (`updateBonesDisplay` function)
 - Modify: `css/game.css` (bones-display premium variant — OR use premium.css classes defined in 2.2)
 
-- [ ] **Step 1: In `js/main.js`, update `updateBonesDisplay()` (~line 107)**
+- [x] **Step 1: In `js/main.js`, update `updateBonesDisplay()` (~line 107)**
 
 ```javascript
 function updateBonesDisplay() {
@@ -1331,7 +1331,7 @@ function updateBonesDisplay() {
 }
 ```
 
-- [ ] **Step 2: Add to `css/game.css` near the hud-bones rule**
+- [x] **Step 2: Add to `css/game.css` near the hud-bones rule**
 
 ```css
 .hud-bones.premium {
@@ -1341,14 +1341,14 @@ function updateBonesDisplay() {
 }
 ```
 
-- [ ] **Step 3: Call `updateBonesDisplay()` after any purchase (already happens via `earn()` in most places — verify by triggering trial/buy and watching HUD).**
+- [x] **Step 3: Call `updateBonesDisplay()` after any purchase (already happens via `earn()` in most places — verify by triggering trial/buy and watching HUD).**
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 Trigger purchase. HUD gets crown + golden bones pill.
 Console: `import('./js/economy.js').then(m => { m.setPremium(false); document.getElementById('bonesDisplay').dispatchEvent(new Event('refresh')); });` → crown disappears.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add js/main.js css/game.css
@@ -1363,13 +1363,13 @@ git commit -m "premium: crown + gold bones pill in HUD for subscribers"
 - Modify: `index.html` (add badge slot under logo)
 - Modify: `js/main.js` (populate badge on menu open)
 
-- [ ] **Step 1: In `index.html`, inside `.ls-inner` after the tagline `<p>` (around line 56), insert:**
+- [x] **Step 1: In `index.html`, inside `.ls-inner` after the tagline `<p>` (around line 56), insert:**
 
 ```html
 <div class="ls-club-badge" id="lsClubBadge" style="display:none"></div>
 ```
 
-- [ ] **Step 2: Add CSS to `css/panels.css` near the tagline rules**
+- [x] **Step 2: Add CSS to `css/panels.css` near the tagline rules**
 
 ```css
 .ls-club-badge {
@@ -1401,7 +1401,7 @@ git commit -m "premium: crown + gold bones pill in HUD for subscribers"
 }
 ```
 
-- [ ] **Step 3: In `js/main.js`, add a helper and call it when menu opens**
+- [x] **Step 3: In `js/main.js`, add a helper and call it when menu opens**
 
 ```javascript
 function updateMenuPremiumSignals() {
@@ -1430,13 +1430,13 @@ function updateMenuPremiumSignals() {
 
 Call `updateMenuPremiumSignals()` in the function that shows the level-select screen (search for `.level-select` + `show` class toggles — likely a `showLevelSelect` or similar function). Also call after purchase completes (add to celebration close handler).
 
-- [ ] **Step 4: Manual test**
+- [x] **Step 4: Manual test**
 
 Premium state → menu shows "KLUB-MITGLIED SEIT MAI 2026" (gold, pulsing).
 Founder state (`localStorage.setItem('catsort-premium', 'true'); localStorage.removeItem('catsort_subscription'); location.reload();`) → shows "FOUNDER · DANKE FÜR DIE UNTERSTÜTZUNG" (silver).
 Free state → no badge, no gold tint.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add index.html css/panels.css js/main.js
@@ -1451,7 +1451,7 @@ git commit -m "premium: menu club badge (founder vs club) + gold tint"
 - Modify: `js/main.js` (album rendering — search for `renderAlbum` or similar)
 - Modify: `css/panels.css` (new frame variants)
 
-- [ ] **Step 1: Add CSS to `css/panels.css` in the album-cell block**
+- [x] **Step 1: Add CSS to `css/panels.css` in the album-cell block**
 
 ```css
 .album-cell.premium-unlocked {
@@ -1476,7 +1476,7 @@ git commit -m "premium: menu club badge (founder vs club) + gold tint"
 }
 ```
 
-- [ ] **Step 2: Find the album cell rendering in main.js (search for `album-cell` or `.album-grid`)**
+- [x] **Step 2: Find the album cell rendering in main.js (search for `album-cell` or `.album-grid`)**
 
 Wherever a cell is constructed for an owned/unlocked cat, add classes based on cat metadata:
 
@@ -1493,12 +1493,12 @@ function classifyCatCell(cat, owned) {
 
 Apply this helper in the existing render loop.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 With an active premium state, open Album. Premium-unlocked cats (Aurora, Prism, Imperial, Galaxy, Diamond) have gold frames. Others plain.
 Set `localStorage.setItem('catsort-premium', 'true')` then reload for founder. The premium cats now have silver FOUNDER badge in corner.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/main.js css/panels.css
@@ -1513,7 +1513,7 @@ git commit -m "premium: gold/founder/season frame variants in cat album"
 - Modify: `js/splash.js` (append welcome text when premium)
 - Modify: `css/splash.css` (welcome text styling)
 
-- [ ] **Step 1: In `js/splash.js`, add a welcome-text injection during splash build**
+- [x] **Step 1: In `js/splash.js`, add a welcome-text injection during splash build**
 
 Find where splash content is rendered. After the tagline/play button, add:
 
@@ -1541,7 +1541,7 @@ function injectPremiumWelcome() {
 
 Call `injectPremiumWelcome()` at splash boot (right after the splash DOM exists).
 
-- [ ] **Step 2: Add CSS to `css/splash.css`**
+- [x] **Step 2: Add CSS to `css/splash.css`**
 
 ```css
 .splash-welcome {
@@ -1563,11 +1563,11 @@ Call `injectPremiumWelcome()` at splash boot (right after the splash DOM exists)
 }
 ```
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 With premium active, hard-reload. Splash shows the welcome line just above the play button.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add js/splash.js css/splash.css
@@ -1578,11 +1578,11 @@ git commit -m "premium: splash shows 'Willkommen zurück, Club-Mitglied seit X'"
 
 ### Phase 3 Checkpoint
 
-- [ ] HUD shows crown + gold bones when premium
-- [ ] Menu shows club/founder badge + gold tint
-- [ ] Album shows gold frames on premium cats, silver founder badge
-- [ ] Splash shows personalized welcome for premium users
-- [ ] Free users see unchanged UI
+- [x] HUD shows crown + gold bones when premium
+- [x] Menu shows club/founder badge + gold tint
+- [x] Album shows gold frames on premium cats, silver founder badge
+- [x] Splash shows personalized welcome for premium users
+- [x] Free users see unchanged UI
 
 ---
 
