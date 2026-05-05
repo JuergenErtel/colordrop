@@ -90,7 +90,7 @@ export function tetrisNextBall() {
   TETRIS.dropStart = performance.now();
   TETRIS.landing   = null;
   // Gradually speed up
-  TETRIS.dropSpeed += 5;
+  TETRIS.dropSpeed += 3;
 }
 
 // ── Get current ball Y position (0 = top, 1 = landed) ───────────────────

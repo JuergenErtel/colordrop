@@ -1895,13 +1895,27 @@ function toCanvas(e) {
 // ══════════════════════════════════════════════════════════════════════════
 
 // ── Tetris swipe handling ──────────────────────────────────────────────────
-let tetrisSwipeStartX = 0;
+let tetrisSwipeStartX = 0;          // canvas-space X
 let tetrisSwipeActive = false;
-const SWIPE_THRESHOLD = 20; // min px to register as swipe
+const SWIPE_THRESHOLD = 20;         // canvas px below this counts as a tap
+
+function clientXToCanvasX(clientX) {
+  const rect = canvas.getBoundingClientRect();
+  return (clientX - rect.left) * (CW / rect.width);
+}
+
+function tetrisColumnNearestX(canvasX) {
+  let best = 0, bestDist = Infinity;
+  for (let i = 0; i < TETRIS.numTubes; i++) {
+    const d = Math.abs(canvasX - tubeCX(i, TETRIS.numTubes));
+    if (d < bestDist) { bestDist = d; best = i; }
+  }
+  return best;
+}
 
 function tetrisSwipeStart(clientX) {
   if (TETRIS.active && TETRIS.current) {
-    tetrisSwipeStartX = clientX;
+    tetrisSwipeStartX = clientXToCanvasX(clientX);
     tetrisSwipeActive = true;
   }
 }
@@ -1910,13 +1924,24 @@ function tetrisSwipeEnd(clientX) {
   if (!tetrisSwipeActive) return false;
   tetrisSwipeActive = false;
   if (!TETRIS.active || !TETRIS.current) return false;
-  const dx = clientX - tetrisSwipeStartX;
-  if (Math.abs(dx) < SWIPE_THRESHOLD) return true; // tap — do nothing in tetris
-  const dir = dx > 0 ? 1 : -1;
-  const next = TETRIS.column + dir;
-  if (next >= 0 && next < TETRIS.numTubes) {
+  const canvasX = clientXToCanvasX(clientX);
+  const dx = canvasX - tetrisSwipeStartX;
+
+  let target;
+  if (Math.abs(dx) < SWIPE_THRESHOLD) {
+    // Tap → jump directly to the tube the player tapped on
+    target = tetrisColumnNearestX(canvasX);
+  } else {
+    // Swipe → step columns proportional to swipe distance (multi-jump possible)
+    const pitch = tubeCX(1, TETRIS.numTubes) - tubeCX(0, TETRIS.numTubes);
+    const steps = Math.max(1, Math.round(Math.abs(dx) / pitch));
+    const dir   = dx > 0 ? 1 : -1;
+    target = TETRIS.column + dir * steps;
+  }
+  target = Math.max(0, Math.min(TETRIS.numTubes - 1, target));
+  if (target !== TETRIS.column) {
     playSound('select');
-    tetrisMoveTo(next);
+    tetrisMoveTo(target);
   }
   return true;
 }
