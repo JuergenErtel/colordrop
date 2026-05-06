@@ -10,8 +10,8 @@
 
 ## Erfolgskriterien
 
-1. Default-Café enthält 8 zusätzliche Cozy-Elemente (siehe Layer-Liste).
-2. Kirschblüte-Szene enthält 8 zusätzliche / verbesserte Elemente.
+1. Default-Café enthält 8 zusätzliche Décor-Elemente: Tapeten-Muster, 3 Bilderrahmen, Fenster + Lichtstrahl, Hängepflanze, Holzdielen-Boden (ersetzt Perspektivlinien), Akzent-Teppich, Tasse mit Dampf, schlafende Katze. Staubpartikel werden überarbeitet (an Lichtstrahl gebunden).
+2. Kirschblüte-Szene enthält 8 zusätzliche / verbesserte Elemente: Berg-Silhouette, Pagode-Upgrade (3 Tiers + Bezier-Dächer), Blütenkrone-Cluster-Detail, Stein-Laterne, Boden mit Pfad, liegende Blütenblätter, verbesserte Petal-Form, sitzende Katze unter Baum.
 3. Bestehende Theme-Color-Drift (`themeCenter` / `lerpHSL`) bleibt funktional bei Tier-Wechsel.
 4. Frame-Budget Background < 4 ms auf Desktop-Chrome (60 fps Ziel mit Headroom).
 5. Mobile Viewport (375 × 667): keine Kollision von Décor-Elementen mit Puzzle-UI (Röhren-Bounding-Box `TUBE_TOP`–`TUBE_BOT`).
@@ -143,7 +143,7 @@ Garden / Rooftop / Winter: 1:1 Funktions-Move in eigenes Modul. Kein Refactor de
 3. **Theme-Wechsel:** Tier 1 → 5 sequenziell, je screenshot. Wand-Hue-Drift erkennbar, Décor stabil.
 4. **Mobile-Viewport:** 375 × 667 emuliert, Décor-Kollision visuell prüfen.
 5. **Saison-Switch:** Set bgId zu `kirschbluete`, screenshot.
-6. **Pixel-Regression Garden/Rooftop/Winter:** vor/nach Refactor screenshot, MD5-Vergleich (per `evaluate_script` mit Canvas → DataURL).
+6. **Visual-Regression Garden/Rooftop/Winter:** vor/nach Refactor screenshot, visueller Side-by-Side-Vergleich. Ziel: keine erkennbaren Änderungen (1:1 Move).
 
 ### Performance-Sanity
 
@@ -169,7 +169,7 @@ Drei Commits = drei Rollback-Punkte. Bei Problem in Phase 2 → revert auf Phase
 ## Risiken & Open Questions
 
 - **Cat-Silhouette-Form:** Schlafende Katze und sitzende Katze sind separate Pfade. `_shared.js::drawCat(ctx, x, y, opts)` mit `opts.pose ∈ {'sleeping', 'sitting'}`. Detailgrad iterativ im Implementation-Phase tunen.
-- **Lichtstrahl-Sichtbarkeit:** Trapez-Form muss auf dunkleren Themes (Tier 5+) noch sichtbar sein. Alpha-Floor 0.15 als Untergrenze.
+- **Lichtstrahl-Sichtbarkeit:** Bei Themes mit niedriger Wand-Helligkeit (kalte/dunkle `themeCenter`-Varianten) muss das Trapez noch wahrnehmbar bleiben. Alpha-Floor 0.15 als Untergrenze; bei Bedarf Trapez-Mitte heller als Wand-Basis berechnen.
 - **Pagode-Detail-Skalierung:** Bei Mobile (375 px Breite) wirkt 3-Tier-Pagode zu klein. Falls nötig: 2-Tier statt 3-Tier auf schmalen Viewports (responsive Layer-Variante).
 
 ## Out of Scope
