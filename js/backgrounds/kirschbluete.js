@@ -29,8 +29,10 @@ const TRUNK_X  = CW * 0.15;
 const TRUNK_TOP = CH * 0.55;
 const LANTERN_X = CW * 0.62;
 const LANTERN_BASE = CH * 0.80;
-const CAT_X = TRUNK_X - 10;          // sitting under tree, slightly to its left
-const CAT_Y = CH * 0.86;
+const CAT_X = TRUNK_X - 25;          // sitting at tree base, clear of leftmost stepping stone
+// Y must clear TUBE_BOT (440) including ears (cat head reaches y - 30).
+// CH * 0.92 = 478 → ear tip at 448, fully below tubes.
+const CAT_Y = CH * 0.92;
 
 // ── Pre-baked blossom-cluster positions (golden-angle distributed) ────────
 const CANOPY = Array.from({ length: 13 }, (_, i) => {
