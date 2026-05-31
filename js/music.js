@@ -378,6 +378,25 @@ let _activeNodes    = [];
 let _crossfading    = false;
 let _lastMelodyFreqs = []; // store last bar's melody for echo
 
+// ── Recorded-track layer ───────────────────────────────────────────────────
+// Real produced audio files replace the procedural engine per slot.
+// A slot WITHOUT an entry here falls back to the procedural engine, so
+// new tracks can be dropped in one at a time without breaking playback.
+const TRACK_FILES = {
+  MENU:   'audio/menu.mp3',
+  EASY:   'audio/gameplay.mp3',        // shared "schnelle Miau-Edition" loop
+  MEDIUM: 'audio/gameplay.mp3',        // (same file → keeps playing across the boundary)
+  HARD:   'audio/gameplay-hard.mp3',   // shared heavy track across hard/expert/master
+  EXPERT: 'audio/gameplay-hard.mp3',
+  MASTER: 'audio/gameplay-hard.mp3',
+};
+
+let _mode          = null;   // 'file' | 'procedural' | null
+let _fileSource    = null;   // active AudioBufferSourceNode
+let _fileGain      = null;   // its volume node
+let _fileLoadToken = 0;      // cancels in-flight loads when the slot changes
+const _fileBuffers = {};     // url -> decoded AudioBuffer (cache)
+
 // ── AudioContext ─────────────────────────────────────────────────────────
 function getCtx() {
   if (!_ctx) {
@@ -1299,176 +1318,6 @@ function scheduleRiser(config, barStart) {
   src.stop(barStart + riserDur + 0.05);
 }
 
-// ── Cat Choir — "Kit-ty-sort!" jingle ────────────────────────────────────
-// Bright children's humming choir with consonant clicks for rhythm.
-// Pure sine tones = clear pitch. Clicks = recognizable "K", "T", "S".
-
-// Syllable timing and consonant definitions
-const CHOIR_NOTES = [
-  { dur: 0.22, click: 3500, clickVol: 0.25 },  // "Kit" — /k/ click
-  { dur: 0.18, click: 5000, clickVol: 0.20 },  // "ty"  — /t/ click
-  { dur: 0.55, click: 7000, clickVol: 0.18 },  // "sort" — /s/ hiss + /t/ end
-];
-
-// Choir melodies (scale degrees)
-const CHOIR_MELODIES = [
-  [4, 4, 2],     // sol-sol-mi  (iconic, easy to recognize)
-  [2, 4, 7],     // mi-sol-do'
-  [4, 2, 0],     // sol-mi-do
-  [0, 2, 4],     // do-re-mi
-];
-
-function scheduleCatChoir(config, barStart) {
-  if (_barIndex < 8) return;
-  if ((_barIndex - 8) % 12 !== 0) return;
-
-  const ctx = _ctx;
-  if (!ctx || !_masterGain) return;
-
-  const barDur = barDuration(config.bpm, config.beatsPerBar);
-
-  // ── Duck the music during choir ──
-  const totalChoirDur = 1.1;
-  const choirStart = barStart + barDur * 0.45;
-  const duckStart = choirStart - 0.1;
-  _masterGain.gain.setValueAtTime(_volume, duckStart);
-  _masterGain.gain.linearRampToValueAtTime(_volume * 0.18, duckStart + 0.06);
-  _masterGain.gain.setValueAtTime(_volume * 0.18, duckStart + totalChoirDur);
-  _masterGain.gain.linearRampToValueAtTime(_volume, duckStart + totalChoirDur + 0.4);
-
-  // ── Choir output (bypasses masterGain) ──
-  const choirBus = ctx.createGain();
-  choirBus.gain.value = 0.6;
-  choirBus.connect(ctx.destination);
-
-  const melodyIdx = Math.floor(_barIndex / 12) % CHOIR_MELODIES.length;
-  const choirMelody = CHOIR_MELODIES[melodyIdx];
-
-  // 5 voices with slight detuning = warm children's choir
-  const numVoices = 5;
-  const voiceDetune = [10, -10, 5, -5, 0];
-  // Alternate octaves for richness (some voices an octave higher)
-  const voiceOctave = [0, 0, 12, 12, 0];
-
-  for (let voice = 0; voice < numVoices; voice++) {
-    const timeJitter = (Math.random() - 0.5) * 0.015;
-    let noteTime = choirStart + timeJitter;
-
-    for (let s = 0; s < CHOIR_NOTES.length; s++) {
-      const note = CHOIR_NOTES[s];
-      const melDegree = choirMelody[s];
-      const semi = scaleNoteToSemi(melDegree, config.scale);
-
-      // Child pitch range: 600-1000 Hz base
-      let baseFreq = semiToFreq(config.root, semi + 12 + voiceOctave[voice]);
-      while (baseFreq < 500) baseFreq *= 2;
-      while (baseFreq > 1200) baseFreq /= 2;
-
-      const t = noteTime;
-      const dur = note.dur;
-
-      // ═══ CONSONANT CLICK — short, crisp, percussive ═══
-      // Makes rhythm of "Kit-ty-sort" recognizable without formant speech
-      if (voice === 0) {  // only one click per syllable (not per voice)
-        const clickLen = Math.floor(ctx.sampleRate * 0.02);
-        const clickBuf = ctx.createBuffer(1, clickLen, ctx.sampleRate);
-        const clickData = clickBuf.getChannelData(0);
-        for (let i = 0; i < clickLen; i++) clickData[i] = Math.random() * 2 - 1;
-        const clickSrc = ctx.createBufferSource();
-        clickSrc.buffer = clickBuf;
-        const clickBp = ctx.createBiquadFilter();
-        clickBp.type = 'bandpass';
-        clickBp.frequency.value = note.click;
-        clickBp.Q.value = 2;
-        const clickEnv = ctx.createGain();
-        clickEnv.gain.setValueAtTime(note.clickVol, t);
-        clickEnv.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
-        clickSrc.connect(clickBp);
-        clickBp.connect(clickEnv);
-        clickEnv.connect(choirBus);
-        clickSrc.start(t);
-        clickSrc.stop(t + 0.025);
-      }
-
-      // ═══ VOICE — pure sine humming (like "mmm") ═══
-      const hum = ctx.createOscillator();
-      hum.type = 'sine';
-      hum.detune.value = voiceDetune[voice];
-
-      // Eager pitch scoop up
-      hum.frequency.setValueAtTime(baseFreq * 0.95, t + 0.01);
-      hum.frequency.exponentialRampToValueAtTime(baseFreq, t + 0.04);
-
-      // Envelope: quick attack, sustain, release
-      const humEnv = ctx.createGain();
-      const isLast = s === CHOIR_NOTES.length - 1;
-      humEnv.gain.setValueAtTime(0, t + 0.008);
-      humEnv.gain.linearRampToValueAtTime(0.45, t + 0.025);  // fast attack
-      if (isLast) {
-        humEnv.gain.setValueAtTime(0.40, t + dur * 0.5);
-        humEnv.gain.linearRampToValueAtTime(0, t + dur);
-      } else {
-        humEnv.gain.setValueAtTime(0.35, t + dur * 0.4);
-        humEnv.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
-      }
-
-      hum.connect(humEnv);
-      humEnv.connect(choirBus);
-      hum.start(t + 0.008);
-      hum.stop(t + dur + 0.05);
-      trackNode(hum, humEnv);
-
-      // ═══ OCTAVE HARMONIC — adds brightness/presence ═══
-      const harm = ctx.createOscillator();
-      harm.type = 'sine';
-      harm.frequency.value = baseFreq * 2;  // one octave up
-      harm.detune.value = voiceDetune[voice];
-      harm.frequency.setValueAtTime(baseFreq * 2 * 0.95, t + 0.01);
-      harm.frequency.exponentialRampToValueAtTime(baseFreq * 2, t + 0.04);
-
-      const harmEnv = ctx.createGain();
-      harmEnv.gain.setValueAtTime(0, t + 0.008);
-      harmEnv.gain.linearRampToValueAtTime(0.12, t + 0.03);
-      if (isLast) {
-        harmEnv.gain.linearRampToValueAtTime(0, t + dur);
-      } else {
-        harmEnv.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.85);
-      }
-
-      harm.connect(harmEnv);
-      harmEnv.connect(choirBus);
-      harm.start(t + 0.008);
-      harm.stop(t + dur + 0.05);
-      trackNode(harm, harmEnv);
-
-      // Ending /t/ click on "sort"
-      if (isLast && voice === 0) {
-        const tEnd = t + dur - 0.025;
-        const tLen = Math.floor(ctx.sampleRate * 0.018);
-        const tBuf = ctx.createBuffer(1, tLen, ctx.sampleRate);
-        const tData = tBuf.getChannelData(0);
-        for (let i = 0; i < tLen; i++) tData[i] = Math.random() * 2 - 1;
-        const tSrc = ctx.createBufferSource();
-        tSrc.buffer = tBuf;
-        const tBp = ctx.createBiquadFilter();
-        tBp.type = 'bandpass';
-        tBp.frequency.value = 4500;
-        tBp.Q.value = 1.5;
-        const tGain = ctx.createGain();
-        tGain.gain.setValueAtTime(0.15, tEnd);
-        tGain.gain.exponentialRampToValueAtTime(0.001, tEnd + 0.018);
-        tSrc.connect(tBp);
-        tBp.connect(tGain);
-        tGain.connect(choirBus);
-        tSrc.start(tEnd);
-        tSrc.stop(tEnd + 0.025);
-      }
-
-      noteTime += dur + 0.05;
-    }
-  }
-}
-
 // ── Main scheduler ───────────────────────────────────────────────────────
 
 function scheduleBar(tier) {
@@ -1500,9 +1349,6 @@ function scheduleBar(tier) {
   scheduleFill(config, barStart);
   scheduleRiser(config, barStart);
 
-  // Cat choir — "Kit-ty-sort!"
-  scheduleCatChoir(config, barStart);
-
   _barIndex++;
   _scheduleId = setTimeout(() => scheduleBar(tier), barDur * 1000);
 }
@@ -1526,13 +1372,7 @@ function stopActiveNodes(fadeTime) {
   _activeNodes = [];
 }
 
-function fullStop() {
-  if (_scheduleId !== null) {
-    clearTimeout(_scheduleId);
-    _scheduleId = null;
-  }
-  stopActiveNodes(0.5);
-  _currentTier = null;
+function resetProceduralState() {
   _barIndex = 0;
   _phraseIndex = -1;
   _phraseRepeat = 0;
@@ -1542,70 +1382,132 @@ function fullStop() {
   _lastMelodyFreqs = [];
 }
 
+function stopProcedural(fade) {
+  if (_scheduleId !== null) {
+    clearTimeout(_scheduleId);
+    _scheduleId = null;
+  }
+  stopActiveNodes(fade);
+  resetProceduralState();
+}
+
+function startProcedural(tier) {
+  resetProceduralState();
+  const now = _ctx.currentTime;
+  _masterGain.gain.cancelScheduledValues(now);
+  _masterGain.gain.setValueAtTime(0, now);
+  _masterGain.gain.linearRampToValueAtTime(_volume, now + 0.6);
+  scheduleBar(tier);
+}
+
+// ── Recorded-track playback (gapless loop via Web Audio) ────────────────────
+
+function loadTrack(url) {
+  if (_fileBuffers[url]) return Promise.resolve(_fileBuffers[url]);
+  return fetch(url)
+    .then((r) => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.arrayBuffer();
+    })
+    .then((arr) => _ctx.decodeAudioData(arr))
+    .then((buf) => { _fileBuffers[url] = buf; return buf; });
+}
+
+function stopFileTrack(fade) {
+  _fileLoadToken++;                 // cancel any in-flight load
+  if (_ctx && _fileGain && _fileSource) {
+    const now = _ctx.currentTime;
+    const g = _fileGain;
+    const s = _fileSource;
+    try {
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(0, now + fade);
+      s.stop(now + fade + 0.05);
+    } catch { /* already stopped */ }
+  }
+  _fileSource = null;
+  _fileGain = null;
+}
+
+function startFileTrack(tier) {
+  const url = TRACK_FILES[tier];
+  const token = ++_fileLoadToken;
+  loadTrack(url).then((buf) => {
+    // Aborted if: superseded by a newer start, disabled, or the current tier
+    // no longer wants this URL. (Tier may change to one sharing the same URL.)
+    if (token !== _fileLoadToken || !_enabled || TRACK_FILES[_currentTier] !== url) return;
+    const ctx = _ctx;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(_volume, ctx.currentTime + 0.6);
+    src.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+    _fileSource = src;
+    _fileGain = gain;
+  }).catch((err) => {
+    if (token !== _fileLoadToken || !_enabled || TRACK_FILES[_currentTier] !== url) return;
+    // File missing / decode failed → graceful fallback to procedural engine.
+    console.warn('[music] track file unavailable, using procedural fallback:', url, err);
+    _mode = 'procedural';
+    startProcedural(_currentTier);
+  });
+}
+
+function stopCurrent(fade) {
+  if (_mode === 'file') stopFileTrack(fade);
+  else if (_mode === 'procedural') stopProcedural(fade);
+  _mode = null;
+}
+
 // ── Public API ────────────────────────────────────────────────────────────
 
 export function startMusic(tier) {
   if (!_enabled) return;
   const ctx = getCtx();
   if (!ctx) return;
-
   if (_currentTier === tier) return;
 
-  if (_currentTier !== null) {
-    _crossfading = true;
-    const now = ctx.currentTime;
-
-    if (_scheduleId !== null) {
-      clearTimeout(_scheduleId);
-      _scheduleId = null;
-    }
-    _masterGain.gain.cancelScheduledValues(now);
-    _masterGain.gain.setValueAtTime(_masterGain.gain.value, now);
-    _masterGain.gain.linearRampToValueAtTime(0, now + 1.0);
-
-    setTimeout(() => {
-      stopActiveNodes(0);
-      _barIndex = 0;
-      _phraseIndex = -1;
-      _scaleOffset = 0;
-      _bassPatIndex = 0;
-      _arpPatIndex = 0;
-      _currentTier = tier;
-      _crossfading = false;
-
-      _masterGain.gain.setValueAtTime(0, _ctx.currentTime);
-      _masterGain.gain.linearRampToValueAtTime(_volume, _ctx.currentTime + 1.0);
-      scheduleBar(tier);
-    }, 1050);
-  } else {
+  // Tiers can share one recorded track (e.g. a single gameplay loop). If the
+  // new tier maps to the same file that's already playing, keep it looping
+  // instead of restarting from the top on every tier change.
+  if (_mode === 'file' && TRACK_FILES[tier] && TRACK_FILES[tier] === TRACK_FILES[_currentTier]) {
     _currentTier = tier;
-    _barIndex = 0;
-    _phraseIndex = -1;
-    _scaleOffset = 0;
-    _bassPatIndex = 0;
-    _arpPatIndex = 0;
-    _masterGain.gain.setValueAtTime(0, ctx.currentTime);
-    _masterGain.gain.linearRampToValueAtTime(_volume, ctx.currentTime + 0.5);
-    scheduleBar(tier);
+    return;
+  }
+
+  stopCurrent(0.8);          // fade out whatever is currently playing
+  _currentTier = tier;
+
+  if (TRACK_FILES[tier]) {
+    _mode = 'file';
+    startFileTrack(tier);
+  } else {
+    _mode = 'procedural';
+    startProcedural(tier);
   }
 }
 
 export function stopMusic() {
-  if (_crossfading) {
-    _crossfading = false;
-  }
-  fullStop();
-  if (_masterGain) {
-    _masterGain.gain.cancelScheduledValues(_ctx.currentTime);
-    _masterGain.gain.setValueAtTime(0, _ctx.currentTime);
-  }
+  stopCurrent(0.5);
+  _currentTier = null;
 }
 
 export function setMusicVolume(vol) {
   _volume = Math.max(0, Math.min(1, vol));
-  if (_masterGain && !_crossfading) {
-    _masterGain.gain.cancelScheduledValues(_ctx.currentTime);
-    _masterGain.gain.setValueAtTime(_volume, _ctx.currentTime);
+  if (!_ctx) return;
+  const now = _ctx.currentTime;
+  if (_masterGain) {
+    _masterGain.gain.cancelScheduledValues(now);
+    _masterGain.gain.setValueAtTime(_volume, now);
+  }
+  if (_fileGain) {
+    _fileGain.gain.cancelScheduledValues(now);
+    _fileGain.gain.setValueAtTime(_volume, now);
   }
 }
 
@@ -1613,9 +1515,7 @@ export function getMusicVolume() { return _volume; }
 
 export function setMusicEnabled(enabled) {
   _enabled = !!enabled;
-  if (!_enabled) {
-    stopMusic();
-  }
+  if (!_enabled) stopMusic();
 }
 
 export function isMusicEnabled() { return _enabled; }

@@ -61,6 +61,9 @@ body {
     height: auto;
     display: block;
     margin: 0 auto;
+    filter:
+        drop-shadow(0 3px 8px rgba(0,0,0,.38))
+        drop-shadow(0 12px 22px rgba(110,35,80,.30));
 }
 
 .tagline {

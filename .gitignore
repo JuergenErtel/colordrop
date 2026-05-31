@@ -1,0 +1,4 @@
+.vercel
+.superpowers/
+node_modules/
+.tmp/

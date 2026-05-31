@@ -81,20 +81,66 @@
     gap: 1.5rem;
 }
 
+.ls-logo-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: .25rem;
+    isolation: isolate;
+}
+
+/* Soft colour halo glowing from behind the wordmark — grounds the logo in
+   the scene instead of letting it float as a pasted-on rectangle. */
+.ls-logo-wrap::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 40%;
+    width: 116%; height: 150%;
+    transform: translate(-50%, -50%);
+    background:
+        radial-gradient(ellipse 52% 46% at 44% 50%, rgba(255,122,170,.34), transparent 72%),
+        radial-gradient(ellipse 46% 40% at 64% 48%, rgba(255,184,82,.30), transparent 72%);
+    filter: blur(26px);
+    z-index: -1;
+    pointer-events: none;
+    animation: lsHaloPulse 6s ease-in-out infinite;
+}
+
 .ls-title-logo {
-    width: clamp(200px, 60vw, 360px);
+    width: clamp(210px, 62vw, 360px);
     height: auto;
     display: block;
     margin: 0 auto;
+    filter:
+        drop-shadow(0 3px 8px rgba(0,0,0,.40))
+        drop-shadow(0 16px 28px rgba(110,35,80,.34));
+    animation: lsLogoFloat 5.5s ease-in-out infinite;
+    transform-origin: 50% 80%;
+    will-change: transform;
 }
 
 .ls-tagline {
     font-size: .68rem;
-    letter-spacing: .32em;
+    letter-spacing: .34em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: rgba(255, 238, 230, .58);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .4);
     text-align: center;
-    margin-top: -.75rem;
+    margin-top: .35rem;
+}
+
+@keyframes lsLogoFloat {
+    0%, 100% { transform: translateY(0) rotate(-.4deg); }
+    50%      { transform: translateY(-7px) rotate(.5deg); }
+}
+@keyframes lsHaloPulse {
+    0%, 100% { opacity: .75; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.07); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ls-title-logo, .ls-logo-wrap::before { animation: none; }
 }
 .ls-club-badge {
     text-align: center;
