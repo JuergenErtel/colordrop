@@ -58,6 +58,7 @@ import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled,
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
 import { buildRoomPanel, buildWinRoomHint } from './room.js';
 import { invalidateRoomDecorCache } from './room-decor.js';
+import { hasBgImage, getBgImage, drawBgImageCover } from './bg-image.js';
 import { checkMilestone, claimMilestone } from './milestones.js';
 import { addXp, XP, getProgress, xpForTier, tierFromXp, claimTier, checkSeasonRollover } from './season.js';
 import { computeRanking, ensureLeaderboardId, getWeekScore, addWeekScore, checkWeeklyRollover } from './leaderboard.js';
@@ -2662,6 +2663,13 @@ function drawSkinPreview(canvas, skinId) {
 function drawBgPreview(canvas, bgId) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
+
+  // Painted image preview takes precedence; redraws once the image loads.
+  if (hasBgImage(bgId)) {
+    const img = getBgImage(bgId, () => drawBgPreview(canvas, bgId));
+    if (img) { drawBgImageCover(ctx, img, w, h); return; }
+    // not loaded yet → fall through to the procedural preview for this frame
+  }
 
   if (bgId === 'cafe') {
     // Wall — warm, bright

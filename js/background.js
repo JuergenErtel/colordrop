@@ -1,5 +1,7 @@
 'use strict';
 
+import { CW, CH } from './constants.js';
+import { hasBgImage, getBgImage, drawBgImageCover } from './bg-image.js';
 import * as cafe         from './backgrounds/cafe.js';
 import * as kirschbluete from './backgrounds/kirschbluete.js';
 import * as garden       from './backgrounds/garden.js';
@@ -14,6 +16,13 @@ export {
 } from './backgrounds/_shared.js';
 
 export function drawBackground(ctx, ts, theme, prevTheme, fade, bgId) {
+  // Painted image background takes precedence (falls through to procedural
+  // until the image has loaded — the render loop redraws every frame).
+  if (hasBgImage(bgId)) {
+    const img = getBgImage(bgId);
+    if (img) { drawBgImageCover(ctx, img, CW, CH); return; }
+  }
+
   switch (bgId) {
     case 'garden':       return garden.draw(ctx, ts, theme);
     case 'rooftop':      return rooftop.draw(ctx, ts, theme);

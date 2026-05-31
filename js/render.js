@@ -11,6 +11,7 @@ import {
 import { easeInOut, easeOutBack, easeOutBounce, easeOutQuart, easeOutElastic, bezier2, ANIM } from './animations.js';
 import { spawnParticle, updateParticles, drawParticles, drawConfetti, triggerTubeExplosion, spawnConfetti, scheduleWinFireworks, spawnFireflies, clearFireflies, drawFireflies } from './particles.js';
 import { drawBackground } from './background.js';
+import { hasBgImage } from './bg-image.js';
 import { drawRoomDecor } from './room-decor.js';
 import { drawContainer } from './containers.js';
 import { drawBall, drawBallSymbol, drawBallHidden } from './balls.js';
@@ -987,8 +988,10 @@ export function renderFrame(ctx, ts, G) {
   // Draw
   const theme     = THEMES[G.theme] || THEMES.EASY;
   const prevTheme = G.themePrev ? (THEMES[G.themePrev] || theme) : theme;
-  drawBackground(ctx, ts, theme, prevTheme, G.themeFade, G.background || 'cafe');
-  drawRoomDecor(ctx, ts, theme, prevTheme, G.themeFade, G.level);
+  const bgId = G.background || 'cafe';
+  drawBackground(ctx, ts, theme, prevTheme, G.themeFade, bgId);
+  // Painted image backgrounds are already fully furnished → skip procedural décor.
+  if (!hasBgImage(bgId)) drawRoomDecor(ctx, ts, theme, prevTheme, G.themeFade, G.level);
   if (!REDUCED_MOTION) drawFireflies(ctx, ts);
 
   // Screen shake
