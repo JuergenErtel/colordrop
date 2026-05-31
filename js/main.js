@@ -1172,6 +1172,11 @@ function showWin() {
   _pendingCats = newCats;
   updateDailyStreak();
 
+  // Daily challenge runs on a fixed level number (dailyLevelNum) unrelated to
+  // the player's progression — there is no "next level" to advance into, so
+  // hide WEITER and leave MENÜ as the only forward path back to the menu.
+  document.getElementById('nextLevelBtn').style.display = G.isDailyChallenge ? 'none' : '';
+
   // ── Ad interstitial check ──
   if (shouldShowAd()) {
     markAdShown();
@@ -2013,6 +2018,13 @@ document.getElementById('resetBtn').addEventListener('click', () =>
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
   playSound('click');
   hideOverlay();
+  // Safety net: a daily-challenge win must never advance the level chain
+  // (LEVEL.current is the daily level number, not a progression level).
+  // The button is normally hidden for daily wins; route to the menu anyway.
+  if (G.isDailyChallenge) {
+    processPendingUnlocks(() => openLevelSelect());
+    return;
+  }
   G.isDailyChallenge = false;
   G.dailyModifier = null;
   processPendingUnlocks(() => { generateLevel(LEVEL.current + 1); invalidateRoomDecorCache(); });
