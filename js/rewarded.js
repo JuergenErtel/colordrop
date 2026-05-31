@@ -25,6 +25,8 @@ import { isPremium } from './economy.js';
 import { resetIfNewDay, canClaim, recordClaim } from './rewarded-caps.js';
 import { playSound } from './audio.js';
 
+let _inFlight = false;
+
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' +
@@ -50,11 +52,23 @@ export async function showRewarded(surface) {
   const gate = canShowRewarded(surface);
   if (!gate.ok) return { completed: false, reason: gate.reason };
 
-  const { completed } = await playAd(surface);
-  if (!completed) return { completed: false, reason: 'aborted' };
+  if (_inFlight) return { completed: false, reason: 'busy' };
+  _inFlight = true;
+  try {
+    let completed = false;
+    try {
+      ({ completed } = await playAd(surface));
+    } catch (e) {
+      console.error('rewarded playAd failed:', e);
+      return { completed: false, reason: 'error' };
+    }
+    if (!completed) return { completed: false, reason: 'aborted' };
 
-  saveRewardedState(recordClaim(freshState(), surface, Date.now()));
-  return { completed: true };
+    saveRewardedState(recordClaim(freshState(), surface, Date.now()));
+    return { completed: true };
+  } finally {
+    _inFlight = false;
+  }
 }
 
 // ── Provider dispatch ──────────────────────────────────────────────────────
