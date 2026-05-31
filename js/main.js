@@ -2201,9 +2201,11 @@ document.getElementById('timeoutContinueBtn').addEventListener('click', async ()
   const { completed } = await showRewarded('continue');
   if (!completed) { playSound('invalid'); return; }
   document.getElementById('timeoutOverlay').classList.remove('show');
-  // Timer um 20 s verlängern und weiterspielen.
-  G.timer.active  = true;
-  G.timer.endTime = performance.now() + 20000;
+  // Timer auf frische 20 s setzen und weiterspielen (duration mit, damit
+  // der Timer-Balken voll startet statt anteilig zur alten Dauer).
+  G.timer.active    = true;
+  G.timer.duration  = 20000;
+  G.timer.endTime   = performance.now() + 20000;
   G.timer._lastTick = -1;
   ANIM.busy = false;
   document.getElementById('timerBar').classList.add('visible');
