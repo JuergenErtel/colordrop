@@ -897,6 +897,37 @@ function updateHintCostBadge() {
   }
 }
 
+function applyHint() {
+  let move;
+  try {
+    move = solveHint(G.tubes, G.jokerUsed);
+  } catch (e) {
+    console.error('solveHint failed:', e);
+    return;
+  }
+  if (!move) {
+    G.hintCooldown = true;
+    setHintIcon('\u274C');  // ❌
+    const btn = document.getElementById('hintBtn');
+    btn.disabled = true;
+    setTimeout(() => {
+      G.hintCooldown = false;
+      setHintIcon('\uD83D\uDCA1');  // 💡
+      btn.disabled = false;
+    }, 1500);
+    return;
+  }
+  updateHUD();
+  G.hintFrom  = move.from;
+  G.hintTo    = move.to;
+  G.hintUntil = G.frameTime + 4000;
+}
+
+// Hint ohne Fischgräten-Kosten (nach abgeschlossenem Rewarded-Video).
+function grantFreeHint() {
+  applyHint();
+}
+
 function showHintAction() {
   if (ANIM.busy || G.won || G.tutorial) return;
   const btn = document.getElementById('hintBtn');
@@ -904,9 +935,17 @@ function showHintAction() {
   // Economy check — hints cost fish bones (free for premium)
   playSound('hint');
   if (!spendHint(G.theme || 'EASY')) {
-    setHintIcon(FISHBONE_ICON + '\u2753');  // fishbone + ❓
-    btn.disabled = true;
-    setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
+    // Zu wenig Fischgräten — Gratis-Hint per Video anbieten, falls verfügbar.
+    if (canShowRewarded('hint').ok) {
+      showRewarded('hint').then(({ completed }) => {
+        if (completed) { grantFreeHint(); }
+        else { playSound('invalid'); }
+      });
+    } else {
+      setHintIcon(FISHBONE_ICON + '\u2753');  // fishbone + ❓
+      btn.disabled = true;
+      setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
+    }
     return;
   }
   updateBonesDisplay();
@@ -920,30 +959,8 @@ function showHintAction() {
     }
   }
 
-  let move;
-  try {
-    move = solveHint(G.tubes, G.jokerUsed);
-  } catch (e) {
-    console.error('solveHint failed:', e);
-    return;
-  }
-  if (!move) {
-    G.hintCooldown  = true;
-    setHintIcon('\u274C');  // ❌
-    btn.disabled    = true;
-    setTimeout(() => {
-      G.hintCooldown  = false;
-      setHintIcon('\uD83D\uDCA1');  // 💡
-      btn.disabled    = false;
-    }, 1500);
-    return;
-  }
-  updateHUD();
-  G.hintFrom  = move.from;
-  G.hintTo    = move.to;
-  G.hintUntil = G.frameTime + 4000;
+  applyHint();
 }
-
 function triggerFlash(idx) {
   G.flashTube  = idx;
   G.flashUntil = G.frameTime + 320;
