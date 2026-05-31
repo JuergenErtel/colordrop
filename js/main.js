@@ -961,6 +961,7 @@ function showHintAction() {
 
   applyHint();
 }
+
 function triggerFlash(idx) {
   G.flashTube  = idx;
   G.flashUntil = G.frameTime + 320;
