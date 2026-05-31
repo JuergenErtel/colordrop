@@ -52,6 +52,15 @@ export function saveDaily(obj) {
   saveJSON(key('daily'), obj);
 }
 
+// ── Rewarded video state ───────────────────────────────────────────────────
+export function loadRewardedState() {
+  return loadJSON(key('rewarded'), null);
+}
+
+export function saveRewardedState(state) {
+  saveJSON(key('rewarded'), state);
+}
+
 // ── Stats ─────────────────────────────────────────────────────────────────
 const DEFAULT_STATS = {
   totalMoves:     0,

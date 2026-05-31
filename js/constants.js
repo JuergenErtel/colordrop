@@ -189,6 +189,16 @@ export const REWARDS = {
   rewardedAd:   20,
 };
 
+// ── Rewarded video (flip to 'adsense' at launch) ─────────────────────────
+export const REWARDED_MODE = 'preview';   // 'preview' | 'adsense' | 'native'
+
+export const REWARDED_LIMITS = {
+  life:     { daily: 5,  cooldownMs: 60000 },              // 1 Min
+  hint:     { daily: 10, cooldownMs: 30000 },              // großzügig
+  bones:    { daily: 3,  cooldownMs: 300000, amount: 50 }, // 5 Min, +50 Fischgräten
+  continue: { daily: 3,  cooldownMs: 60000 },              // Blitz-Timeout
+};
+
 export const HINT_COSTS = {
   EASY:   10,
   MEDIUM: 20,
