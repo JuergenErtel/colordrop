@@ -46,6 +46,7 @@ import { MOUSE, startMouse, endMouse, updateMouse, tapHole, mouseStars } from '.
 import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
+import { showRewarded, canShowRewarded } from './rewarded.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -252,7 +253,12 @@ function showLivesEmpty(retryFn) {
     }
   }, 500);
 
-  document.getElementById('livesAdBtn').onclick = () => {
+  const livesAdBtn = document.getElementById('livesAdBtn');
+  const livesAdGate = canShowRewarded('life');
+  livesAdBtn.style.display = livesAdGate.ok ? '' : 'none';
+  livesAdBtn.onclick = async () => {
+    const { completed } = await showRewarded('life');
+    if (!completed) { playSound('invalid'); return; }
     refillWithAd();
     closeLivesEmpty();
     consumeLife(); updateLivesDisplay(); retryFn();
