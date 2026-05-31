@@ -75,6 +75,7 @@ export function draw(ctx, ts, theme, prevTheme, fade) {
   drawCup(ctx);
   drawSteam(ctx, ts);
   drawSpotlight(ctx, ts, h, s, b);
+  drawSunbeam(ctx, ts);
   drawVignette(ctx);
   drawLampGlow(ctx, ts);
   drawMotes(ctx, ts);
@@ -321,6 +322,21 @@ function drawSpotlight(ctx, ts, h, s, b) {
   g.addColorStop(1.0, 'rgba(255,240,220,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, CW, CH);
+}
+
+// ── Layer 9b: Sunbeam — soft diagonal window light for depth ──────────────
+function drawSunbeam(ctx, ts) {
+  ctx.save();
+  ctx.translate(CW * 0.74 + Math.sin(ts * 0.00005) * 6, 0);
+  ctx.rotate(0.42);
+  const beamW = CW * 0.30;
+  const g = ctx.createLinearGradient(-beamW / 2, 0, beamW / 2, 0);
+  g.addColorStop(0.0, 'rgba(255,240,210,0)');
+  g.addColorStop(0.5, 'rgba(255,243,216,0.07)');
+  g.addColorStop(1.0, 'rgba(255,240,210,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(-beamW / 2, -40, beamW, CH * 1.4);
+  ctx.restore();
 }
 
 // ── Layer 10: Vignette ────────────────────────────────────────────────────
