@@ -5,11 +5,11 @@
 // scene (both in-game and in the shop preview). Ids NOT listed fall back to the
 // procedural renderer in backgrounds/*.js — so images can be added one at a time.
 const BG_IMAGES = {
-  cafe: 'img/bg-cafe.jpg',
-  // kirschbluete: 'img/bg-kirschbluete.jpg',
-  // garden:       'img/bg-garden.jpg',
-  // rooftop:      'img/bg-rooftop.jpg',
-  // winter:       'img/bg-winter.jpg',
+  cafe:         'img/bg-cafe.jpg',
+  kirschbluete: 'img/bg-kirschbluete.jpg',
+  garden:       'img/bg-garden.jpg',
+  rooftop:      'img/bg-rooftop.jpg',
+  winter:       'img/bg-winter.jpg',
 };
 
 const _cache = {};   // bgId -> { img, ready, error, cbs:[] }
