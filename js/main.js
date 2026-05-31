@@ -2190,6 +2190,25 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   invalidateRoomDecorCache();
 });
 
+// Von render.js beim Timeout aufgerufen: Continue-Button je nach Gate zeigen.
+window.__configureTimeoutContinue = function () {
+  const btn = document.getElementById('timeoutContinueBtn');
+  if (!btn) return;
+  btn.classList.toggle('hidden', !canShowRewarded('continue').ok);
+};
+
+document.getElementById('timeoutContinueBtn').addEventListener('click', async () => {
+  const { completed } = await showRewarded('continue');
+  if (!completed) { playSound('invalid'); return; }
+  document.getElementById('timeoutOverlay').classList.remove('show');
+  // Timer um 20 s verlängern und weiterspielen.
+  G.timer.active  = true;
+  G.timer.endTime = performance.now() + 20000;
+  G.timer._lastTick = -1;
+  ANIM.busy = false;
+  document.getElementById('timerBar').classList.add('visible');
+});
+
 // ── Mouse hunt handlers ─────────────────────────────────
 document.getElementById('mouseStartBtn').addEventListener('click', () => {
   tryStartGatedMode(() => {
