@@ -4,7 +4,7 @@ import {
   CW, CH, DUR_ARC,
   THEMES, TIER_DEFS,
   ACHIEVEMENTS, TUTORIAL_SCRIPT,
-  REWARDS, COSTS,
+  REWARDS, COSTS, REWARDED_LIMITS,
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
@@ -2919,16 +2919,44 @@ function drawBgPreview(canvas, bgId) {
   }
 }
 
+function updateShopRewardBtn() {
+  const btn = document.getElementById('shopRewardBonesBtn');
+  if (!btn) return;
+  const gate = canShowRewarded('bones');
+  if (gate.ok) {
+    btn.style.display = '';
+    btn.disabled = false;
+    btn.textContent = '📺 Gratis-Fischgräten (noch ' + gate.remaining + ' heute)';
+  } else if (gate.reason === 'cooldown') {
+    btn.style.display = '';
+    btn.disabled = true;
+    btn.textContent = '📺 Gleich wieder verfügbar …';
+  } else {
+    // premium / capped / unavailable
+    btn.style.display = 'none';
+  }
+}
+
 document.getElementById('shopBtn').addEventListener('click', () => {
   playSound('click');
   _shopTab = 'skins';
   document.querySelectorAll('.shop-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'skins'));
   buildShopGrid();
+  updateShopRewardBtn();
   document.getElementById('shopScreen').classList.remove('hidden');
 });
 
 document.getElementById('shopBackBtn').addEventListener('click', () => {
   document.getElementById('shopScreen').classList.add('hidden');
+});
+
+document.getElementById('shopRewardBonesBtn')?.addEventListener('click', async () => {
+  const { completed } = await showRewarded('bones');
+  if (!completed) { playSound('invalid'); updateShopRewardBtn(); return; }
+  earn(REWARDED_LIMITS.bones.amount);
+  updateBonesDisplay();
+  document.getElementById('shopBalance').innerHTML = FISHBONE_ICON + ' ' + getBalance();
+  updateShopRewardBtn();
 });
 
 document.querySelectorAll('.shop-tab').forEach(tab => {
