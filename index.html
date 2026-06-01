@@ -2,8 +2,35 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Kittysort</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kittysort — Das süße Katzen-Sortierspiel</title>
+    <meta name="description" content="Kittysort — Das niedliche Katzen-Sortierspiel! Sortiere bunte Wollknäuel, schalte süße Katzen frei und dekoriere dein eigenes Katzencafé. Jetzt kostenlos spielen!">
+
+    <!-- ── PWA ── -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffcad4">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Kittysort">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- ── Open Graph / social sharing ── -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Kittysort">
+    <meta property="og:title" content="Kittysort — Das süße Katzen-Sortierspiel">
+    <meta property="og:description" content="Sortiere bunte Wollknäuel, schalte 30 süße Katzen frei und dekoriere dein eigenes Katzencafé. Jetzt kostenlos spielen!">
+    <meta property="og:url" content="https://kittysort.de/">
+    <meta property="og:image" content="https://kittysort.de/img/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="de_DE">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Kittysort — Das süße Katzen-Sortierspiel">
+    <meta name="twitter:description" content="Sortiere bunte Wollknäuel, schalte 30 süße Katzen frei und dekoriere dein eigenes Katzencafé.">
+    <meta name="twitter:image" content="https://kittysort.de/img/og-image.jpg">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +48,19 @@
 </head>
 
 <body>
+    <!-- Boot loader — covers the brief JS-module init, removed by main.js -->
+    <div id="bootLoader">
+        <div class="boot-paw">🐾</div>
+        <div class="boot-label">Lädt …</div>
+    </div>
+    <script>
+      /* Safety net: never let the loader trap the user if a module fails. */
+      setTimeout(function () {
+        var b = document.getElementById('bootLoader');
+        if (b) b.classList.add('boot-hide');
+      }, 8000);
+    </script>
+
     <div class="wrap">
         <header class="header">
             <img class="title-logo" src="img/logo-mark.png" alt="Kittysort">

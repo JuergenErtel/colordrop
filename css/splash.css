@@ -21,7 +21,14 @@
 /* ── Background image ── */
 .splash-bg {
     position: absolute; inset: 0; z-index: 0;
-    background: url('../img/splash-bg.png') center center / cover no-repeat;
+    /* Compressed WebP (~104 KB) with PNG fallback for old browsers.
+       The .splash backdrop (#2a1f10) shows instantly, so this never blocks paint. */
+    background-image: url('../img/splash-bg.png');
+    background-image: -webkit-image-set(url('../img/splash-bg.webp') type('image/webp'), url('../img/splash-bg.png') type('image/png'));
+    background-image: image-set(url('../img/splash-bg.webp') type('image/webp'), url('../img/splash-bg.png') type('image/png'));
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
     animation: kenBurns 6s ease-out forwards;
     transform-origin: 50% 40%;
 }
