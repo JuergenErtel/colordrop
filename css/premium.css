@@ -20,7 +20,9 @@
   max-height: 92vh; overflow-y: auto;
 }
 .paywall-close {
-  position: absolute; top: .8rem; right: 1rem;
+  position: absolute; top: .4rem; right: .6rem;
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
   background: none; border: none; color: rgba(255,255,255,.4);
   font-size: 1.2rem; cursor: pointer;
 }

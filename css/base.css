@@ -34,7 +34,12 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 1rem;
+    /* Respect device notches / rounded corners (iOS, Android cutouts) */
+    padding:
+        max(1rem, env(safe-area-inset-top))
+        max(1rem, env(safe-area-inset-right))
+        max(1rem, env(safe-area-inset-bottom))
+        max(1rem, env(safe-area-inset-left));
     overflow: hidden;
     -webkit-user-select: none;
     user-select: none;
@@ -93,4 +98,45 @@ body {
         0 24px 50px rgba(40,20,0,.55),
         0 6px 16px rgba(40,20,0,.25),
         inset 0 0 40px rgba(255,220,160,.06);
+}
+
+/* ── Boot loader (shown until JS modules initialize) ───────────── */
+#bootLoader {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .9rem;
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse 70% 50% at 50% 30%, rgba(255,202,212,.45) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 50% 90%, rgba(220,175,120,.25) 0%, transparent 60%);
+    transition: opacity .45s ease;
+}
+#bootLoader .boot-paw {
+    font-size: 3.2rem;
+    animation: bootPulse 1s ease-in-out infinite;
+    filter: drop-shadow(0 6px 12px rgba(110,35,80,.25));
+}
+#bootLoader .boot-label {
+    font-family: var(--f-head);
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-size: .72rem;
+    color: var(--muted);
+}
+#bootLoader.boot-hide {
+    opacity: 0;
+    pointer-events: none;
+}
+@keyframes bootPulse {
+    0%, 100% { transform: scale(1)    rotate(-6deg); opacity: .8; }
+    50%      { transform: scale(1.18) rotate(6deg);  opacity: 1;  }
+}
+@media (prefers-reduced-motion: reduce) {
+    #bootLoader .boot-paw { animation: none; }
 }

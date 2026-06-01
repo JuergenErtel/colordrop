@@ -384,6 +384,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Keep cards & close buttons clear of notches / home indicator */
+    padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
     background: rgba(45,28,15,.92);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -574,7 +580,7 @@
 .premium-banner {
   position: fixed; bottom: 0; left: 0; right: 0;
   display: flex; align-items: center; justify-content: center; gap: .8rem;
-  padding: .5rem 1rem;
+  padding: .5rem max(1rem, env(safe-area-inset-right)) calc(.5rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   background: rgba(60,40,25,.92);
   border-top: 1px solid rgba(255,215,0,.3);
   box-shadow: 0 -4px 20px rgba(0,0,0,.3);

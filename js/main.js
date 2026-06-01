@@ -3293,3 +3293,18 @@ document.getElementById('splashPlayBtn').addEventListener('click', async () => {
     openLevelSelect();
   }
 });
+
+// ── Boot loader: modules are evaluated, the app is interactive ──────────────
+(function hideBootLoader() {
+  const b = document.getElementById('bootLoader');
+  if (b) b.classList.add('boot-hide');
+})();
+
+// ── Service Worker registration (PWA / offline) ─────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((err) => {
+      console.warn('SW registration failed:', err);
+    });
+  });
+}

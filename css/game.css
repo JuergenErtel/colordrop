@@ -20,6 +20,7 @@
 }
 
 .hud-btn {
+    position: relative;
     width: 38px; height: 38px;
     border-radius: 50%;
     border: 1px solid rgba(255,215,0,.2);
@@ -30,6 +31,13 @@
     cursor: pointer;
     box-shadow: 0 2px 0 rgba(184,134,11,.3), 0 3px 8px rgba(0,0,0,.25);
     transition: background .15s, border-color .15s, transform .1s, box-shadow .1s, opacity .2s;
+}
+/* Expand the touch target to ≥44px without growing the visual button */
+.hud-btn::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
 }
 .hud-btn:hover  { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(184,134,11,.3), 0 5px 12px rgba(0,0,0,.35); }
 .hud-btn:active { transform: translateY(1px);  box-shadow: 0 1px 0 rgba(184,134,11,.3); }
