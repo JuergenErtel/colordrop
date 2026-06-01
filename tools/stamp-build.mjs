@@ -18,8 +18,8 @@ const when = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` 
 
 const stamp = `${sha} · ${when}`;
 
-const file = new URL('../index.html', import.meta.url);
-let html = readFileSync(file, 'utf8');
+const htmlFile = new URL('../index.html', import.meta.url);
+let html = readFileSync(htmlFile, 'utf8');
 
 const re = /(<div[^>]*id="buildBadge"[^>]*>)([\s\S]*?)(<\/div>)/;
 if (!re.test(html)) {
@@ -27,6 +27,9 @@ if (!re.test(html)) {
   process.exit(1);
 }
 html = html.replace(re, `$1${stamp}$3`);
-writeFileSync(file, html);
+writeFileSync(htmlFile, html);
+
+// Klartext-Datei für geräteunabhängige Live-Kontrolle: kittysort.de/version.txt
+writeFileSync(new URL('../version.txt', import.meta.url), stamp + '\n');
 
 console.log('Build gestempelt:', stamp);
