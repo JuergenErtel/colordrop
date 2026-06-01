@@ -130,6 +130,16 @@
     margin-top: .35rem;
 }
 
+/* Build-Badge im Menü — beim Deploy via tools/stamp-build.mjs gestempelt */
+.ls-build {
+    margin-top: 1rem;
+    font-size: .58rem;
+    letter-spacing: .1em;
+    text-align: center;
+    color: rgba(255, 238, 230, .3);
+    font-variant-numeric: tabular-nums;
+}
+
 @keyframes lsLogoFloat {
     0%, 100% { transform: translateY(0) rotate(-.4deg); }
     50%      { transform: translateY(-7px) rotate(.5deg); }
