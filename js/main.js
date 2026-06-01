@@ -4,7 +4,7 @@ import {
   CW, CH, DUR_ARC,
   THEMES, TIER_DEFS,
   ACHIEVEMENTS, TUTORIAL_SCRIPT,
-  REWARDS, COSTS,
+  REWARDS, COSTS, REWARDED_LIMITS,
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
@@ -46,6 +46,7 @@ import { MOUSE, startMouse, endMouse, updateMouse, tapHole, mouseStars } from '.
 import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
+import { showRewarded, canShowRewarded } from './rewarded.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -252,7 +253,12 @@ function showLivesEmpty(retryFn) {
     }
   }, 500);
 
-  document.getElementById('livesAdBtn').onclick = () => {
+  const livesAdBtn = document.getElementById('livesAdBtn');
+  const livesAdGate = canShowRewarded('life');
+  livesAdBtn.style.display = livesAdGate.ok ? '' : 'none';
+  livesAdBtn.onclick = async () => {
+    const { completed } = await showRewarded('life');
+    if (!completed) { playSound('invalid'); return; }
     refillWithAd();
     closeLivesEmpty();
     consumeLife(); updateLivesDisplay(); retryFn();
@@ -891,6 +897,37 @@ function updateHintCostBadge() {
   }
 }
 
+function applyHint() {
+  let move;
+  try {
+    move = solveHint(G.tubes, G.jokerUsed);
+  } catch (e) {
+    console.error('solveHint failed:', e);
+    return;
+  }
+  if (!move) {
+    G.hintCooldown = true;
+    setHintIcon('\u274C');  // ❌
+    const btn = document.getElementById('hintBtn');
+    btn.disabled = true;
+    setTimeout(() => {
+      G.hintCooldown = false;
+      setHintIcon('\uD83D\uDCA1');  // 💡
+      btn.disabled = false;
+    }, 1500);
+    return;
+  }
+  updateHUD();
+  G.hintFrom  = move.from;
+  G.hintTo    = move.to;
+  G.hintUntil = G.frameTime + 4000;
+}
+
+// Hint ohne Fischgräten-Kosten (nach abgeschlossenem Rewarded-Video).
+function grantFreeHint() {
+  applyHint();
+}
+
 function showHintAction() {
   if (ANIM.busy || G.won || G.tutorial) return;
   const btn = document.getElementById('hintBtn');
@@ -898,9 +935,17 @@ function showHintAction() {
   // Economy check — hints cost fish bones (free for premium)
   playSound('hint');
   if (!spendHint(G.theme || 'EASY')) {
-    setHintIcon(FISHBONE_ICON + '\u2753');  // fishbone + ❓
-    btn.disabled = true;
-    setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
+    // Zu wenig Fischgräten — Gratis-Hint per Video anbieten, falls verfügbar.
+    if (canShowRewarded('hint').ok) {
+      showRewarded('hint').then(({ completed }) => {
+        if (completed) { grantFreeHint(); }
+        else { playSound('invalid'); }
+      });
+    } else {
+      setHintIcon(FISHBONE_ICON + '\u2753');  // fishbone + ❓
+      btn.disabled = true;
+      setTimeout(() => { setHintIcon('\uD83D\uDCA1'); btn.disabled = false; }, 1500);  // 💡
+    }
     return;
   }
   updateBonesDisplay();
@@ -914,28 +959,7 @@ function showHintAction() {
     }
   }
 
-  let move;
-  try {
-    move = solveHint(G.tubes, G.jokerUsed);
-  } catch (e) {
-    console.error('solveHint failed:', e);
-    return;
-  }
-  if (!move) {
-    G.hintCooldown  = true;
-    setHintIcon('\u274C');  // ❌
-    btn.disabled    = true;
-    setTimeout(() => {
-      G.hintCooldown  = false;
-      setHintIcon('\uD83D\uDCA1');  // 💡
-      btn.disabled    = false;
-    }, 1500);
-    return;
-  }
-  updateHUD();
-  G.hintFrom  = move.from;
-  G.hintTo    = move.to;
-  G.hintUntil = G.frameTime + 4000;
+  applyHint();
 }
 
 function triggerFlash(idx) {
@@ -2166,6 +2190,27 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   invalidateRoomDecorCache();
 });
 
+// Von render.js beim Timeout aufgerufen: Continue-Button je nach Gate zeigen.
+window.__configureTimeoutContinue = function () {
+  const btn = document.getElementById('timeoutContinueBtn');
+  if (!btn) return;
+  btn.classList.toggle('hidden', !canShowRewarded('continue').ok);
+};
+
+document.getElementById('timeoutContinueBtn').addEventListener('click', async () => {
+  const { completed } = await showRewarded('continue');
+  if (!completed) { playSound('invalid'); return; }
+  document.getElementById('timeoutOverlay').classList.remove('show');
+  // Timer auf frische 20 s setzen und weiterspielen (duration mit, damit
+  // der Timer-Balken voll startet statt anteilig zur alten Dauer).
+  G.timer.active    = true;
+  G.timer.duration  = 20000;
+  G.timer.endTime   = performance.now() + 20000;
+  G.timer._lastTick = -1;
+  ANIM.busy = false;
+  document.getElementById('timerBar').classList.add('visible');
+});
+
 // ── Mouse hunt handlers ─────────────────────────────────
 document.getElementById('mouseStartBtn').addEventListener('click', () => {
   tryStartGatedMode(() => {
@@ -2895,16 +2940,44 @@ function drawBgPreview(canvas, bgId) {
   }
 }
 
+function updateShopRewardBtn() {
+  const btn = document.getElementById('shopRewardBonesBtn');
+  if (!btn) return;
+  const gate = canShowRewarded('bones');
+  if (gate.ok) {
+    btn.style.display = '';
+    btn.disabled = false;
+    btn.textContent = '📺 Gratis-Fischgräten (noch ' + gate.remaining + ' heute)';
+  } else if (gate.reason === 'cooldown') {
+    btn.style.display = '';
+    btn.disabled = true;
+    btn.textContent = '📺 Gleich wieder verfügbar …';
+  } else {
+    // premium / capped / unavailable
+    btn.style.display = 'none';
+  }
+}
+
 document.getElementById('shopBtn').addEventListener('click', () => {
   playSound('click');
   _shopTab = 'skins';
   document.querySelectorAll('.shop-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'skins'));
   buildShopGrid();
+  updateShopRewardBtn();
   document.getElementById('shopScreen').classList.remove('hidden');
 });
 
 document.getElementById('shopBackBtn').addEventListener('click', () => {
   document.getElementById('shopScreen').classList.add('hidden');
+});
+
+document.getElementById('shopRewardBonesBtn')?.addEventListener('click', async () => {
+  const { completed } = await showRewarded('bones');
+  if (!completed) { playSound('invalid'); updateShopRewardBtn(); return; }
+  earn(REWARDED_LIMITS.bones.amount);
+  updateBonesDisplay();
+  document.getElementById('shopBalance').innerHTML = FISHBONE_ICON + ' ' + getBalance();
+  updateShopRewardBtn();
 });
 
 document.querySelectorAll('.shop-tab').forEach(tab => {

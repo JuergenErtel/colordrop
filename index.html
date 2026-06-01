@@ -128,6 +128,7 @@
             <div class="win-icon">⏱</div>
             <h2 class="win-title">ZEIT ABGELAUFEN</h2>
             <div class="win-actions">
+                <button class="win-btn hidden" id="timeoutContinueBtn" type="button">📺 +20 Sek weiter</button>
                 <button class="win-btn" id="timeoutRetryBtn" type="button">Nochmal ↺</button>
             </div>
         </div>
@@ -423,6 +424,7 @@
           <h2 class="stats-title">SHOP</h2>
           <span class="shop-balance" id="shopBalance"></span>
         </div>
+        <button class="win-btn" id="shopRewardBonesBtn" type="button">📺 Gratis-Fischgräten</button>
         <div class="shop-tabs">
           <button class="shop-tab active" data-tab="skins">Ball-Skins</button>
           <button class="shop-tab" data-tab="backgrounds">Hintergr&uuml;nde</button>
@@ -580,6 +582,19 @@
         <div class="win-actions">
           <button class="win-btn" id="adSkipBtn" type="button">Weiter →</button>
           <button class="win-btn win-btn--secondary premium-cta" id="adPremiumBtn" type="button">Zum Club</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rewarded Video (Preview-Simulation) -->
+    <div id="rewardedOverlay" class="overlay">
+      <div class="win-card">
+        <div class="win-icon rewarded-paw">🐾</div>
+        <h2 class="win-title" style="font-size:1.2rem">Werbung läuft …</h2>
+        <p class="win-sub">Belohnung in <b id="rewardedCountdown">5</b> s</p>
+        <div class="win-actions">
+          <button class="win-btn hidden" id="rewardedClaimBtn" type="button">Belohnung abholen 🎁</button>
+          <button class="win-btn win-btn--secondary" id="rewardedCancelBtn" type="button">Abbrechen</button>
         </div>
       </div>
     </div>

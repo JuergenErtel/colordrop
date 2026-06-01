@@ -1073,6 +1073,7 @@ export function renderFrame(ctx, ts, G) {
     const timedOut = updateTimer(G.timer, G.frameTime, G.won);
     if (timedOut && !MOUSE.active) {
       ANIM.busy = true;
+      if (window.__configureTimeoutContinue) window.__configureTimeoutContinue();
       document.getElementById('timeoutOverlay').classList.add('show');
     }
     drawTimerBar(timerBar, G.timer, G.frameTime);
