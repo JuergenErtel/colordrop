@@ -37,16 +37,17 @@ export function updateTimer(timer, frameTime, won) {
  */
 export function drawTimerBar(bar, timer, frameTime) {
   const countdown = document.getElementById('timerCountdown');
-  if (!timer) {
+  // Nur anzeigen, solange der Timer aktiv läuft. Ein gestoppter Timer (Level
+  // gewonnen, Zeit abgelaufen, oder vor Rundenstart) darf nicht stehen bleiben –
+  // sonst hängt nach einer Blitzrunde die rote "0" im nächsten Level fest.
+  if (!timer || !timer.active) {
     bar.classList.remove('visible', 'pulse');
     if (countdown) countdown.classList.remove('visible', 'urgent');
     return;
   }
   bar.classList.add('visible');
 
-  const remaining = timer.active
-    ? Math.max(0, timer.endTime - frameTime)
-    : (timer.active === false && timer.endTime > 0 ? 0 : timer.duration);
+  const remaining = Math.max(0, timer.endTime - frameTime);
   const pct = remaining / timer.duration;
   const hue = Math.round(pct * 120);
   const clr = `hsl(${hue}, 100%, 55%)`;
