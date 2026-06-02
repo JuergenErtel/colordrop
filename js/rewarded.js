@@ -71,6 +71,21 @@ export async function showRewarded(surface) {
   }
 }
 
+// ── Premium-Perk: gratis weiter, ohne Video, aber gleiches Cap/Cooldown ─────
+// Für Surfaces, die auch Premium-Nutzern sinnvoll offenstehen (z. B. Blitz-
+// Continue). Reiner Gate-Check, ignoriert den Premium-Block von canShowRewarded.
+export function canClaimFree(surface) {
+  return canClaim(freshState(), surface, Date.now(), REWARDED_LIMITS);
+}
+
+// Bucht einen Claim ohne Ad. Belohnung vergibt der Aufrufer (wie showRewarded).
+export function claimFree(surface) {
+  const gate = canClaimFree(surface);
+  if (!gate.ok) return { completed: false, reason: gate.reason };
+  saveRewardedState(recordClaim(freshState(), surface, Date.now()));
+  return { completed: true };
+}
+
 // ── Provider dispatch ──────────────────────────────────────────────────────
 function playAd(surface) {
   if (REWARDED_MODE === 'preview') return playPreviewAd();

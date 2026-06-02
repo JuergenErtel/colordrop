@@ -46,7 +46,7 @@ import { MOUSE, startMouse, endMouse, updateMouse, tapHole, mouseStars } from '.
 import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
-import { showRewarded, canShowRewarded } from './rewarded.js';
+import { showRewarded, canShowRewarded, canClaimFree, claimFree } from './rewarded.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -2191,14 +2191,18 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
 });
 
 // Von render.js beim Timeout aufgerufen: Continue-Button je nach Gate zeigen.
+// Premium darf in der Blitzrunde gratis (ohne Video) weiter — gleiches Limit.
 window.__configureTimeoutContinue = function () {
   const btn = document.getElementById('timeoutContinueBtn');
   if (!btn) return;
-  btn.classList.toggle('hidden', !canShowRewarded('continue').ok);
+  const gate = isPremium() ? canClaimFree('continue') : canShowRewarded('continue');
+  btn.classList.toggle('hidden', !gate.ok);
+  // Premium: kein TV-/Werbe-Icon, da kein Video läuft.
+  btn.textContent = isPremium() ? '▶️ +20 Sek weiter' : '📺 +20 Sek weiter';
 };
 
 document.getElementById('timeoutContinueBtn').addEventListener('click', async () => {
-  const { completed } = await showRewarded('continue');
+  const { completed } = isPremium() ? claimFree('continue') : await showRewarded('continue');
   if (!completed) { playSound('invalid'); return; }
   document.getElementById('timeoutOverlay').classList.remove('show');
   // Timer auf frische 20 s setzen und weiterspielen (duration mit, damit
