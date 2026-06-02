@@ -149,11 +149,11 @@ export const THEMES = {
 
 // ── Tier definitions ──────────────────────────────────────────────────────
 export const TIER_DEFS = [
-  { name: 'EASY',   minLevel:   1, maxLevel:  15 },
-  { name: 'MEDIUM', minLevel:  16, maxLevel:  45 },
-  { name: 'HARD',   minLevel:  46, maxLevel: 100 },
-  { name: 'EXPERT', minLevel: 101, maxLevel: 180 },
-  { name: 'MASTER', minLevel: 181, maxLevel: 300 },
+  { name: 'EASY',   minLevel:   1, maxLevel:  10 },
+  { name: 'MEDIUM', minLevel:  11, maxLevel:  30 },
+  { name: 'HARD',   minLevel:  31, maxLevel:  70 },
+  { name: 'EXPERT', minLevel:  71, maxLevel: 140 },
+  { name: 'MASTER', minLevel: 141, maxLevel: 300 },
 ];
 
 // ── Achievements ──────────────────────────────────────────────────────────
@@ -197,6 +197,17 @@ export const REWARDED_LIMITS = {
   hint:     { daily: 10, cooldownMs: 30000 },              // großzügig
   bones:    { daily: 3,  cooldownMs: 300000, amount: 50 }, // 5 Min, +50 Fischgräten
   continue: { daily: 3,  cooldownMs: 60000 },              // Blitz-Timeout
+  moves:    { daily: 30, cooldownMs: 0, amount: 5 },       // Haupt-Funnel: +5 Züge
+};
+
+// Zug-Limit im Kern-Puzzle (Fail-/Ad-Funnel). enabled:false → altes Verhalten.
+export const MOVE_LIMIT = {
+  enabled:    true,
+  onsetLevel: 11,        // ab hier greift das Limit; davor unbegrenzt
+  mult:       { MEDIUM: 1.6, HARD: 1.5, EXPERT: 1.35, MASTER: 1.25 },
+  floor:      3,         // limit ist mindestens par + floor
+  adAmount:   5,         // +Züge pro Ad / Bones-Kauf
+  bonesCost:  30,        // Fischgräten für +5 Züge
 };
 
 export const HINT_COSTS = {

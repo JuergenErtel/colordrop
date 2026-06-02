@@ -323,6 +323,9 @@ function updateArc(ts, G) {
     triggerWinSequence(ts, G, tubeCount);
   }
 
+  // Zug-Limit: nach jedem gelandeten Zug prüfen, ob das Budget verbraucht ist.
+  if (typeof window !== 'undefined' && window.__onMovesExhausted) window.__onMovesExhausted();
+
   if (G.onHUDUpdate) G.onHUDUpdate();
 }
 

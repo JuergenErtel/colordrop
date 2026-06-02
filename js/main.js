@@ -4,13 +4,14 @@ import {
   CW, CH, DUR_ARC,
   THEMES, TIER_DEFS,
   ACHIEVEMENTS, TUTORIAL_SCRIPT,
-  REWARDS, COSTS, REWARDED_LIMITS,
+  REWARDS, COSTS, REWARDED_LIMITS, MOVE_LIMIT,
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
 import { drawCatPortrait, drawMascotCat, CAT_PARAMS, triggerCatShake, triggerCatWinJump } from './cat-renderer.js';
 import {
   getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
+  spend, canAfford,
   shouldShowAd, markAdShown, tickAdLevel,
   canUndo, trackUndo, resetUndos,
   canUseHint, spendHint, getHintCost,
@@ -36,7 +37,7 @@ import {
 
 import {
   levelConfig, parForLevel, isTimedLevel, timerDuration,
-  calcStars, checkWinState, isSolved, canMove,
+  calcStars, checkWinState, isSolved, canMove, moveLimit,
   generateTubes, generateTutorialTubes, solveHint, findJokerTube,
   dailyLevelNum, generateDailyTubes, getIcePositions, isDogLevel,
   isMouseLevel, mouseConfig,
@@ -81,6 +82,7 @@ const G = {
   selected:       -1,
   selectedTime:   -1,
   moves:          0,
+  movesSpent:     0,
   history:        [],
   won:            false,
   tutorial:       false,
@@ -711,6 +713,7 @@ function generateLevel(n) {
   G.selected     = -1;
   G.selectedTime = -1;
   G.moves        = 0;
+  G.movesSpent   = 0;
   G.history      = [];
   G.won          = false;
   G.flashTube    = -1;
@@ -821,6 +824,7 @@ function doMove(from, to) {
   G.tubes[from].pop();
   G.tubes[to].push(color);
   G.moves++;
+  G.movesSpent++;
   G.hintFrom = G.hintTo = -1;
   G.hintUntil = 0;
   updateHUD();
@@ -1092,6 +1096,21 @@ function updateHUD() {
   document.getElementById('hintBtn').disabled    = TETRIS.active || G.tutorial || ANIM.busy || G.won || G.hintCooldown;
   document.getElementById('resetBtn').disabled   = G.won;
   document.getElementById('menuBtnHud').disabled = ANIM.busy || G.won;
+
+  // Restzüge-HUD (nur wenn ein Zug-Limit für dieses Level gilt)
+  const lim    = moveLimit(LEVEL.current);
+  const mlWrap = document.getElementById('movesLeftWrap');
+  const mlVal  = document.getElementById('movesLeft');
+  if (mlWrap && mlVal) {
+    if (lim === null || G.tutorial || TETRIS.active || MOUSE.active) {
+      mlWrap.classList.add('hidden');
+    } else {
+      const left = Math.max(0, lim - G.movesSpent);
+      mlVal.textContent = left;
+      mlWrap.classList.remove('hidden');
+      mlWrap.classList.toggle('moves-left--warn', left <= 3);
+    }
+  }
 }
 
 function showWin() {
@@ -1858,6 +1877,7 @@ function startTutorial() {
   G.tutStep      = 0;
   G.won          = false;
   G.moves        = 0;
+  G.movesSpent   = 0;
   G.selected     = -1;
   G.selectedTime = -1;
   G.history      = [];
@@ -2116,6 +2136,7 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
   G.selected     = -1;
   G.selectedTime = -1;
   G.moves        = 0;
+  G.movesSpent   = 0;
   G.history      = [];
   G.won          = false;
   G.flashTube    = -1;
@@ -2213,6 +2234,61 @@ document.getElementById('timeoutContinueBtn').addEventListener('click', async ()
   G.timer._lastTick = -1;
   ANIM.busy = false;
   document.getElementById('timerBar').classList.add('visible');
+});
+
+// ── Zug-Limit: Fail-Screen "Züge aufgebraucht" ──────────────────────────────
+function grantExtraMoves() {
+  // Budget erhöhen, indem der Verbrauch reduziert wird → (Limit - movesSpent) wächst.
+  G.movesSpent = Math.max(0, G.movesSpent - MOVE_LIMIT.adAmount);
+  document.getElementById('movesOutOverlay').classList.remove('show');
+  ANIM.busy = false;
+  updateHUD();
+  playSound('click');
+}
+
+// Vom Render-Loop nach jedem gelandeten Zug aufgerufen.
+window.__onMovesExhausted = function () {
+  if (G.won || G.tutorial || TETRIS.active || MOUSE.active) return;
+  if (checkWinState(G.tubes)) return;            // Sieg-Move → kein Fail
+  const lim = moveLimit(LEVEL.current);
+  if (lim === null || G.movesSpent < lim) return;
+
+  const overlay = document.getElementById('movesOutOverlay');
+  if (!overlay || overlay.classList.contains('show')) return;
+
+  // Ad-Button nur zeigen, wenn Gate erlaubt (Premium: gratis via claimFree).
+  const adBtn  = document.getElementById('movesAdBtn');
+  const adGate = isPremium() ? canClaimFree('moves') : canShowRewarded('moves');
+  adBtn.style.display = adGate.ok ? '' : 'none';
+  adBtn.textContent   = isPremium() ? '▶️ +' + MOVE_LIMIT.adAmount + ' Züge'
+                                    : '🎬 +' + MOVE_LIMIT.adAmount + ' Züge ansehen';
+
+  document.getElementById('movesBonesBtn').textContent =
+    '🐟 +' + MOVE_LIMIT.adAmount + ' Züge (' + MOVE_LIMIT.bonesCost + ')';
+
+  overlay.classList.add('show');
+  playSound('invalid');
+};
+
+document.getElementById('movesAdBtn').addEventListener('click', async () => {
+  const { completed } = isPremium() ? claimFree('moves') : await showRewarded('moves');
+  if (!completed) { playSound('invalid'); return; }
+  grantExtraMoves();
+});
+
+document.getElementById('movesBonesBtn').addEventListener('click', () => {
+  if (!canAfford(MOVE_LIMIT.bonesCost)) { playSound('invalid'); return; }
+  spend(MOVE_LIMIT.bonesCost);
+  updateBonesDisplay();
+  grantExtraMoves();
+});
+
+document.getElementById('movesRestartBtn').addEventListener('click', () => {
+  document.getElementById('movesOutOverlay').classList.remove('show');
+  if (!isPremium() && !hasLife()) { showLivesEmpty(() => generateLevel(LEVEL.current)); return; }
+  if (!isPremium()) { consumeLife(); updateLivesDisplay(); }
+  generateLevel(LEVEL.current);
+  invalidateRoomDecorCache();
 });
 
 // ── Mouse hunt handlers ─────────────────────────────────

@@ -2,7 +2,7 @@
 
 import {
   COLOR_KEYS, TIER_DEFS, THEMES,
-  TUTORIAL_TUBES,
+  TUTORIAL_TUBES, MOVE_LIMIT,
 } from './constants.js';
 
 const CAPACITY = 4; // balls per tube (fixed)
@@ -40,17 +40,17 @@ export function levelConfig(n) {
   const span    = tierDef.maxLevel - tierDef.minLevel || 1;
   const progress = Math.min(1, (n - tierDef.minLevel) / span);
 
-  // Colors ramp up faster and scale within each tier:
-  //   EASY   (1-15):   2 → 3 colors
-  //   MEDIUM (16-45):  3 → 5 colors
-  //   HARD   (46-100): 5 → 7 colors
-  //   EXPERT (101-180):7 → 9 colors
-  //   MASTER (181-300):9 → 10 colors
+  // Colors ramp up faster and scale within each tier (steeper, earlier):
+  //   EASY   (1-10):    2 → 4 colors
+  //   MEDIUM (11-30):   4 → 6 colors
+  //   HARD   (31-70):   6 → 8 colors
+  //   EXPERT (71-140):  8 → 9 colors
+  //   MASTER (141-300): 9 → 10 colors
   const colorRanges = [
-    [2, 3],   // EASY
-    [3, 5],   // MEDIUM
-    [5, 7],   // HARD
-    [7, 9],   // EXPERT
+    [2, 4],   // EASY
+    [4, 6],   // MEDIUM
+    [6, 8],   // HARD
+    [8, 9],   // EXPERT
     [9, 10],  // MASTER
   ];
   const [minC, maxC] = colorRanges[diff] || [2, 3];
@@ -74,6 +74,14 @@ export function parForLevel(n) {
   // Tighter par: scales with colors but gets stricter at higher tiers
   const baseMult = 5.5 - diff * 0.5;
   return Math.max(numColors + 2, Math.round(numColors * (baseMult - progress * 1.5)));
+}
+
+// Gibt das Zug-Limit für Level n zurück, oder null wenn kein Limit gilt.
+export function moveLimit(n) {
+  if (!MOVE_LIMIT.enabled || n < MOVE_LIMIT.onsetLevel) return null;
+  const par  = parForLevel(n);
+  const mult = MOVE_LIMIT.mult[tierForLevel(n)] ?? 1.5;
+  return Math.max(par + MOVE_LIMIT.floor, Math.ceil(par * mult));
 }
 
 export function isTimedLevel(n) { return n >= 8 && n % 8 === 0; }

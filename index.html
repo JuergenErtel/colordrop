@@ -89,6 +89,7 @@
                 <span class="move-counter-wrap" id="moveCountWrap"><span class="move-old moves-n" id="moveCount">0</span><span class="move-new moves-n" id="moveCountNew">0</span></span>
                 <span class="moves-l">moves</span>
             </div>
+            <div class="moves-pill moves-left hidden" id="movesLeftWrap"><b class="moves-n" id="movesLeft">–</b><span class="moves-l">übrig</span></div>
         </div>
     </div>
 
@@ -171,6 +172,20 @@
             <div class="win-actions">
                 <button class="win-btn hidden" id="timeoutContinueBtn" type="button">📺 +20 Sek weiter</button>
                 <button class="win-btn" id="timeoutRetryBtn" type="button">Nochmal ↺</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Out-of-moves overlay -->
+    <div id="movesOutOverlay" class="overlay">
+        <div class="win-card">
+            <div class="win-icon">🫙</div>
+            <h2 class="win-title">ZÜGE AUFGEBRAUCHT!</h2>
+            <p class="win-sub">Hol dir mehr Züge oder starte neu.</p>
+            <div class="win-actions">
+                <button class="win-btn" id="movesAdBtn" type="button">🎬 +5 Züge ansehen</button>
+                <button class="win-btn win-btn--secondary" id="movesBonesBtn" type="button">🐟 +5 Züge (30)</button>
+                <button class="win-btn win-btn--secondary" id="movesRestartBtn" type="button">🔄 Neustart (−1 Leben)</button>
             </div>
         </div>
     </div>
