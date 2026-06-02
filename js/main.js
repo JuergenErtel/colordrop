@@ -803,6 +803,9 @@ function generateLevel(n) {
   } else if (n === 31 && !hasSeenIntro('ice')) {
     ANIM.busy = true;
     document.getElementById('iceIntroOverlay').classList.add('show');
+  } else if (MOVE_LIMIT.enabled && n === MOVE_LIMIT.onsetLevel && !hasSeenIntro('movelimit')) {
+    ANIM.busy = true;
+    document.getElementById('moveLimitIntroOverlay').classList.add('show');
   }
 
   updateHUD();
@@ -1760,6 +1763,7 @@ function openLevelSelect() {
   document.getElementById('dogOverlay').classList.remove('show');
   document.getElementById('jokerIntroOverlay').classList.remove('show');
   document.getElementById('iceIntroOverlay').classList.remove('show');
+  document.getElementById('moveLimitIntroOverlay').classList.remove('show');
   document.getElementById('mouseOverlay').classList.remove('show');
   document.getElementById('mouseIntroOverlay').classList.remove('show');
   document.getElementById('mouseGameOverOverlay').classList.remove('show');
@@ -2336,6 +2340,13 @@ document.getElementById('iceIntroBtn').addEventListener('click', () => {
   playSound('click');
   markIntroSeen('ice');
   document.getElementById('iceIntroOverlay').classList.remove('show');
+  ANIM.busy = false;
+});
+
+document.getElementById('moveLimitIntroBtn').addEventListener('click', () => {
+  playSound('click');
+  markIntroSeen('movelimit');
+  document.getElementById('moveLimitIntroOverlay').classList.remove('show');
   ANIM.busy = false;
 });
 

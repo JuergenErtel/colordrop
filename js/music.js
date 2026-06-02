@@ -384,11 +384,11 @@ let _lastMelodyFreqs = []; // store last bar's melody for echo
 // new tracks can be dropped in one at a time without breaking playback.
 const TRACK_FILES = {
   MENU:   'audio/menu.mp3',
-  EASY:   'audio/gameplay.mp3',        // shared "schnelle Miau-Edition" loop
-  MEDIUM: 'audio/gameplay.mp3',        // (same file → keeps playing across the boundary)
-  HARD:   'audio/gameplay-hard.mp3',   // shared heavy track across hard/expert/master
-  EXPERT: 'audio/gameplay-hard.mp3',
-  MASTER: 'audio/gameplay-hard.mp3',
+  EASY:   'audio/gameplay.mp3',     // "schnelle Miau-Edition" loop — bleibt
+  MEDIUM: 'audio/kittysort4.mp3',   // ab Medium: kittysort4
+  HARD:   'audio/kittysort3.mp3',   // ab Hard: kittysort3 (über hard/expert/master)
+  EXPERT: 'audio/kittysort3.mp3',
+  MASTER: 'audio/kittysort3.mp3',
 };
 
 let _mode          = null;   // 'file' | 'procedural' | null
