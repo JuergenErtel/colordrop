@@ -93,6 +93,12 @@
 }
 .win-sub b { color: var(--gold); font-weight: 500; }
 
+/* Restzüge-HUD (Zug-Limit) */
+.moves-left.hidden { display: none; }
+.moves-left .moves-n { color: var(--gold); }
+.moves-left--warn .moves-n { color: #E8897A; animation: movesPulse .6s ease-in-out infinite alternate; }
+@keyframes movesPulse { from { transform: scale(1); } to { transform: scale(1.15); } }
+
 .win-stars {
     font-size: 1.6rem;
     letter-spacing: .1em;
