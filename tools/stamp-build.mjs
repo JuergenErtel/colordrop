@@ -18,6 +18,9 @@ const when = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` 
 
 const stamp = `${sha} · ${when}`;
 
+// Eindeutige Service-Worker-Cache-Version pro Deploy (SHA + Zeit).
+const cacheVer = `kittysort-${sha}-${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
+
 const htmlFile = new URL('../index.html', import.meta.url);
 let html = readFileSync(htmlFile, 'utf8');
 
@@ -32,4 +35,18 @@ writeFileSync(htmlFile, html);
 // Klartext-Datei für geräteunabhängige Live-Kontrolle: kittysort.de/version.txt
 writeFileSync(new URL('../version.txt', import.meta.url), stamp + '\n');
 
+// Service-Worker-Cache bumpen, sonst liefert cache-first altes JS/CSS/Audio
+// bei zurückkehrenden Nutzern ewig aus (HTML ist network-first und täuscht
+// einen frischen Deploy nur vor).
+const swFile = new URL('../sw.js', import.meta.url);
+let sw = readFileSync(swFile, 'utf8');
+const swRe = /const CACHE = '[^']*';/;
+if (!swRe.test(sw)) {
+  console.error('FEHLER: CACHE-Konstante in sw.js nicht gefunden.');
+  process.exit(1);
+}
+sw = sw.replace(swRe, `const CACHE = '${cacheVer}';`);
+writeFileSync(swFile, sw);
+
 console.log('Build gestempelt:', stamp);
+console.log('SW-Cache:', cacheVer);
