@@ -6,7 +6,7 @@ import { loadSubscription, loadPaywallState, savePaywallState } from './storage.
 import { getBalance } from './economy.js';
 import { playSound } from './audio.js';
 
-let _selectedTier = 'yearly';
+let _selectedTier = 'lifetime';
 let _onCloseCallback = null;
 
 // ── Show / hide ─────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ export function showPaywall(opts = {}) {
 
   screen.classList.remove('hidden');
   screen.classList.add('show');
-  selectTier(opts.initialTier || 'yearly');
+  selectTier(opts.initialTier || 'lifetime');
   updateBuyLabel();
   playSound('click');
 }
@@ -57,18 +57,16 @@ function updateBuyLabel() {
   if (!label) return;
 
   if (hasSub) {
-    label.textContent = 'Du bist bereits Mitglied';
-  } else if (!sub || sub.tier !== 'trial') {
-    label.textContent = 'JETZT 7 TAGE GRATIS TESTEN';
+    label.textContent = 'Du hast bereits alles freigeschaltet';
   } else {
     const def = SUB_TIERS[_selectedTier];
-    label.textContent = 'KAUFEN · ' + (def?.price || '');
+    label.textContent = 'FÜR IMMER FREISCHALTEN · ' + (def?.price || '');
   }
 
   if (foot) {
     foot.textContent = BILLING_MODE === 'preview'
       ? 'Preview-Modus — Premium wird ohne Zahlung aktiviert'
-      : 'Abo jederzeit kündbar · Keine versteckten Kosten';
+      : 'Einmalzahlung · Kein Abo · Keine versteckten Kosten';
   }
 }
 
@@ -80,10 +78,7 @@ async function handleBuyClick() {
     return;
   }
 
-  const useTrial = !sub || sub.tier !== 'trial';
-  const tierToBuy = useTrial ? 'trial' : _selectedTier;
-
-  const result = await purchase(tierToBuy);
+  const result = await purchase(_selectedTier);
   if (!result || !result.ok) {
     playSound('invalid');
     return;
@@ -193,11 +188,11 @@ export const TRIGGERS = {
 };
 
 const TRIGGER_COPY = {
-  level5:      { title: 'Du hast Talent! 🐾',          sub: 'Probier den Kittysort Club 7 Tage gratis und entdecke die Saison-Katzen.' },
-  level15:     { title: 'Drei Katzen warten auf dich', sub: 'Die Kirschblüte-Saison hat exklusive Katzen nur für Club-Mitglieder.' },
-  hint3rd:     { title: 'Brauchst du öfter Hilfe?',    sub: 'Im Club sind Hints unbegrenzt kostenlos.' },
-  streak7:     { title: '7 Tage in Folge — stark!',    sub: 'Du spielst sowieso jeden Tag. Hol dir den Club und vermisse keine Saison.' },
-  lives0:      { title: 'Keine Wartezeit mit dem Club',sub: 'Unbegrenzte Lives + alle Premium-Features.' },
+  level5:      { title: 'Du hast Talent! 🐾',          sub: 'Schalte einmalig alle Saison-Katzen und Premium-Features frei — für immer.' },
+  level15:     { title: 'Drei Katzen warten auf dich', sub: 'Die Kirschblüte-Saison hat exklusive Katzen — einmal freischalten, für immer behalten.' },
+  hint3rd:     { title: 'Brauchst du öfter Hilfe?',    sub: 'Mit dem Unlock sind Hints unbegrenzt kostenlos.' },
+  streak7:     { title: '7 Tage in Folge — stark!',    sub: 'Du spielst sowieso jeden Tag. Einmal freischalten und keine Saison verpassen.' },
+  lives0:      { title: 'Keine Wartezeit mehr',        sub: 'Unbegrenzte Lives + alle Premium-Features — einmalig freigeschaltet.' },
   seasonEnd3d: { title: 'Noch 3 Tage für die Saison-Katzen!', sub: 'Sakura, Tsubaki und Hoshi verschwinden am Monatsende.' },
 };
 

@@ -430,38 +430,16 @@ function updatePremiumBanner() {
   const sub = loadSubscription();
   const active = sub && sub.active && (sub.lifetime || (sub.expiresAt && new Date(sub.expiresAt) > new Date()));
 
-  // Paid/lifetime/founder: no banner
-  if (active && sub.tier !== 'trial') {
+  // Premium freigeschaltet (lifetime/founder): kein Banner
+  if (active) {
     banner.classList.add('hidden');
     return;
   }
 
-  // Active trial: countdown
-  if (active && sub.tier === 'trial' && sub.trialEnd) {
-    const days = Math.max(0, Math.ceil((new Date(sub.trialEnd).getTime() - Date.now()) / 86400000));
-    banner.classList.remove('hidden');
-    span.textContent = `🐾 Trial: noch ${days} ${days === 1 ? 'Tag' : 'Tage'} gratis`;
-    btn.textContent = 'Club halten';
-    return;
-  }
-
-  // Trial expired — conversion reminder
-  if (sub && !sub.active && sub.tier === 'trial') {
-    banner.classList.remove('hidden');
-    span.textContent = '🐾 Trial vorbei — bleib im Club';
-    btn.textContent  = '3,99€/Monat';
-    return;
-  }
-
-  // Free, never trialed
-  if (!sub) {
-    banner.classList.remove('hidden');
-    span.textContent = '🐾 Kittysort Club — 7 Tage gratis testen';
-    btn.textContent  = 'Probieren';
-    return;
-  }
-
-  banner.classList.add('hidden');
+  // Noch nicht freigeschaltet — einmaliger Unlock-Hinweis
+  banner.classList.remove('hidden');
+  span.textContent = '🐾 Alles freischalten — einmalig 2,99€';
+  btn.textContent  = 'Freischalten';
 }
 
 function updateMenuPremiumSignals() {

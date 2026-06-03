@@ -8,17 +8,13 @@
    1. In js/constants.js:
       export const BILLING_MODE = 'stripe';
       export const STRIPE_LINKS = {
-        monthly:  'https://buy.stripe.com/XXX',
-        yearly:   'https://buy.stripe.com/YYY',
         lifetime: 'https://buy.stripe.com/ZZZ',
       };
 
-   2. In each Stripe Payment Link:
-      - Set success URL: https://kittysort.de/?success=1&tier=monthly
-                                                         (change per tier)
+   2. In the Stripe Payment Link (Einmalkauf-Modell — nur ein Tier):
+      - Use a ONE-TIME payment (not a subscription)
+      - Set success URL: https://kittysort.de/?success=1&tier=lifetime
       - Enable customer email collection
-      - Enable 7-day trial on monthly/yearly (optional — current client-side
-        trial still works, Stripe trial adds real-card verification)
 
    3. Test with Stripe's test mode (4242 4242 4242 4242) before going live.
 

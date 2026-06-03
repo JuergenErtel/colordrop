@@ -225,16 +225,13 @@ export const COSTS = { hint: 15, extraUndo: 10 };
 export const BILLING_MODE = 'preview';    // 'preview' | 'stripe' | 'native'
 
 export const STRIPE_LINKS = {
-  monthly:  '',   // fill at launch
-  yearly:   '',
-  lifetime: '',
+  lifetime: '',   // fill at launch
 };
 
-// ── Subscription-tier constants ──────────────────────────────────────────
+// ── Purchase-tier constants ───────────────────────────────────────────────
+// Einmalkauf-Modell: ein einziger Lifetime-Unlock, niedrige Kaufhürde.
 export const SUB_TIERS = {
-  monthly:  { price: '3,99€',   priceNum: 3.99,  cycle: 'month',    label: 'Monatlich' },
-  yearly:   { price: '29,99€',  priceNum: 29.99, cycle: 'year',     label: 'Jährlich',   highlight: '-37%' },
-  lifetime: { price: '39,99€',  priceNum: 39.99, cycle: 'lifetime', label: 'Forever' },
+  lifetime: { price: '2,99€', priceNum: 2.99, cycle: 'lifetime', label: 'Forever' },
 };
 
 export const WELCOME_BONUS_BONES = 500;
