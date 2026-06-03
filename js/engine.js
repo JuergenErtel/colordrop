@@ -251,6 +251,10 @@ export function generateTubes(n) {
       for (let e = 0; e < empty; e++) result.push([]);
     }
 
+    // Reject layouts that hand the player an already-sorted tube — that
+    // makes the puzzle feel pre-solved (e.g. Level 6 starting monochrome).
+    if (result.some(t => t.length >= capacity && isSolved(t))) continue;
+
     // Verify solvability (skip for 2+ empty tubes — virtually always solvable)
     if (empty >= 2 || isSolvable(result) >= 0) return result;
   }
