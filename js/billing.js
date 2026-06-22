@@ -28,6 +28,7 @@
 import { BILLING_MODE, STRIPE_LINKS, SUB_TIERS, TRIAL_DAYS, WELCOME_BONUS_BONES } from './constants.js';
 import { loadSubscription, saveSubscription } from './storage.js';
 import { earn } from './economy.js';
+import { purchaseNative } from './native-billing.js';
 
 // ── Pure status helpers ─────────────────────────────────────────────────
 export function isActiveSubscription(sub) {
@@ -71,8 +72,16 @@ export async function purchase(tier) {
   if (tier === 'trial')    return grantTrial();
   if (BILLING_MODE === 'preview')  return grantPreview(tier);
   if (BILLING_MODE === 'stripe')   return redirectToStripe(tier);
-  if (BILLING_MODE === 'native')   throw new Error('Native IAP not implemented');
+  if (BILLING_MODE === 'native')   return purchaseNativeFlow(tier);
   throw new Error('Unknown BILLING_MODE: ' + BILLING_MODE);
+}
+
+// Nativer Kauf (StoreKit): erst Store bestätigen lassen, dann lokal die
+// Berechtigung gewähren (gleicher Pfad wie Preview/Stripe-Rückkehr).
+async function purchaseNativeFlow(tier) {
+  const r = await purchaseNative(tier);
+  if (r && r.ok) return grantPreview(tier);
+  return r || { ok: false, reason: 'native_failed' };
 }
 
 function grantTrial() {

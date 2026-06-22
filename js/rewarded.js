@@ -23,6 +23,7 @@ import { REWARDED_MODE, REWARDED_LIMITS } from './constants.js';
 import { loadRewardedState, saveRewardedState } from './storage.js';
 import { isPremium } from './economy.js';
 import { resetIfNewDay, canClaim, recordClaim } from './rewarded-caps.js';
+import { playNativeRewarded } from './native-rewarded.js';
 import { playSound } from './audio.js';
 
 let _inFlight = false;
@@ -90,7 +91,7 @@ export function claimFree(surface) {
 function playAd(surface) {
   if (REWARDED_MODE === 'preview') return playPreviewAd();
   if (REWARDED_MODE === 'adsense') return playAdSenseAd(surface);
-  if (REWARDED_MODE === 'native')  return Promise.reject(new Error('native rewarded not implemented'));
+  if (REWARDED_MODE === 'native')  return playNativeRewarded(surface);
   return Promise.resolve({ completed: false });
 }
 

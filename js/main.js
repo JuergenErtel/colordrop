@@ -3370,7 +3370,16 @@ document.getElementById('splashPlayBtn').addEventListener('click', async () => {
 })();
 
 // ── Service Worker registration (PWA / offline) ─────────────────────────────
-if ('serviceWorker' in navigator) {
+// Im nativen Capacitor-Build (iOS-App) NICHT registrieren: die App lädt lokal
+// von capacitor://localhost, der SW (network-first) brächte dort nur Risiko für
+// den Offline-Start ohne Nutzen. window.Capacitor existiert nur in der App;
+// im Web bleibt alles unverändert.
+const isNativeApp = !!(
+  window.Capacitor &&
+  typeof window.Capacitor.isNativePlatform === 'function' &&
+  window.Capacitor.isNativePlatform()
+);
+if (!isNativeApp && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch((err) => {
       console.warn('SW registration failed:', err);
