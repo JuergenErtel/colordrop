@@ -1,0 +1,17 @@
+{
+  "appId": "de.kittysort.app",
+  "appName": "Kittysort",
+  "webDir": "www",
+  "ios": {
+    "backgroundColor": "#fdf6ec",
+    "contentInset": "never",
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#fdf6ec",
+      "showSpinner": false
+    }
+  }
+}

@@ -2,3 +2,6 @@
 .superpowers/
 node_modules/
 .tmp/
+
+# Capacitor — generierter Web-Bundle-Ordner (aus tools/build-www.mjs)
+www/
