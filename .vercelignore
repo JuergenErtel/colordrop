@@ -4,3 +4,12 @@ docs
 .git
 .superpowers
 .claude
+
+# Native/Build-Artefakte und Tooling — gehören nicht auf die Website
+ios
+build
+www
+tools
+test
+capacitor.config.json
+CLAUDE.md
