@@ -28,7 +28,7 @@
 import { BILLING_MODE, STRIPE_LINKS, SUB_TIERS, TRIAL_DAYS, WELCOME_BONUS_BONES } from './constants.js';
 import { loadSubscription, saveSubscription } from './storage.js';
 import { earn } from './economy.js';
-import { purchaseNative } from './native-billing.js';
+import { purchaseNative, restoreNative, syncEntitlementsNative } from './native-billing.js';
 
 // ── Pure status helpers ─────────────────────────────────────────────────
 export function isActiveSubscription(sub) {
@@ -84,6 +84,24 @@ async function purchaseNativeFlow(tier) {
   return r || { ok: false, reason: 'native_failed' };
 }
 
+// Käufe wiederherstellen (Apple-Pflicht) — kein Bonus.
+export async function restorePurchases() {
+  const owned = await restoreNative();
+  if (!owned) return { ok: false, reason: 'nothing_to_restore' };
+  setEntitlement('lifetime');
+  return { ok: true, restored: true };
+}
+
+// Beim App-Start (nativ) still abgleichen — kein Bonus.
+export async function syncEntitlementsOnLaunch() {
+  const owned = await syncEntitlementsNative();
+  if (owned && !isActiveSubscription(loadSubscription())) {
+    setEntitlement('lifetime');
+    return true;
+  }
+  return false;
+}
+
 function grantTrial() {
   const existing = loadSubscription();
   if (existing && existing.tier === 'trial') return { ok: false, reason: 'already_trial' };
@@ -103,29 +121,40 @@ function grantTrial() {
   return { ok: true, tier: 'trial', welcomeBonus: 0 };
 }
 
-function grantPreview(tier) {
-  const def = SUB_TIERS[tier];
-  if (!def) return { ok: false, reason: 'unknown_tier' };
+export function shouldGrantWelcomeBonus(prevSub) {
+  return !isActiveSubscription(prevSub);
+}
 
-  const now = new Date();
+export function buildSub(tier, now = new Date()) {
   let expiresAt = null;
   let lifetime  = false;
   if (tier === 'monthly')  expiresAt = new Date(now.getTime() + 30 * 86400000).toISOString();
   if (tier === 'yearly')   expiresAt = new Date(now.getTime() + 365 * 86400000).toISOString();
   if (tier === 'lifetime') lifetime  = true;
+  return {
+    tier, since: now.toISOString(), trialEnd: null,
+    expiresAt, lifetime, active: true, stripeCustomerId: null,
+  };
+}
 
-  saveSubscription({
-    tier,
-    since:     now.toISOString(),
-    trialEnd:  null,
-    expiresAt,
-    lifetime,
-    active:    true,
-    stripeCustomerId: null,
-  });
+function setEntitlement(tier) {
+  const def = SUB_TIERS[tier];
+  if (!def) return { ok: false, reason: 'unknown_tier' };
+  saveSubscription(buildSub(tier));
+  return { ok: true, tier };
+}
 
-  earn(WELCOME_BONUS_BONES);
-  return { ok: true, tier, welcomeBonus: WELCOME_BONUS_BONES };
+function grantPreview(tier) {
+  const def = SUB_TIERS[tier];
+  if (!def) return { ok: false, reason: 'unknown_tier' };
+
+  const prev  = loadSubscription();
+  const bonus = shouldGrantWelcomeBonus(prev) ? WELCOME_BONUS_BONES : 0;
+
+  saveSubscription(buildSub(tier));
+  if (bonus) earn(bonus);
+
+  return { ok: true, tier, welcomeBonus: bonus };
 }
 
 function redirectToStripe(tier) {
