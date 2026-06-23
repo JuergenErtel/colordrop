@@ -17,7 +17,7 @@ import {
   canUseHint, spendHint, getHintCost,
 } from './economy.js';
 import { initPaywallUI, showPaywall, maybeShowPaywall } from './paywall.js';
-import { handleStripeReturn, isFounder } from './billing.js';
+import { handleStripeReturn, isFounder, syncEntitlementsOnLaunch } from './billing.js';
 
 import {
   loadProgress, saveStars, maxUnlockedLevel,
@@ -3379,6 +3379,12 @@ const isNativeApp = !!(
   typeof window.Capacitor.isNativePlatform === 'function' &&
   window.Capacitor.isNativePlatform()
 );
+// Nativ: Entitlements still mit dem Store abgleichen (Neuinstallation/anderes Gerät).
+if (isNativeApp) {
+  syncEntitlementsOnLaunch()
+    .then((changed) => { if (changed && typeof updateMenuPremiumSignals === 'function') updateMenuPremiumSignals(); })
+    .catch((err) => console.warn('entitlement sync failed:', err));
+}
 if (!isNativeApp && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch((err) => {
