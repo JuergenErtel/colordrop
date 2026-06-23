@@ -98,7 +98,12 @@ In Xcode dann:
      1320×2868), Leitfaden + Restliste in `docs/STORE-SCREENSHOTS.md`.
    - [ ] Finalen Screenshot-Satz (5–6) beim echten Spielen aufnehmen.
    - [ ] Metadaten in App Store Connect eintragen.
-6. **TestFlight → Review → Launch.**
+6. **TestFlight → Review → Launch** — Projekt archive-ready (Signing-Team
+   gesetzt, Release-Build grün, Export-Compliance `ITSAppUsesNonExemptEncryption
+   = false`). Vollständige Schritt-für-Schritt-Anleitung: `docs/TESTFLIGHT.md`.
+   - [ ] `PrivacyInfo.xcprivacy` in Xcode ans App-Target hängen.
+   - [ ] App-Record + IAP in App Store Connect anlegen.
+   - [ ] Archive (Any iOS Device) → Upload → TestFlight.
 
 ## Strategie-Entscheidungen (fix)
 

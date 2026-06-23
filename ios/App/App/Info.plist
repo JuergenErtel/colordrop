@@ -47,6 +47,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- Export-Compliance: App nutzt nur Standard-Verschlüsselung (HTTPS/StoreKit/
+	     AdMob), keine eigene Kryptografie → kein Exportnachweis nötig. Erspart die
+	     Compliance-Frage bei jedem TestFlight-Upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<!-- ── AdMob (Rewarded Video) ──────────────────────────────────────────
 	     TODO vor Release: GADApplicationIdentifier durch die ECHTE AdMob-App-ID
 	     ersetzen (muss zu ADMOB.appId in js/constants.js passen). Aktuell:
