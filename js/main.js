@@ -3379,11 +3379,21 @@ const isNativeApp = !!(
   typeof window.Capacitor.isNativePlatform === 'function' &&
   window.Capacitor.isNativePlatform()
 );
-// Nativ: Entitlements still mit dem Store abgleichen (Neuinstallation/anderes Gerät).
+// Nativ: Entitlements still mit dem Store abgleichen (Neuinstallation/anderes Gerät)
+// und auf asynchrone Freigaben (Ask-to-Buy / pending) reagieren.
 if (isNativeApp) {
-  syncEntitlementsOnLaunch()
-    .then((changed) => { if (changed && typeof updateMenuPremiumSignals === 'function') updateMenuPremiumSignals(); })
-    .catch((err) => console.warn('entitlement sync failed:', err));
+  const purchasesPlugin = window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
+  if (!purchasesPlugin) {
+    console.error('[native] Purchases-Plugin fehlt — IAP deaktiviert. Bitte "npm run cap:sync" erneut ausführen.');
+  }
+  const refreshEntitlement = () =>
+    syncEntitlementsOnLaunch()
+      .then((changed) => { if (changed && typeof updateMenuPremiumSignals === 'function') updateMenuPremiumSignals(); })
+      .catch((err) => console.warn('entitlement sync failed:', err));
+  refreshEntitlement();
+  if (purchasesPlugin && typeof purchasesPlugin.addListener === 'function') {
+    purchasesPlugin.addListener('entitlementChanged', refreshEntitlement);
+  }
 }
 if (!isNativeApp && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

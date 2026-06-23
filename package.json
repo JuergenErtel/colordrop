@@ -5,7 +5,7 @@
   "scripts": {
     "test": "node --test",
     "build:www": "node tools/build-www.mjs",
-    "cap:sync": "npm run build:www && cap sync ios && node -e \"const f='ios/App/App/capacitor.config.json',j=JSON.parse(require('fs').readFileSync(f,'utf8'));if(!j.packageClassList.includes('PurchasesPlugin'))j.packageClassList.push('PurchasesPlugin');require('fs').writeFileSync(f,JSON.stringify(j,null,'\\t'));\"",
+    "cap:sync": "npm run build:www && cap sync ios && node tools/register-native-plugins.mjs",
     "cap:open": "cap open ios"
   },
   "devDependencies": {
