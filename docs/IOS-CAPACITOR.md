@@ -78,7 +78,8 @@ In Xcode dann:
 3. **Privacy** ✅ — `datenschutz.html` + `impressum.html` (im www-Bundle, im
    Einstellungs-Screen verlinkt), Privacy-Label-Checkliste in
    `docs/PRIVACY-LABELS.md`, ATT-Text in Info.plist.
-   - [ ] Datenschutz-/Impressum-Seiten nach kittysort.de deployen (Vercel).
+   - [x] Deployed (2026-06-23, Vercel prod): https://www.kittysort.de/datenschutz.html
+     + /impressum.html (beide HTTP 200, im Einstellungs-Screen verlinkt).
    - [ ] App-Privacy-Labels in App Store Connect setzen (siehe Doku).
 4. **Native Politur (Guideline 4.2)** ✅ (Simulator getestet 2026-06-23):
    - **Status-Bar**: dunkler Text auf hellem BG (`js/native-ui.js`,
