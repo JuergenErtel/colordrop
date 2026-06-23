@@ -4,6 +4,8 @@
 // Clean Web Audio API synthesizer for cat-themed sound effects.
 // Replaces ZzFX with readable, debuggable code.
 
+import { hapticForSound } from './native-haptics.js';
+
 let _sfxVolume  = 0.7;
 let _sfxEnabled = true;
 let _ctx = null;
@@ -162,6 +164,8 @@ function purr(dur, vol) {
 // ── Public API ────────────────────────────────────────────────────────────
 
 export function playSound(name) {
+  // Haptik vor dem Sound-Mute-Check: dezentes Feedback unabhängig vom Ton (nur nativ).
+  hapticForSound(name);
   if (!_sfxEnabled) return;
   try {
     switch (name) {

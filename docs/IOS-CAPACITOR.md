@@ -75,10 +75,20 @@ In Xcode dann:
    - [x] Im Simulator getestet (2026-06-23, iPhone 17): ATT-Dialog erscheint beim
      Launch mit korrektem Text, Test-Rewarded läuft, Belohnung wird gebucht.
      UMP-Consent nur in EEA-Region (Simulator = NOT_REQUIRED → übersprungen).
-3. **Privacy** — Datenschutz-URL, App-Privacy-Label in App Store Connect,
-   ATT-Begründungstext.
-4. **Native Politur (Guideline 4.2)** — Launch-Screen, Haptik, Safe-Areas
-   (Web-Seite hat sie schon), Status-Bar-Styling.
+3. **Privacy** ✅ — `datenschutz.html` + `impressum.html` (im www-Bundle, im
+   Einstellungs-Screen verlinkt), Privacy-Label-Checkliste in
+   `docs/PRIVACY-LABELS.md`, ATT-Text in Info.plist.
+   - [ ] Datenschutz-/Impressum-Seiten nach kittysort.de deployen (Vercel).
+   - [ ] App-Privacy-Labels in App Store Connect setzen (siehe Doku).
+4. **Native Politur (Guideline 4.2)** ✅ (Simulator getestet 2026-06-23):
+   - **Status-Bar**: dunkler Text auf hellem BG (`js/native-ui.js`,
+     `StatusBar.setStyle LIGHT` beim nativen Launch) — verifiziert.
+   - **Launch-Screen**: Hintergrund auf App-Beige `#fdf6ec` (statt Weiß →
+     kein Flash), `LaunchScreen.storyboard`.
+   - **Haptik**: dezentes Feedback zentral an `playSound` (`js/native-haptics.js`):
+     LIGHT bei select/tap/drop/click, SUCCESS bei win/solved, WARNING bei invalid.
+     Nur auf echtem Gerät spürbar (Simulator = No-op).
+   - **Safe-Areas**: im Web bereits via `env(safe-area-inset-*)` (base/panels.css).
 5. **Store-Assets/Metadaten** — Icon 1024², Screenshots (6.9"/6.7" iPhone),
    Beschreibung, Keywords, Kategorie, Altersfreigabe **4+ (keine Kids-Kategorie)**.
 6. **TestFlight → Review → Launch.**

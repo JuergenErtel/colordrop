@@ -49,6 +49,7 @@ import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 import { showRewarded, canShowRewarded, canClaimFree, claimFree } from './rewarded.js';
 import { initNativeAds } from './native-rewarded.js';
+import { initNativeStatusBar } from './native-ui.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -3383,6 +3384,9 @@ const isNativeApp = !!(
 // Nativ: Entitlements still mit dem Store abgleichen (Neuinstallation/anderes Gerät)
 // und auf asynchrone Freigaben (Ask-to-Buy / pending) reagieren.
 if (isNativeApp) {
+  // Status-Bar an den hellen Hintergrund anpassen (dunkler Text).
+  initNativeStatusBar().catch((err) => console.warn('StatusBar init failed:', err));
+
   const purchasesPlugin = window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
   if (!purchasesPlugin) {
     console.error('[native] Purchases-Plugin fehlt — IAP deaktiviert. Bitte "npm run cap:sync" erneut ausführen.');
