@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 function withPlugin(plugin) {
@@ -11,6 +11,10 @@ function withoutNative() {
 }
 
 const mod = await import('../js/native-billing.js');
+
+beforeEach(() => {
+  withoutNative();
+});
 
 test('purchaseNative maps purchased -> ok', async () => {
   withPlugin({ purchase: async () => ({ status: 'purchased' }) });
@@ -61,4 +65,14 @@ test('getNativeProducts returns array', async () => {
 test('getNativeProducts empty without plugin', async () => {
   withoutNative();
   assert.deepEqual(await mod.getNativeProducts(['x']), []);
+});
+
+test('restoreNative returns false when lifetime is false', async () => {
+  withPlugin({ restorePurchases: async () => ({ lifetime: false }) });
+  assert.equal(await mod.restoreNative(), false);
+});
+
+test('syncEntitlementsNative returns false when lifetime is false', async () => {
+  withPlugin({ getEntitlements: async () => ({ lifetime: false }) });
+  assert.equal(await mod.syncEntitlementsNative(), false);
 });
