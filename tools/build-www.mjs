@@ -4,8 +4,9 @@
 // Kopiert NUR, was die App zur Laufzeit braucht. node_modules, docs, tools,
 // test, .git, CNAME usw. bleiben außen vor, damit das App-Bundle schlank ist.
 
-import { rm, mkdir, cp, readdir } from 'node:fs/promises';
+import { rm, mkdir, cp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { patchConstantsForNative } from './patch-constants.mjs';
 
 const root = new URL('..', import.meta.url);
 const out = new URL('../www/', import.meta.url);
@@ -36,6 +37,12 @@ async function main() {
       console.warn(`build-www: Verzeichnis fehlt, übersprungen: ${d}`);
     }
   }
+
+  // BILLING_MODE im native Bundle auf 'native' setzen (Quelle bleibt unberührt).
+  const constUrl = new URL('js/constants.js', out);
+  const src = await readFile(constUrl, 'utf8');
+  await writeFile(constUrl, patchConstantsForNative(src));
+  console.log('build-www: BILLING_MODE in www/js/constants.js auf "native" gesetzt.');
 
   const count = (await readdir(out)).length;
   console.log(`build-www: www/ neu erstellt (${count} Einträge auf oberster Ebene).`);
