@@ -1,0 +1,24 @@
+{
+  "identifier": "KITTYSORT-LOCAL",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "lifetime-001",
+      "localizations": [
+        {
+          "description": "Alle Premium-Features für immer freischalten.",
+          "displayName": "Kittysort Forever",
+          "locale": "de_DE"
+        }
+      ],
+      "productID": "de.kittysort.app.lifetime",
+      "referenceName": "Lifetime Forever",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": { "_failTransactionsEnabled": false },
+  "subscriptionGroups": [],
+  "version": { "major": 3, "minor": 0 }
+}
