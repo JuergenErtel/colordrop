@@ -27,33 +27,11 @@ import { updateTimer, drawTimerBar } from './timer.js';
 
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ── Layout helpers (exported) ────────────────────────────────────────────
-
-/** Centre X of tube i given tubeCount total tubes */
-export function tubeCX(i, tubeCount) {
-  const gap = (CW - tubeCount * TUBE_W) / (tubeCount + 1);
-  return gap + i * (TUBE_W + gap) + TUBE_W / 2;
-}
-
-/** Centre Y of ball at stack index bi (0 = bottom) */
-export function ballCY(bi) {
-  return TUBE_BOT - BALL_PAD - BALL_R - bi * (BALL_D + BALL_GAP);
-}
-
-/** Oscillating float position */
-export function floatY(ts) {
-  return FLOAT_Y_BASE + Math.sin(ts * 0.0028) * 5;
-}
-
-/** Hit test: returns tube index at (lx, ly) or -1 */
-export function tubeAt(lx, ly, tubeCount) {
-  for (let i = 0; i < tubeCount; i++) {
-    const tx = tubeCX(i, tubeCount) - TUBE_W / 2;
-    if (lx >= tx && lx <= tx + TUBE_W &&
-        ly >= TUBE_TOP && ly <= TUBE_TOP + TUBE_H) return i;
-  }
-  return -1;
-}
+// ── Layout helpers ────────────────────────────────────────────────────────
+// Pure geometry lives in layout.js (DOM-free, unit-tested). Re-exported here
+// so existing importers of render.js keep working unchanged.
+import { tubeCX, ballCY, floatY, tubeAt } from './layout.js';
+export { tubeCX, ballCY, floatY, tubeAt };
 
 // ── Private helpers ──────────────────────────────────────────────────────
 
