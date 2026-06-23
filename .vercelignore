@@ -4,3 +4,8 @@ docs
 .git
 .superpowers
 .claude
+
+# iOS / Capacitor — never part of the web deploy
+build
+www
+ios
