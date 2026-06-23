@@ -12,7 +12,7 @@ const root = new URL('..', import.meta.url);
 const out = new URL('../www/', import.meta.url);
 
 // Einzeldateien + Verzeichnisse, die ins Bundle gehören.
-const FILES = ['index.html', 'manifest.json', 'sw.js', 'version.txt'];
+const FILES = ['index.html', 'datenschutz.html', 'manifest.json', 'sw.js', 'version.txt'];
 const DIRS = ['css', 'js', 'img', 'audio'];
 
 async function main() {

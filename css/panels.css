@@ -465,6 +465,10 @@
   text-align: left;
 }
 .settings-label { color: rgba(255,255,255,.8); font-size: .85rem; font-weight: 500; }
+.settings-legal-link {
+  display: block; margin: 0 0 1rem; text-align: center;
+  color: rgba(255,255,255,.6); font-size: .8rem; text-decoration: underline;
+}
 .settings-control { display: flex; align-items: center; gap: .5rem; }
 .settings-slider {
   flex: 1; height: 4px;
