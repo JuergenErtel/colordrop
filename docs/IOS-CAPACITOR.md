@@ -90,8 +90,14 @@ In Xcode dann:
      LIGHT bei select/tap/drop/click, SUCCESS bei win/solved, WARNING bei invalid.
      Nur auf echtem Gerät spürbar (Simulator = No-op).
    - **Safe-Areas**: im Web bereits via `env(safe-area-inset-*)` (base/panels.css).
-5. **Store-Assets/Metadaten** — Icon 1024², Screenshots (6.9"/6.7" iPhone),
-   Beschreibung, Keywords, Kategorie, Altersfreigabe **4+ (keine Kids-Kategorie)**.
+5. **Store-Assets/Metadaten** — größtenteils fertig:
+   - **Icon 1024²** ✅ — `AppIcon-512@2x.png` (1024×1024, kein Alpha, valide).
+   - **Texte** ✅ — `docs/STORE-LISTING.md` (DE+EN: Name, Untertitel, Keywords,
+     Beschreibung, Kategorie Puzzle, 4+).
+   - **Screenshots** — 2 von 6.9" aufgenommen (`store-assets/screenshots/`,
+     1320×2868), Leitfaden + Restliste in `docs/STORE-SCREENSHOTS.md`.
+   - [ ] Finalen Screenshot-Satz (5–6) beim echten Spielen aufnehmen.
+   - [ ] Metadaten in App Store Connect eintragen.
 6. **TestFlight → Review → Launch.**
 
 ## Strategie-Entscheidungen (fix)
