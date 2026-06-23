@@ -28,8 +28,11 @@ export function showPaywall(opts = {}) {
 
   screen.classList.remove('hidden');
   screen.classList.add('show');
+  const restoreHint = document.getElementById('paywallRestoreHint');
+  if (restoreHint) restoreHint.hidden = true;
   selectTier(opts.initialTier || 'lifetime');
   updateBuyLabel();
+  // intentional fire-and-forget: hidePaywall runs before any stale label write matters
   applyLocalizedPrice();
   playSound('click');
 }
@@ -162,15 +165,21 @@ async function applyLocalizedPrice() {
 
 // ── Restore flow ─────────────────────────────────────────────────────────
 async function handleRestoreClick() {
+  const btn  = document.getElementById('paywallRestoreBtn');
   const hint = document.getElementById('paywallRestoreHint');
-  const res = await restorePurchases();
-  if (res && res.ok && res.restored) {
-    hidePaywall();
-    showCelebration({ tier: 'lifetime', welcomeBonus: 0 });
-  } else if (hint) {
-    hint.hidden = false;
-    hint.textContent = 'Kein früherer Kauf gefunden.';
-    playSound('invalid');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await restorePurchases();
+    if (res && res.ok && res.restored) {
+      hidePaywall();
+      showCelebration({ tier: 'lifetime', welcomeBonus: 0 });
+    } else if (hint) {
+      hint.hidden = false;
+      hint.textContent = 'Kein früherer Kauf gefunden.';
+      playSound('invalid');
+    }
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
