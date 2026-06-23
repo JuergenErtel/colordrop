@@ -190,7 +190,20 @@ export const REWARDS = {
 };
 
 // ── Rewarded video (flip to 'adsense' at launch) ─────────────────────────
+// Web-Quelle bleibt 'preview'/'adsense'; der native Build patcht auf 'native'
+// (tools/patch-constants.mjs).
 export const REWARDED_MODE = 'preview';   // 'preview' | 'adsense' | 'native'
+
+// ── AdMob (nur nativer iOS/Android-Build, REWARDED_MODE='native') ─────────
+// TODO vor Release: echte IDs aus der AdMob-Konsole eintragen und
+// ADMOB.testing=false setzen. Bis dahin laufen Googles offizielle Test-Units
+// (garantierter Fill, zählen NICHT als echte Impressions).
+export const ADMOB = {
+  testing: true,
+  // App-ID gehört zusätzlich in Info.plist (GADApplicationIdentifier).
+  appId:   'ca-app-pub-3940256099942544~1458002511',        // Test-App (iOS)
+  rewardedUnitId: 'ca-app-pub-3940256099942544/1712485313', // Test-Rewarded (iOS)
+};
 
 export const REWARDED_LIMITS = {
   life:     { daily: 5,  cooldownMs: 60000 },              // 1 Min

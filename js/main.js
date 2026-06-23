@@ -48,6 +48,7 @@ import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 import { showRewarded, canShowRewarded, canClaimFree, claimFree } from './rewarded.js';
+import { initNativeAds } from './native-rewarded.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
@@ -3393,6 +3394,16 @@ if (isNativeApp) {
   refreshEntitlement();
   if (purchasesPlugin && typeof purchasesPlugin.addListener === 'function') {
     purchasesPlugin.addListener('entitlementChanged', refreshEntitlement);
+  }
+
+  // AdMob: Consent (UMP/DSGVO) + ATT + SDK-Init vorwärmen, damit das erste
+  // Rewarded-Video flüssig läuft. Für Premium-Nutzer überspringen — sie sehen
+  // nie Ads, also kein Ad-SDK-Init und kein ATT-Dialog.
+  const adMobPlugin = window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob;
+  if (!adMobPlugin) {
+    console.error('[native] AdMob-Plugin fehlt — Rewarded-Ads deaktiviert. Bitte "npm run cap:sync" erneut ausführen.');
+  } else if (!isPremium()) {
+    initNativeAds().catch((err) => console.warn('AdMob warm-up failed:', err));
   }
 }
 if (!isNativeApp && 'serviceWorker' in navigator) {

@@ -38,11 +38,12 @@ async function main() {
     }
   }
 
-  // BILLING_MODE im native Bundle auf 'native' setzen (Quelle bleibt unberührt).
+  // BILLING_MODE + REWARDED_MODE im native Bundle auf 'native' setzen
+  // (Quelle bleibt unberührt).
   const constUrl = new URL('js/constants.js', out);
   const src = await readFile(constUrl, 'utf8');
   await writeFile(constUrl, patchConstantsForNative(src));
-  console.log('build-www: BILLING_MODE in www/js/constants.js auf "native" gesetzt.');
+  console.log('build-www: BILLING_MODE + REWARDED_MODE in www/js/constants.js auf "native" gesetzt.');
 
   const count = (await readdir(out)).length;
   console.log(`build-www: www/ neu erstellt (${count} Einträge auf oberster Ebene).`);

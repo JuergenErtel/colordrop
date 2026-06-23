@@ -51,11 +51,29 @@ In Xcode dann:
    laufen, nicht Stripe. `js/billing.js` ist mit `BILLING_MODE = 'native'`
    bereits vorbereitet; native Bridge + Produkt in App Store Connect anlegen.
    Plugin-Kandidat: `@capacitor-community/in-app-purchases` o. ä.
-2. **AdMob statt AdSense** — Rewarded Video über `@capacitor-community/admob`.
-   `js/rewarded.js` hat `REWARDED_MODE = 'native'` als Stub. Dazu:
-   - **App Tracking Transparency (ATT)**-Dialog
-   - **SKAdNetwork**-IDs in `Info.plist`
-   - **Privacy Manifest** `PrivacyInfo.xcprivacy`
+2. **AdMob statt AdSense** — Rewarded Video über `@capacitor-community/admob`
+   (v8, SPM-nativ). **Code-Integration erledigt:**
+   - Plugin installiert + via `cap:sync` registriert (`AdMobPlugin` in
+     `Package.swift` + `packageClassList`).
+   - `js/native-rewarded.js`: Consent (UMP/DSGVO) → ATT → SDK-Init → Rewarded,
+     idempotenter Warm-up `initNativeAds()`, von `main.js` beim nativen Launch
+     aufgerufen (nur Nicht-Premium).
+   - `js/constants.js` → `ADMOB`-Block (IDs + `testing`-Flag). `REWARDED_MODE`
+     wird im www-Build auf `'native'` gepatcht (`tools/patch-constants.mjs`).
+   - `Info.plist`: `GADApplicationIdentifier`, `NSUserTrackingUsageDescription`,
+     `SKAdNetworkItems`. `PrivacyInfo.xcprivacy` angelegt.
+
+   **Noch offen (braucht AdMob-Konto / Xcode-Klick):**
+   - [ ] AdMob-App + Rewarded-Ad-Unit anlegen → **echte IDs** in `js/constants.js`
+     (`ADMOB.appId`, `ADMOB.rewardedUnitId`) **und** `Info.plist`
+     (`GADApplicationIdentifier`) eintragen; `ADMOB.testing = false`.
+   - [ ] `SKAdNetworkItems` mit der **aktuellen vollständigen Google-Liste**
+     ersetzen (developers.google.com/admob/ios/3p-skadnetwork-ids).
+   - [ ] `PrivacyInfo.xcprivacy` in Xcode dem **App-Target hinzufügen**
+     (Copy Bundle Resources) + `NSPrivacyTrackingDomains` füllen, falls
+     personalisierte Werbung.
+   - [ ] Auf Gerät testen: Consent-Dialog + ATT erscheinen, Test-Rewarded läuft,
+     Belohnung wird gebucht (Premium-Nutzer sehen **nichts** davon).
 3. **Privacy** — Datenschutz-URL, App-Privacy-Label in App Store Connect,
    ATT-Begründungstext.
 4. **Native Politur (Guideline 4.2)** — Launch-Screen, Haptik, Safe-Areas

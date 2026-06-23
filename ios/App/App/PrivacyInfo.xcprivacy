@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  App-Level Privacy Manifest (Apple-Pflicht ab Frühjahr 2024).
+  Das Google-Mobile-Ads-SDK liefert ein EIGENES Manifest mit für seine Domains;
+  dieses hier deklariert die Nutzung der App selbst.
+
+  ⚠️ MANUELLER XCODE-SCHRITT: Diese Datei muss dem App-Target hinzugefügt werden
+     (Xcode → Datei in den "App"-Ordner ziehen → Target "App" anhaken, "Copy Bundle
+     Resources"). Sonst landet sie nicht im Bundle.
+
+  TODO vor Release: NSPrivacyTrackingDomains mit der aktuellen Google-Liste
+  füllen (https://developers.google.com/admob/ios/privacy/manifest), falls
+  personalisierte Werbung (Tracking) ausgeliefert wird. Bei reiner non-personali-
+  sierter Auslieferung kann NSPrivacyTracking auf false bleiben.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<true/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array>
+		<!-- TODO: Google-Tracking-Domains hier eintragen (siehe Kommentar oben). -->
+	</array>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- UserDefaults (localStorage der WebView / Capacitor-Prefs). -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

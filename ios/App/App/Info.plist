@@ -47,5 +47,44 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- ── AdMob (Rewarded Video) ──────────────────────────────────────────
+	     TODO vor Release: GADApplicationIdentifier durch die ECHTE AdMob-App-ID
+	     ersetzen (muss zu ADMOB.appId in js/constants.js passen). Aktuell:
+	     Googles offizielle iOS-Test-App-ID. -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<!-- App Tracking Transparency: Begründungstext für den iOS-Systemdialog. -->
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Kittysort nutzt deine Daten, um dir relevantere Werbung in den freiwilligen Belohnungs-Videos anzuzeigen.</string>
+	<!-- SKAdNetwork-IDs für Werbe-Attribution (ohne Tracking). Google + gängige
+	     Mediation-Netzwerke. TODO vor Release: aktuelle vollständige Liste von
+	     https://developers.google.com/admob/ios/3p-skadnetwork-ids einsetzen. -->
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>4fzdc2evr5.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>2fnua5tdw4.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>ydx93a7ass.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>p78axxw29g.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>v72qych5uu.skadnetwork</string>
+		</dict>
+	</array>
 </dict>
 </plist>
