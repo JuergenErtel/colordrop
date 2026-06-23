@@ -72,8 +72,9 @@ In Xcode dann:
    - [ ] `PrivacyInfo.xcprivacy` in Xcode dem **App-Target hinzufügen**
      (Copy Bundle Resources) + `NSPrivacyTrackingDomains` füllen, falls
      personalisierte Werbung.
-   - [ ] Auf Gerät testen: Consent-Dialog + ATT erscheinen, Test-Rewarded läuft,
-     Belohnung wird gebucht (Premium-Nutzer sehen **nichts** davon).
+   - [x] Im Simulator getestet (2026-06-23, iPhone 17): ATT-Dialog erscheint beim
+     Launch mit korrektem Text, Test-Rewarded läuft, Belohnung wird gebucht.
+     UMP-Consent nur in EEA-Region (Simulator = NOT_REQUIRED → übersprungen).
 3. **Privacy** — Datenschutz-URL, App-Privacy-Label in App Store Connect,
    ATT-Begründungstext.
 4. **Native Politur (Guideline 4.2)** — Launch-Screen, Haptik, Safe-Areas
