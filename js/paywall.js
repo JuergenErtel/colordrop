@@ -1,7 +1,8 @@
 'use strict';
 
 import { SUB_TIERS, BILLING_MODE, WELCOME_BONUS_BONES } from './constants.js';
-import { purchase, isActiveSubscription } from './billing.js';
+import { purchase, isActiveSubscription, restorePurchases } from './billing.js';
+import { getNativeProducts, IAP_PRODUCT_IDS } from './native-billing.js';
 import { loadSubscription, loadPaywallState, savePaywallState } from './storage.js';
 import { getBalance } from './economy.js';
 import { playSound } from './audio.js';
@@ -29,6 +30,7 @@ export function showPaywall(opts = {}) {
   screen.classList.add('show');
   selectTier(opts.initialTier || 'lifetime');
   updateBuyLabel();
+  applyLocalizedPrice();
   playSound('click');
 }
 
@@ -145,12 +147,40 @@ function animateBonesCounter(el, from, to, durationMs) {
   requestAnimationFrame(step);
 }
 
+// ── Localized price ─────────────────────────────────────────────────────
+async function applyLocalizedPrice() {
+  const products = await getNativeProducts([IAP_PRODUCT_IDS.lifetime]);
+  const p = products.find(x => x.id === IAP_PRODUCT_IDS.lifetime);
+  if (!p) return; // Fallback: hardcodierter Preis bleibt
+  const priceEl = document.querySelector('.paywall-tier[data-tier="lifetime"] .paywall-tier-price');
+  if (priceEl) priceEl.textContent = p.displayPrice;
+  const label = document.getElementById('paywallBuyLabel');
+  if (label && !isActiveSubscription(loadSubscription())) {
+    label.textContent = 'FÜR IMMER FREISCHALTEN · ' + p.displayPrice;
+  }
+}
+
+// ── Restore flow ─────────────────────────────────────────────────────────
+async function handleRestoreClick() {
+  const hint = document.getElementById('paywallRestoreHint');
+  const res = await restorePurchases();
+  if (res && res.ok && res.restored) {
+    hidePaywall();
+    showCelebration({ tier: 'lifetime', welcomeBonus: 0 });
+  } else if (hint) {
+    hint.hidden = false;
+    hint.textContent = 'Kein früherer Kauf gefunden.';
+    playSound('invalid');
+  }
+}
+
 // ── Wire buttons (call once at boot) ────────────────────────────────────
 export function initPaywallUI() {
   document.querySelectorAll('.paywall-tier').forEach(btn => {
     btn.addEventListener('click', () => selectTier(btn.dataset.tier));
   });
   document.getElementById('paywallBuyBtn')?.addEventListener('click', handleBuyClick);
+  document.getElementById('paywallRestoreBtn')?.addEventListener('click', handleRestoreClick);
   document.getElementById('paywallCloseBtn')?.addEventListener('click', hidePaywall);
 
   document.getElementById('celebrationSkipBtn')?.addEventListener('click', () => {
