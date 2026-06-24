@@ -7,7 +7,8 @@ automatisiert werden. Diese Liste führt durch alles.
 ## ✅ Bereits erledigt (Code/Projekt)
 - Signing: `DEVELOPMENT_TEAM = WRQVS25R62`, `CODE_SIGN_STYLE = Automatic`.
 - Version `1.0`, Build `1` (`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`).
-- Bundle ID `de.kittysort.app`, Deployment Target iOS 15.0.
+- Bundle ID `de.codingbrothers.kittysort`, Deployment Target iOS 15.0.
+  (Alt `de.kittysort.app` war global blockiert → gewechselt 2026-06-24.)
 - App-Icon 1024² (kein Alpha), Launch-Screen, Status-Bar, Haptik.
 - **Export-Compliance**: `ITSAppUsesNonExemptEncryption = false` → kein Prompt.
 - Release-Build kompiliert sauber (geprüft 2026-06-23).
@@ -27,8 +28,10 @@ automatisiert werden. Diese Liste führt durch alles.
 3. **`npm run cap:sync`** ausführen, damit `www/` aktuell im Bundle liegt.
 
 ## App Store Connect — App anlegen
-1. ASC → Apps → **+** → Neue App: Plattform iOS, Name **Kittysort**,
-   Primärsprache **Deutsch**, Bundle ID `de.kittysort.app`, SKU frei wählbar.
+1. ASC → Apps → **+** → Neue App: Plattform iOS, Name **Kittysort: Color Drop**
+   (reines „Kittysort" ist im Store vergeben), Primärsprache **Deutsch**,
+   Bundle ID `de.codingbrothers.kittysort`, SKU frei wählbar.
+   ✅ Erledigt 2026-06-24 — App-Record angelegt, erster Build hochgeladen.
 2. **In-App-Kauf** anlegen: Non-Consumable, Produkt-ID `de.kittysort.app.lifetime`,
    Preis 2,99 €, Anzeigename + Beschreibung. (Muss mit dem ersten Build zur
    Review eingereicht werden.)
