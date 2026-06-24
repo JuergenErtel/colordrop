@@ -48,7 +48,7 @@ import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 import { showRewarded, canShowRewarded, canClaimFree, claimFree } from './rewarded.js';
-import { initNativeAds } from './native-rewarded.js';
+import { initNativeAds } from './native-ads.js';
 import { initNativeStatusBar } from './native-ui.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 

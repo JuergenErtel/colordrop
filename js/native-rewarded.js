@@ -29,71 +29,10 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { ADMOB } from './constants.js';
+// Consent/ATT/SDK-Init liegt geteilt in native-ads.js (einmalig dedupliziert).
+import { getAdMob, ensureInit, initNativeAds } from './native-ads.js';
 
-let _initPromise = null; // dedupe: Consent/ATT/initialize nur einmal
-
-function getAdMob() {
-  const C = typeof window !== 'undefined' ? window.Capacitor : null;
-  if (!C || typeof C.isNativePlatform !== 'function' || !C.isNativePlatform()) {
-    return null;
-  }
-  return (C.Plugins && C.Plugins.AdMob) || null;
-}
-
-// Consent (UMP) → ATT → SDK-Init. Gibt {canRequestAds} zurück.
-async function runInit(AdMob) {
-  // 1./2. UMP-Consent. Fehler hier dürfen das Spiel nicht blockieren.
-  let canRequestAds = true;
-  try {
-    let info = await AdMob.requestConsentInfo();
-    if (info && info.status === 'REQUIRED' && info.isConsentFormAvailable) {
-      info = await AdMob.showConsentForm();
-    }
-    if (info && typeof info.canRequestAds === 'boolean') {
-      canRequestAds = info.canRequestAds;
-    }
-  } catch (err) {
-    console.warn('native-rewarded: Consent-Schritt übersprungen:', err);
-  }
-
-  // 3. iOS App Tracking Transparency. Optional — kein Blocker bei Ablehnung.
-  try {
-    if (typeof AdMob.requestTrackingAuthorization === 'function') {
-      await AdMob.requestTrackingAuthorization();
-    }
-  } catch (err) {
-    console.warn('native-rewarded: ATT-Dialog übersprungen:', err);
-  }
-
-  // 4. SDK starten.
-  await AdMob.initialize({ initializeForTesting: !!ADMOB.testing });
-
-  return { canRequestAds };
-}
-
-function ensureInit(AdMob) {
-  if (!_initPromise) {
-    _initPromise = runInit(AdMob).catch((err) => {
-      _initPromise = null; // bei hartem Fehler nächsten Versuch erlauben
-      throw err;
-    });
-  }
-  return _initPromise;
-}
-
-/**
- * Einmaliger Warm-up beim App-Start: Consent/ATT/SDK-Init vorbereiten, damit
- * das erste Rewarded-Video nicht erst den Consent-Flow durchläuft. Best-effort.
- */
-export async function initNativeAds() {
-  const AdMob = getAdMob();
-  if (!AdMob) return;
-  try {
-    await ensureInit(AdMob);
-  } catch (err) {
-    console.warn('native-rewarded: Init beim Launch fehlgeschlagen:', err);
-  }
-}
+export { initNativeAds };
 
 /**
  * Spielt ein natives Rewarded-Video. Liefert { completed: boolean }.
