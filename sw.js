@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const CACHE = 'kittysort-interstitial-5';
+const CACHE = 'kittysort-bugbatch-6';
 
 // App shell: enough to boot offline. The rest fills in via runtime caching.
 const PRECACHE = [
