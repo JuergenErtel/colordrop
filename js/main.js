@@ -1874,7 +1874,10 @@ function startTutorial() {
   document.getElementById('overlay').classList.remove('show');
 
   updateHUD();
-  advanceTutStep();
+  // Erst die HUD-Symbol-Legende, dann der normale Tutorial-Ablauf.
+  const hudIntro = document.getElementById('hudIntroOverlay');
+  if (hudIntro) hudIntro.classList.add('show');
+  else advanceTutStep();
 }
 
 function endTutorial() {
@@ -2319,6 +2322,11 @@ document.getElementById('mouseIntroBtn').addEventListener('click', () => {
 });
 
 // ── Feature intro handlers ───────────────────────────────
+document.getElementById('hudIntroBtn')?.addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('hudIntroOverlay').classList.remove('show');
+  advanceTutStep();
+});
 document.getElementById('jokerIntroBtn').addEventListener('click', () => {
   playSound('click');
   markIntroSeen('joker');
