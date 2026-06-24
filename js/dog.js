@@ -1,5 +1,7 @@
 'use strict';
 
+import { isSolved } from './engine.js';
+
 // ── Dog "Strolch" state machine ─────────────────────────────────────────
 
 export const DOG = {
@@ -78,6 +80,11 @@ export function planDogAttack(tubes, solvedTubes) {
 export function executeDogAttack(tubes, sourceTube, destTube) {
   if (tubes[sourceTube].length === 0) return null;
   if (tubes[destTube].length >= 4) return null;
+  // Race-Guard: Wird die Quelle während der 3-Sek-Warnung vom Spieler fertig
+  // gemacht, ist sie gelöst und wird gleich „weggeplatzt" (geleert). Klaut der
+  // Hund daraus, verschwinden die restlichen Knäuel beim Leeren und das geklaute
+  // bleibt verwaist → Softlock. Aus gelösten Röhren wird daher nicht geklaut.
+  if (isSolved(tubes[sourceTube])) return null;
   const color = tubes[sourceTube].pop();
   tubes[destTube].push(color);
   return color;
