@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const CACHE = 'kittysort-dailyfix-2';
+const CACHE = 'kittysort-rewardfix-3';
 
 // App shell: enough to boot offline. The rest fills in via runtime caching.
 const PRECACHE = [

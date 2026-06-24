@@ -115,10 +115,42 @@ export async function playNativeRewarded(/* surface */) {
 
     await AdMob.prepareRewardVideoAd({ adId: ADMOB.rewardedUnitId });
 
-    // showRewardVideoAd() resolved mit dem Reward-Objekt, wenn die Belohnung
-    // verdient wurde; bei Abbruch/kein Fill wirft es bzw. liefert nichts.
-    const reward = await AdMob.showRewardVideoAd();
-    return { completed: !!(reward && reward.type !== undefined) };
+    // WICHTIG: showRewardVideoAd() ruft call.resolve() nur im
+    // userDidEarnRewardHandler auf — wird die Ad ohne Belohnung geschlossen,
+    // wird das Promise WEDER resolved NOCH rejected. Allein darauf zu awaiten
+    // lässt den Aufrufer ewig hängen (Bug: Leben-Overlay blieb nach dem Video
+    // hängen, nur der Fischgräten-Button reagierte noch).
+    //
+    // Robust: Belohnung über das 'Reward'-Event erfassen und auf 'Dismissed'
+    // (bzw. 'FailedToShow') auflösen. completed = ob die Belohnung kam.
+    return await new Promise((resolve) => {
+      let earned  = false;
+      let settled = false;
+      const handles = [];
+
+      const finish = (completed) => {
+        if (settled) return;
+        settled = true;
+        for (const h of handles) {
+          Promise.resolve(h).then((x) => { try { x.remove(); } catch { /* ignore */ } });
+        }
+        resolve({ completed });
+      };
+      const on = (evt, fn) => handles.push(AdMob.addListener(evt, fn));
+
+      on('onRewardedVideoAdReward',       () => { earned = true; });
+      on('onRewardedVideoAdDismissed',    () => finish(earned));
+      on('onRewardedVideoAdFailedToShow', () => finish(false));
+
+      // Sicherheitsnetz: falls wider Erwarten kein Event kommt, nicht ewig hängen.
+      const guard = setTimeout(() => finish(earned), 90000);
+      handles.push({ remove: () => clearTimeout(guard) });
+
+      // Promise resolved nur bei verdienter Belohnung; Reject = harter Fehler.
+      AdMob.showRewardVideoAd()
+        .then(() => { earned = true; })
+        .catch((err) => { console.warn('native-rewarded: show error:', err); finish(false); });
+    });
   } catch (err) {
     console.warn('native-rewarded: Ad fehlgeschlagen/abgebrochen:', err);
     return { completed: false };
