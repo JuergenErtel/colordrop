@@ -2041,7 +2041,7 @@ document.getElementById('menuBtnHud').addEventListener('click', () => { playSoun
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('hintBtn').addEventListener('click', showHintAction);
 document.getElementById('resetBtn').addEventListener('click', () =>
-  G.tutorial ? startTutorial() : (generateLevel(LEVEL.current), invalidateRoomDecorCache())
+  G.tutorial ? startTutorial() : restartCurrentLevel()
 );
 document.getElementById('nextLevelBtn').addEventListener('click', () => {
   playSound('click');
@@ -2090,7 +2090,7 @@ document.getElementById('dailyChallengeBtn').addEventListener('click', () => {
 });
 
 
-document.getElementById('dailyStartBtn').addEventListener('click', () => {
+function startDailyChallenge() {
   document.getElementById('dailyOverlay').classList.remove('show');
   hideSplash();
 
@@ -2164,7 +2164,19 @@ document.getElementById('dailyStartBtn').addEventListener('click', () => {
   hideOverlay();
   startMusic(tier);
   invalidateRoomDecorCache();
-});
+}
+
+document.getElementById('dailyStartBtn').addEventListener('click', startDailyChallenge);
+
+// Restarting must respect an active daily challenge: re-run its setup instead
+// of generateLevel(), which clears the daily flags and falls into the normal
+// level logic for that level number — e.g. a tetris/sort-rain level (bug: reset
+// in the daily challenge launched the sort-rain minigame).
+function restartCurrentLevel() {
+  if (G.isDailyChallenge) { startDailyChallenge(); return; }
+  generateLevel(LEVEL.current);
+  invalidateRoomDecorCache();
+}
 
 document.getElementById('statsBtn').addEventListener('click', () => { playSound('click'); showStatsScreen(); });
 document.getElementById('seasonPassBtn')?.addEventListener('click', openSeasonPass);
@@ -2191,8 +2203,7 @@ document.getElementById('blitzStartBtn').addEventListener('click', () => {
 
 document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   document.getElementById('timeoutOverlay').classList.remove('show');
-  generateLevel(LEVEL.current);
-  invalidateRoomDecorCache();
+  restartCurrentLevel();
 });
 
 // Von render.js beim Timeout aufgerufen: Continue-Button je nach Gate zeigen.
@@ -2269,10 +2280,9 @@ document.getElementById('movesBonesBtn').addEventListener('click', () => {
 
 document.getElementById('movesRestartBtn').addEventListener('click', () => {
   document.getElementById('movesOutOverlay').classList.remove('show');
-  if (!isPremium() && !hasLife()) { showLivesEmpty(() => generateLevel(LEVEL.current)); return; }
+  if (!isPremium() && !hasLife()) { showLivesEmpty(() => restartCurrentLevel()); return; }
   if (!isPremium()) { consumeLife(); updateLivesDisplay(); }
-  generateLevel(LEVEL.current);
-  invalidateRoomDecorCache();
+  restartCurrentLevel();
 });
 
 // ── Mouse hunt handlers ─────────────────────────────────
