@@ -49,6 +49,7 @@ import { renderMouseGame, mouseHitTest } from './mouse-renderer.js';
 import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationOverride } from './daily.js';
 import { showRewarded, canShowRewarded, canClaimFree, claimFree } from './rewarded.js';
 import { initNativeAds } from './native-ads.js';
+import { prepareInterstitial, showInterstitialIfReady } from './native-interstitial.js';
 import { initNativeStatusBar } from './native-ui.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
@@ -677,6 +678,7 @@ function generateLevel(n) {
   resetUndos();
   G.isDailyChallenge = false;
   G.dailyModifier = null;
+  G.adDueOnAdvance = false;
   LEVEL.current = n;
   const cfg     = levelConfig(n);
 
@@ -1203,21 +1205,10 @@ function showWin() {
   // hide WEITER and leave MENÜ as the only forward path back to the menu.
   document.getElementById('nextLevelBtn').style.display = G.isDailyChallenge ? 'none' : '';
 
-  // ── Ad interstitial check ──
-  if (shouldShowAd()) {
-    markAdShown();
-    document.getElementById('adOverlay').classList.add('show');
-    // Store win data for after ad dismissal
-    document.getElementById('finalLevel').textContent = LEVEL.current;
-    document.getElementById('finalMoves').textContent = G.moves;
-    document.getElementById('winStars').innerHTML =
-    Array.from({ length: stars }, () => '<span class="win-star">\u2B50</span>').join('') +
-    Array.from({ length: 3 - stars }, () => '<span class="win-star">\u2606</span>').join('');
-    document.getElementById('winPar').textContent     = 'Par: ' + par;
-    buildWinAchProgress();
-    buildWinRoomHint('winRoomHint');
-    return;
-  }
+  // ── Ad interstitial (Variante B) ──
+  // Nicht hier zeigen: nur merken. Der normale Gewinn-Bildschirm läuft
+  // unten; die Werbung kommt beim Tippen auf „Weiter →" (nextLevelBtn).
+  G.adDueOnAdvance = shouldShowAd();
 
   document.getElementById('finalLevel').textContent = LEVEL.current;
   document.getElementById('finalMoves').textContent = G.moves;
@@ -2043,7 +2034,7 @@ document.getElementById('hintBtn').addEventListener('click', showHintAction);
 document.getElementById('resetBtn').addEventListener('click', () =>
   G.tutorial ? startTutorial() : restartCurrentLevel()
 );
-document.getElementById('nextLevelBtn').addEventListener('click', () => {
+document.getElementById('nextLevelBtn').addEventListener('click', async () => {
   playSound('click');
   hideOverlay();
   // Safety net: a daily-challenge win must never advance the level chain
@@ -2055,6 +2046,13 @@ document.getElementById('nextLevelBtn').addEventListener('click', () => {
   }
   G.isDailyChallenge = false;
   G.dailyModifier = null;
+  // Variante B: fällige Interstitial-Werbung beim Vorrücken zeigen. Nie blockieren —
+  // ist keine bereit, geht es sofort weiter. markAdShown() nur, wenn wirklich gezeigt.
+  if (G.adDueOnAdvance) {
+    G.adDueOnAdvance = false;
+    const shown = await showInterstitialIfReady();
+    if (shown) markAdShown();
+  }
   processPendingUnlocks(() => { generateLevel(LEVEL.current + 1); invalidateRoomDecorCache(); });
 });
 document.getElementById('menuBtn').addEventListener('click', () => {
@@ -3417,7 +3415,9 @@ if (isNativeApp) {
   if (!adMobPlugin) {
     console.error('[native] AdMob-Plugin fehlt — Rewarded-Ads deaktiviert. Bitte "npm run cap:sync" erneut ausführen.');
   } else if (!isPremium()) {
-    initNativeAds().catch((err) => console.warn('AdMob warm-up failed:', err));
+    initNativeAds()
+      .then(() => prepareInterstitial())
+      .catch((err) => console.warn('AdMob warm-up failed:', err));
   }
 }
 if (!isNativeApp && 'serviceWorker' in navigator) {
