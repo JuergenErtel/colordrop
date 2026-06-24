@@ -392,10 +392,8 @@ const TRACK_FILES = {
 };
 
 let _mode          = null;   // 'file' | 'procedural' | null
-let _fileSource    = null;   // active AudioBufferSourceNode
-let _fileGain      = null;   // its volume node
+let _audioEl       = null;   // active HTMLAudioElement (streamed recorded track)
 let _fileLoadToken = 0;      // cancels in-flight loads when the slot changes
-const _fileBuffers = {};     // url -> decoded AudioBuffer (cache)
 
 // ── AudioContext ─────────────────────────────────────────────────────────
 function getCtx() {
@@ -1400,62 +1398,87 @@ function startProcedural(tier) {
   scheduleBar(tier);
 }
 
-// ── Recorded-track playback (gapless loop via Web Audio) ────────────────────
+// ── Recorded-track playback (streamed loop via HTMLAudioElement) ────────────
+// iOS WKWebView fails to fetch()+decodeAudioData() the large produced tracks
+// (a 4-min MP3 would decode to ~87 MB of PCM in memory), so we stream them via
+// a native <audio> element instead. This works in WKWebView and never loads the
+// whole file into memory. A genuine load error still falls back to procedural.
 
-function loadTrack(url) {
-  if (_fileBuffers[url]) return Promise.resolve(_fileBuffers[url]);
-  return fetch(url)
-    .then((r) => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.arrayBuffer();
-    })
-    .then((arr) => _ctx.decodeAudioData(arr))
-    .then((buf) => { _fileBuffers[url] = buf; return buf; });
+// Linear volume fade for an HTMLAudioElement (gain ramps aren't available there).
+function fadeAudioEl(el, from, to, dur, onDone) {
+  if (el._fadeId) { clearInterval(el._fadeId); el._fadeId = null; }
+  const steps = 24;
+  const stepMs = Math.max(10, (dur * 1000) / steps);
+  let i = 0;
+  try { el.volume = Math.max(0, Math.min(1, from)); } catch { /* detached */ }
+  el._fadeId = setInterval(() => {
+    i++;
+    const v = from + (to - from) * (i / steps);
+    try { el.volume = Math.max(0, Math.min(1, v)); } catch { /* detached */ }
+    if (i >= steps) {
+      clearInterval(el._fadeId);
+      el._fadeId = null;
+      if (onDone) onDone();
+    }
+  }, stepMs);
 }
 
 function stopFileTrack(fade) {
-  _fileLoadToken++;                 // cancel any in-flight load
-  if (_ctx && _fileGain && _fileSource) {
-    const now = _ctx.currentTime;
-    const g = _fileGain;
-    const s = _fileSource;
-    try {
-      g.gain.cancelScheduledValues(now);
-      g.gain.setValueAtTime(g.gain.value, now);
-      g.gain.linearRampToValueAtTime(0, now + fade);
-      s.stop(now + fade + 0.05);
-    } catch { /* already stopped */ }
+  _fileLoadToken++;                 // cancel any in-flight start
+  const el = _audioEl;
+  _audioEl = null;
+  if (el) {
+    fadeAudioEl(el, el.volume, 0, fade || 0.5, () => {
+      try { el.pause(); el.removeAttribute('src'); el.load(); } catch { /* ignore */ }
+    });
   }
-  _fileSource = null;
-  _fileGain = null;
 }
 
 function startFileTrack(tier) {
   const url = TRACK_FILES[tier];
   const token = ++_fileLoadToken;
-  loadTrack(url).then((buf) => {
-    // Aborted if: superseded by a newer start, disabled, or the current tier
-    // no longer wants this URL. (Tier may change to one sharing the same URL.)
-    if (token !== _fileLoadToken || !_enabled || TRACK_FILES[_currentTier] !== url) return;
-    const ctx = _ctx;
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop = true;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(_volume, ctx.currentTime + 0.6);
-    src.connect(gain);
-    gain.connect(ctx.destination);
-    src.start();
-    _fileSource = src;
-    _fileGain = gain;
-  }).catch((err) => {
-    if (token !== _fileLoadToken || !_enabled || TRACK_FILES[_currentTier] !== url) return;
-    // File missing / decode failed → graceful fallback to procedural engine.
-    console.warn('[music] track file unavailable, using procedural fallback:', url, err);
+  const el = new Audio();
+  el.loop = true;
+  el.preload = 'auto';
+  el.volume = 0;
+  el.src = url;
+  _audioEl = el;
+
+  // Aborted if: superseded by a newer start, disabled, or the current tier no
+  // longer wants this URL. (Tier may change to one sharing the same URL.)
+  const aborted = () =>
+    token !== _fileLoadToken || !_enabled || TRACK_FILES[_currentTier] !== url;
+
+  // A genuine load/decode failure → graceful fallback to procedural engine.
+  el.addEventListener('error', () => {
+    if (aborted()) return;
+    console.warn('[music] track file failed, procedural fallback:', url, el.error);
     _mode = 'procedural';
     startProcedural(_currentTier);
-  });
+  }, { once: true });
+
+  const tryPlay = () => {
+    if (aborted()) { try { el.pause(); } catch { /* ignore */ } return; }
+    const p = el.play();
+    if (p && typeof p.then === 'function') {
+      p.then(() => { if (!aborted()) fadeAudioEl(el, 0, _volume, 0.6); })
+       .catch(() => {
+         // play() rejected = autoplay policy, NOT a bad file. Retry on the next
+         // user gesture instead of falling back to the procedural engine.
+         if (aborted()) return;
+         const resume = () => {
+           document.removeEventListener('pointerdown', resume);
+           document.removeEventListener('touchstart', resume);
+           tryPlay();
+         };
+         document.addEventListener('pointerdown', resume, { once: true });
+         document.addEventListener('touchstart', resume, { once: true });
+       });
+    } else {
+      fadeAudioEl(el, 0, _volume, 0.6);
+    }
+  };
+  tryPlay();
 }
 
 function stopCurrent(fade) {
@@ -1499,15 +1522,15 @@ export function stopMusic() {
 
 export function setMusicVolume(vol) {
   _volume = Math.max(0, Math.min(1, vol));
-  if (!_ctx) return;
-  const now = _ctx.currentTime;
-  if (_masterGain) {
+  // Streamed recorded track (HTMLAudioElement) — set directly.
+  if (_audioEl && !_audioEl._fadeId) {
+    try { _audioEl.volume = _volume; } catch { /* detached */ }
+  }
+  // Procedural engine (Web Audio) — ramp the master gain.
+  if (_ctx && _masterGain) {
+    const now = _ctx.currentTime;
     _masterGain.gain.cancelScheduledValues(now);
     _masterGain.gain.setValueAtTime(_volume, now);
-  }
-  if (_fileGain) {
-    _fileGain.gain.cancelScheduledValues(now);
-    _fileGain.gain.setValueAtTime(_volume, now);
   }
 }
 
