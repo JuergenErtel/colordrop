@@ -203,6 +203,7 @@ export const ADMOB = {
   // App-ID gehört zusätzlich in Info.plist (GADApplicationIdentifier).
   appId:   'ca-app-pub-3940256099942544~1458002511',        // Test-App (iOS)
   rewardedUnitId: 'ca-app-pub-3940256099942544/1712485313', // Test-Rewarded (iOS)
+  interstitialUnitId: 'ca-app-pub-3940256099942544/4411468910', // Test-Interstitial (iOS)
 };
 
 export const REWARDED_LIMITS = {
