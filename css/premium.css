@@ -47,12 +47,14 @@
 
 /* ── Tier Cards ─────────────────────────────────────────── */
 .paywall-tiers {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  justify-content: center;   /* eine einzelne Tier-Box mittig statt links im 3er-Grid */
+  flex-wrap: wrap;
   gap: .5rem; margin-bottom: 1rem;
 }
 .paywall-tier {
   position: relative;
+  min-width: 220px;
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 12px;
@@ -68,6 +70,20 @@
   background: linear-gradient(180deg, rgba(255,215,0,.12), rgba(255,140,0,.06));
   box-shadow: 0 0 16px rgba(255,215,0,.25);
 }
+/* „Käufe wiederherstellen" — schlichter Text-Link statt Default-Button-Rahmen */
+.paywall-restore {
+  display: block;
+  margin: .6rem auto 0;
+  padding: .3rem .6rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.55);
+  font-family: inherit;
+  font-size: .85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.paywall-restore:hover { color: rgba(255,255,255,.85); }
 .paywall-tier--highlight {
   border-color: rgba(255,215,0,.5);
   background: linear-gradient(180deg, rgba(255,215,0,.08), rgba(255,140,0,.03));
