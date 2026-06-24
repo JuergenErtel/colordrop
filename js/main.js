@@ -238,12 +238,14 @@ function tryStartGatedMode(startFn) {
     updateLivesDisplay();
     startFn();
   } else {
-    showLivesEmpty(startFn);
+    // Lehnt der Spieler ab (Abbrechen), zurück ins Menü statt zum „Bereit"-
+    // Vorschirm — sonst landet man in einer Sackgasse ohne Leben.
+    showLivesEmpty(startFn, () => { closeLivesEmpty(); openLevelSelect(); });
   }
 }
 
 let _livesEmptyTick = 0;
-function showLivesEmpty(retryFn) {
+function showLivesEmpty(retryFn, onCancel) {
   const overlay = document.getElementById('livesEmptyOverlay');
   if (!overlay) return;
   overlay.classList.remove('hidden');
@@ -278,7 +280,7 @@ function showLivesEmpty(retryFn) {
     closeLivesEmpty();
     setTimeout(() => showPaywall(), 200);
   };
-  document.getElementById('livesCancelBtn').onclick = closeLivesEmpty;
+  document.getElementById('livesCancelBtn').onclick = onCancel || closeLivesEmpty;
   setTimeout(() => maybeShowPaywall('lives0'), 1500);
 }
 
