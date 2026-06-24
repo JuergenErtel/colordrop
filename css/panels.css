@@ -61,6 +61,8 @@
     position: fixed; inset: 0; z-index: 9100;
     display: flex; align-items: flex-start; justify-content: center;
     overflow-y: auto;
+    overflow-x: hidden;       /* nur vertikal scrollen — kein seitliches Wischen */
+    overscroll-behavior-x: none;
     background: rgba(20,10,35,.75);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
