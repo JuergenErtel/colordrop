@@ -9,8 +9,8 @@ darunter die englische Lokalisierung. Zeichenlimits beachtet.
 
 | Feld | Wert |
 |---|---|
-| App-Name | **Kittysort** |
-| Bundle ID | `de.kittysort.app` |
+| App-Name | **Kittysort: Color Drop** |
+| Bundle ID | `de.codingbrothers.kittysort` |
 | Primäre Kategorie | Spiele → **Puzzle** |
 | Sekundäre Kategorie | Spiele → Gelegenheitsspiele (Casual) |
 | Altersfreigabe | **4+** (keine Kids-Kategorie) |
