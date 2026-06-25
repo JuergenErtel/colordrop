@@ -25,12 +25,36 @@ function getHaptics() {
 }
 
 /**
+ * Web-Fallback (Android-Chrome): navigator.vibrate. iOS-Safari kennt die API
+ * nicht → automatisch No-op. Dezente Muster passend zur Haptik-Art.
+ */
+function webVibrate(name) {
+  const nav = typeof navigator !== 'undefined' ? navigator : null;
+  if (!nav || typeof nav.vibrate !== 'function') return;
+  try {
+    if (IMPACT_LIGHT.has(name)) {
+      nav.vibrate(8);
+    } else if (NOTIFY_SUCCESS.has(name)) {
+      nav.vibrate([0, 18, 40, 18]);
+    } else if (NOTIFY_WARNING.has(name)) {
+      nav.vibrate([0, 30, 25, 30]);
+    }
+  } catch (_) {
+    /* Vibration ist reines Nice-to-have. */
+  }
+}
+
+/**
  * Löst zum übergebenen Sound-Namen das passende haptische Feedback aus.
+ * Nativ (iOS) via Capacitor-Plugin, sonst Web-Fallback (Android-Chrome).
  * Fire-and-forget; Fehler werden geschluckt (z. B. wenn Plugin fehlt).
  */
 export function hapticForSound(name) {
   const H = getHaptics();
-  if (!H) return;
+  if (!H) {
+    webVibrate(name);
+    return;
+  }
   try {
     if (IMPACT_LIGHT.has(name)) {
       H.impact({ style: 'LIGHT' });
