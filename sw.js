@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const CACHE = 'kittysort-bugfix-8';
+const CACHE = 'kittysort-appstore-9';
 
 // App shell: enough to boot offline. The rest fills in via runtime caching.
 const PRECACHE = [

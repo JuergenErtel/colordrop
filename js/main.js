@@ -5,6 +5,7 @@ import {
   THEMES, TIER_DEFS,
   ACHIEVEMENTS, TUTORIAL_SCRIPT,
   REWARDS, COSTS, REWARDED_LIMITS, MOVE_LIMIT,
+  APP_STORE_URL, APP_STORE_LIVE,
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
@@ -3431,6 +3432,16 @@ const isNativeApp = !!(
   typeof window.Capacitor.isNativePlatform === 'function' &&
   window.Capacitor.isNativePlatform()
 );
+
+// App-Store-Badge auf dem Splash: nur im Web (in der App sinnlos) und nur, wenn
+// die App live ist (sonst toter Link). main.js schaltet das hidden-Attribut.
+(function setupAppStoreBadge() {
+  const badge = document.getElementById('splashAppStoreBadge');
+  if (!badge) return;
+  badge.href = APP_STORE_URL;
+  badge.hidden = !(APP_STORE_LIVE && !isNativeApp);
+})();
+
 // Nativ: Entitlements still mit dem Store abgleichen (Neuinstallation/anderes Gerät)
 // und auf asynchrone Freigaben (Ask-to-Buy / pending) reagieren.
 if (isNativeApp) {

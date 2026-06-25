@@ -1,6 +1,6 @@
 'use strict';
 
-import { SUB_TIERS, BILLING_MODE } from './constants.js';
+import { SUB_TIERS, BILLING_MODE, APP_STORE_URL, APP_STORE_LIVE } from './constants.js';
 import { purchase, isActiveSubscription, restorePurchases } from './billing.js';
 import { getNativeProducts, IAP_PRODUCT_IDS } from './native-billing.js';
 import { loadSubscription, loadPaywallState, savePaywallState } from './storage.js';
@@ -61,16 +61,21 @@ function updateBuyLabel() {
   const foot   = document.getElementById('paywallFootnote');
   if (!label) return;
 
+  const isWebDemo = BILLING_MODE === 'preview';
+
   if (hasSub) {
     label.textContent = 'Du hast bereits alles freigeschaltet';
+  } else if (isWebDemo) {
+    // Web: kein Kauf hier — Verweis auf die native iOS-App.
+    label.textContent = APP_STORE_LIVE ? '\u{1F34F} Im App Store laden' : '\u{1F34F} Bald im App Store';
   } else {
     const def = SUB_TIERS[_selectedTier];
     label.textContent = 'FÜR IMMER FREISCHALTEN · ' + (def?.price || '');
   }
 
   if (foot) {
-    foot.textContent = BILLING_MODE === 'preview'
-      ? 'Preview-Modus — Premium wird ohne Zahlung aktiviert'
+    foot.textContent = isWebDemo
+      ? 'Der Kittysort Club ist in der iOS-App erhältlich.'
       : 'Einmalzahlung · Kein Abo · Keine versteckten Kosten';
   }
 }
@@ -80,6 +85,19 @@ async function handleBuyClick() {
   const sub = loadSubscription();
   if (isActiveSubscription(sub)) {
     hidePaywall();
+    return;
+  }
+
+  // Web-Demo (kittysort.de): KEIN Gratis-Premium mehr — stattdessen auf die
+  // native iOS-App verweisen (dort läuft der echte StoreKit-Kauf).
+  if (BILLING_MODE === 'preview') {
+    if (APP_STORE_LIVE) {
+      window.open(APP_STORE_URL, '_blank', 'noopener');
+    } else {
+      const hint = document.getElementById('paywallRestoreHint');
+      if (hint) { hint.hidden = false; hint.textContent = 'Die App wird gerade geprüft — bald im App Store! 🐱'; }
+      playSound('click');
+    }
     return;
   }
 

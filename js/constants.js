@@ -241,6 +241,13 @@ export const STRIPE_LINKS = {
   lifetime: '',   // fill at launch
 };
 
+// ── Web → iOS-App ────────────────────────────────────────────────────────
+// kittysort.de (Web) verweist auf die native App statt Premium gratis zu
+// schenken. APP_STORE_LIVE erst auf true setzen, wenn die App im Store
+// freigegeben ist — sonst zeigen Badge/CTA einen toten Link.
+export const APP_STORE_URL  = 'https://apps.apple.com/app/id6783642547';
+export const APP_STORE_LIVE = false;
+
 // ── Purchase-tier constants ───────────────────────────────────────────────
 // Einmalkauf-Modell: ein einziger Lifetime-Unlock, niedrige Kaufhürde.
 export const SUB_TIERS = {

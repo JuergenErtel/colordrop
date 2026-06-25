@@ -15,6 +15,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Kittysort">
     <meta name="mobile-web-app-capable" content="yes">
+    <!-- App-Store-Smart-Banner: Safari auf iOS zeigt automatisch ein natives
+         "Installieren"-Band, sobald die App im Store live ist. Vorher unsichtbar. -->
+    <meta name="apple-itunes-app" content="app-id=6783642547">
 
     <!-- ── Open Graph / social sharing ── -->
     <meta property="og:type" content="website">
@@ -997,6 +1000,13 @@
             <button class="splash-play" id="splashPlayBtn" type="button">
                 ▶ &nbsp;Spielen
             </button>
+
+            <!-- App-Store-Badge: nur im Web sichtbar (in der App via JS versteckt),
+                 und nur wenn die App live ist (main.js schaltet hidden um). -->
+            <a class="splash-appstore" id="splashAppStoreBadge" hidden
+               href="https://apps.apple.com/app/id6783642547" target="_blank" rel="noopener">
+                 Im App Store laden
+            </a>
         </div>
 
         <span class="splash-version">v2.0</span>
