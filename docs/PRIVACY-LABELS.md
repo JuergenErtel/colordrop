@@ -37,5 +37,36 @@ und der ATT-Dialog implementiert.
 - Werte gelten für die **Standard-AdMob-Einrichtung**. Wenn du in AdMob zusätzliche
   Features (z. B. bestimmte Mediation-Netzwerke) aktivierst, ggf. Datentypen ergänzen —
   aktuelle Liste: developers.google.com/admob/ios/data-disclosure.
-- Solange `ADMOB.testing = true` (Test-Ads) werden technisch dieselben Datentypen
-  berührt → Labels schon jetzt korrekt.
+- **AdMob ist jetzt produktiv** (`ADMOB.testing = false`, echte IDs) — die obigen
+  Datentypen treffen also live zu. Labels wie hier angegeben setzen.
+
+---
+
+## Klick-für-Klick in App Store Connect
+
+**Pfad:** ASC → Apps → *Kittysort: Color Drop* → linke Leiste **„App-Datenschutz"**
+→ **„Erste Schritte"** / **„Bearbeiten"**.
+
+1. **„Erfasst diese App Daten?“** → **Ja**.
+
+2. Jetzt für **jeden** der folgenden Datentypen einzeln **„Hinzufügen“** und genau so
+   beantworten (Zweck überall **Drittanbieter-Werbung**, außer Diagnose):
+
+   | Anhaken unter Kategorie | Datentyp | Zweck | „Mit Identität verknüpft?“ | „Zum Tracking?“ |
+   |---|---|---|---|---|
+   | Standort | **Ungefährer Standort** | Drittanbieter-Werbung | Nein | **Ja** |
+   | Identifikatoren | **Geräte-ID** | Drittanbieter-Werbung | Nein | **Ja** |
+   | Nutzungsdaten | **Produktinteraktion** | Drittanbieter-Werbung + Analyse | Nein | **Ja** |
+   | Nutzungsdaten | **Werbedaten** | Drittanbieter-Werbung | Nein | **Ja** |
+   | Diagnose | **Absturzdaten** | App-Funktionalität | Nein | Nein |
+   | Diagnose | **Leistungsdaten** | App-Funktionalität | Nein | Nein |
+
+3. Wenn bei mindestens einem Typ **„Zum Tracking: Ja“** gewählt wurde, fragt ASC
+   automatisch nach den **„Daten, die zum Tracking verwendet werden“** → dort
+   **Geräte-ID, Ungefährer Standort, Produktinteraktion, Werbedaten** anhaken.
+
+4. **Veröffentlichen / Sichern.** Die Labels gelten ab der nächsten Version.
+
+> Faustregel für diese App: **Standort + Identifikatoren + Nutzungsdaten = Tracking JA**,
+> **Diagnose = Tracking NEIN**, **alles „Mit Identität verknüpft? = Nein“**.
+> NICHT deklarieren: Käufe/Zahlungen, Kontaktdaten, Konto (siehe oben).
