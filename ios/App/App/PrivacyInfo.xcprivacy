@@ -9,19 +9,16 @@
      (Xcode → Datei in den "App"-Ordner ziehen → Target "App" anhaken, "Copy Bundle
      Resources"). Sonst landet sie nicht im Bundle.
 
-  TODO vor Release: NSPrivacyTrackingDomains mit der aktuellen Google-Liste
-  füllen (https://developers.google.com/admob/ios/privacy/manifest), falls
-  personalisierte Werbung (Tracking) ausgeliefert wird. Bei reiner non-personali-
-  sierter Auslieferung kann NSPrivacyTracking auf false bleiben.
+  Tracking: NSPrivacyTracking=false auf APP-Ebene, weil der App-eigene Code NICHT
+  trackt. Das Tracking (IDFA/Werbung) macht ausschließlich das Google-Mobile-Ads-
+  SDK — dieses liefert sein EIGENES Privacy-Manifest mit NSPrivacyTracking=true +
+  seinen Tracking-Domains mit, das Apple automatisch dazurechnet. Darum hier KEINE
+  NSPrivacyTrackingDomains (true + leere Liste = Ablehnung ITMS-91064).
 -->
 <plist version="1.0">
 <dict>
 	<key>NSPrivacyTracking</key>
-	<true/>
-	<key>NSPrivacyTrackingDomains</key>
-	<array>
-		<!-- TODO: Google-Tracking-Domains hier eintragen (siehe Kommentar oben). -->
-	</array>
+	<false/>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
 	<key>NSPrivacyAccessedAPITypes</key>
