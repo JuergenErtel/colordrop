@@ -1733,6 +1733,7 @@ function openLevelSelect() {
   document.getElementById('blitzOverlay').classList.remove('show');
   document.getElementById('dailyOverlay').classList.remove('show');
   document.getElementById('timeoutOverlay').classList.remove('show');
+  document.getElementById('movesOutOverlay').classList.remove('show');
   document.getElementById('dogOverlay').classList.remove('show');
   document.getElementById('jokerIntroOverlay').classList.remove('show');
   document.getElementById('iceIntroOverlay').classList.remove('show');
@@ -2209,6 +2210,14 @@ document.getElementById('timeoutRetryBtn').addEventListener('click', () => {
   restartCurrentLevel();
 });
 
+// Notausgang: ohne Ad-Fill bietet das Timeout-Overlay sonst nur "Nochmal" —
+// der HUD-Menü-Button ist vom Overlay verdeckt. Hier raus ins Menü.
+document.getElementById('timeoutMenuBtn').addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('timeoutOverlay').classList.remove('show');
+  openLevelSelect();
+});
+
 // Von render.js beim Timeout aufgerufen: Continue-Button je nach Gate zeigen.
 // Premium darf in der Blitzrunde gratis (ohne Video) weiter — gleiches Limit.
 window.__configureTimeoutContinue = function () {
@@ -2286,6 +2295,14 @@ document.getElementById('movesRestartBtn').addEventListener('click', () => {
   if (!isPremium() && !hasLife()) { showLivesEmpty(() => restartCurrentLevel()); return; }
   if (!isPremium()) { consumeLife(); updateLivesDisplay(); }
   restartCurrentLevel();
+});
+
+// Notausgang ins Menü (Overlay verdeckt den HUD-Menü-Button).
+document.getElementById('movesMenuBtn').addEventListener('click', () => {
+  playSound('click');
+  document.getElementById('movesOutOverlay').classList.remove('show');
+  ANIM.busy = false;
+  openLevelSelect();
 });
 
 // ── Mouse hunt handlers ─────────────────────────────────

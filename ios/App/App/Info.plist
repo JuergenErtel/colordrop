@@ -52,12 +52,10 @@
 	     Compliance-Frage bei jedem TestFlight-Upload. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- ── AdMob (Rewarded Video) ──────────────────────────────────────────
-	     TODO vor Release: GADApplicationIdentifier durch die ECHTE AdMob-App-ID
-	     ersetzen (muss zu ADMOB.appId in js/constants.js passen). Aktuell:
-	     Googles offizielle iOS-Test-App-ID. -->
+	<!-- ── AdMob ───────────────────────────────────────────────────────────
+	     Echte AdMob-App-ID (muss zu ADMOB.appId in js/constants.js passen). -->
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-6440829707267793~6903635482</string>
 	<!-- App Tracking Transparency: Begründungstext für den iOS-Systemdialog. -->
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Kittysort nutzt deine Daten, um dir relevantere Werbung in den freiwilligen Belohnungs-Videos anzuzeigen.</string>

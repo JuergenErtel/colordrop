@@ -148,6 +148,16 @@
   margin: .8rem 0 0;
 }
 
+.paywall-legal {
+  text-align: center; font-size: .62rem;
+  margin: .35rem 0 0;
+  color: rgba(255,255,255,.45);
+}
+.paywall-legal a {
+  color: rgba(255,255,255,.7);
+  text-decoration: underline;
+}
+
 /* ── Celebration Overlay ────────────────────────────────── */
 .celebration-overlay {
   display: flex; align-items: center; justify-content: center;

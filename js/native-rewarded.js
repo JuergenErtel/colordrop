@@ -10,10 +10,10 @@
    window.Capacitor.Plugins.AdMob — KEIN statischer Paket-Import, damit der
    Web-Bundle (www/) unberührt bleibt.
 
-   Reihenfolge (Google-vorgegeben, DSGVO):
-     1. requestConsentInfo()           — UMP-Consent-Status holen
-     2. showConsentForm()              — falls REQUIRED & Formular verfügbar
-     3. requestTrackingAuthorization() — iOS ATT-Dialog
+   Reihenfolge (Apple ATT zuerst, dann DSGVO/UMP):
+     1. requestTrackingAuthorization() — iOS ATT-Dialog zuerst (ein Prompt)
+     2. requestConsentInfo()           — UMP-Consent-Status holen
+     3. showConsentForm()              — falls REQUIRED & Formular verfügbar
      4. initialize()                   — erst danach SDK starten
      5. prepare/showRewardVideoAd()    — Ads laden/zeigen
 
@@ -85,9 +85,12 @@ export async function playNativeRewarded(/* surface */) {
       const guard = setTimeout(() => finish(earned), 90000);
       handles.push({ remove: () => clearTimeout(guard) });
 
-      // Promise resolved nur bei verdienter Belohnung; Reject = harter Fehler.
+      // 'earned' kommt AUSSCHLIESSLICH aus dem 'Reward'-Event (oben). Je nach
+      // Plugin-/SDK-Version resolved showRewardVideoAd() bereits beim Anzeigen
+      // (nicht erst bei verdienter Belohnung) — würden wir hier earned=true
+      // setzen, bekäme der Nutzer beim frühen Schließen einen Gratis-Reward.
+      // Reject = harter Fehler → sauber auflösen.
       AdMob.showRewardVideoAd()
-        .then(() => { earned = true; })
         .catch((err) => { console.warn('native-rewarded: show error:', err); finish(false); });
     });
   } catch (err) {

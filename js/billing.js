@@ -26,7 +26,7 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { BILLING_MODE, STRIPE_LINKS, SUB_TIERS, TRIAL_DAYS, WELCOME_BONUS_BONES } from './constants.js';
-import { loadSubscription, saveSubscription } from './storage.js';
+import { loadSubscription, saveSubscription, loadPaywallState, savePaywallState } from './storage.js';
 import { earn } from './economy.js';
 import { purchaseNative, restoreNative, syncEntitlementsNative } from './native-billing.js';
 
@@ -148,11 +148,20 @@ function grantPreview(tier) {
   const def = SUB_TIERS[tier];
   if (!def) return { ok: false, reason: 'unknown_tier' };
 
-  const prev  = loadSubscription();
-  const bonus = shouldGrantWelcomeBonus(prev) ? WELCOME_BONUS_BONES : 0;
+  const prev = loadSubscription();
+  const pw   = loadPaywallState();
+  // Welcome-Bonus ist EINMALIG: an einen persistenten Flag gebunden, nicht nur
+  // an den (per Debug/Cancel rücksetzbaren) Sub-Status. Verhindert, dass ein
+  // erneuter Kauf nach cancelSubscription() die 500 Fischgräten nochmal gutschreibt.
+  const bonus = (shouldGrantWelcomeBonus(prev) && !pw.welcomeBonusClaimed)
+    ? WELCOME_BONUS_BONES : 0;
 
   saveSubscription(buildSub(tier));
-  if (bonus) earn(bonus);
+  if (bonus) {
+    earn(bonus);
+    pw.welcomeBonusClaimed = true;
+    savePaywallState(pw);
+  }
 
   return { ok: true, tier, welcomeBonus: bonus };
 }

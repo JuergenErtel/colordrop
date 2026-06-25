@@ -195,15 +195,14 @@ export const REWARDS = {
 export const REWARDED_MODE = 'preview';   // 'preview' | 'adsense' | 'native'
 
 // ── AdMob (nur nativer iOS/Android-Build, REWARDED_MODE='native') ─────────
-// TODO vor Release: echte IDs aus der AdMob-Konsole eintragen und
-// ADMOB.testing=false setzen. Bis dahin laufen Googles offizielle Test-Units
-// (garantierter Fill, zählen NICHT als echte Impressions).
+// Echte Produktions-IDs (AdMob-Konto Coding Brothers, App „Kittysort" iOS).
+// App-ID gehört zusätzlich in Info.plist (GADApplicationIdentifier) — muss zu
+// appId hier passen. Zum Lokal-Testen ohne echte Impressions: testing=true.
 export const ADMOB = {
-  testing: true,
-  // App-ID gehört zusätzlich in Info.plist (GADApplicationIdentifier).
-  appId:   'ca-app-pub-3940256099942544~1458002511',        // Test-App (iOS)
-  rewardedUnitId: 'ca-app-pub-3940256099942544/1712485313', // Test-Rewarded (iOS)
-  interstitialUnitId: 'ca-app-pub-3940256099942544/4411468910', // Test-Interstitial (iOS)
+  testing: false,
+  appId:   'ca-app-pub-6440829707267793~6903635482',
+  rewardedUnitId: 'ca-app-pub-6440829707267793/1623388647',
+  interstitialUnitId: 'ca-app-pub-6440829707267793/4056156468',
 };
 
 export const REWARDED_LIMITS = {

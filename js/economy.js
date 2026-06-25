@@ -91,9 +91,31 @@ export function calcWinReward(stars, isDaily, isBlitz) {
 // ── Ad timing ─────────────────────────────────────────────────────────────────
 const AD_INTERVAL_LEVELS = 3;
 const AD_COOLDOWN_MS     = 3 * 60 * 1000; // 3 minutes
+const _adCadenceKey      = 'catsort-ad-cadence';
 
-let _levelsSinceAd = 0;
-let _lastAdTime    = 0;
+// Persistiert, damit der 3-Minuten-Cooldown einen App-Neustart überlebt. Ohne
+// Persistenz stand _lastAdTime nach jedem Kaltstart auf 0 → Cooldown sofort
+// "abgelaufen" → Interstitials konnten häufiger erscheinen als vorgesehen.
+function _loadAdCadence() {
+  try {
+    const obj = JSON.parse(localStorage.getItem(_adCadenceKey) || '{}');
+    return {
+      levelsSinceAd: Number.isFinite(obj.levelsSinceAd) ? obj.levelsSinceAd : 0,
+      lastAdTime:    Number.isFinite(obj.lastAdTime)    ? obj.lastAdTime    : 0,
+    };
+  } catch {
+    return { levelsSinceAd: 0, lastAdTime: 0 };
+  }
+}
+
+function _saveAdCadence() {
+  try {
+    localStorage.setItem(_adCadenceKey,
+      JSON.stringify({ levelsSinceAd: _levelsSinceAd, lastAdTime: _lastAdTime }));
+  } catch { /* quota */ }
+}
+
+let { levelsSinceAd: _levelsSinceAd, lastAdTime: _lastAdTime } = _loadAdCadence();
 
 export function shouldShowAd() {
   if (isPremium()) return false;
@@ -105,11 +127,13 @@ export function shouldShowAd() {
 export function markAdShown() {
   _levelsSinceAd = 0;
   _lastAdTime    = Date.now();
+  _saveAdCadence();
 }
 
 /** Call after each level completion to track ad cadence. */
 export function tickAdLevel() {
   _levelsSinceAd += 1;
+  _saveAdCadence();
 }
 
 // ── Undo limits ───────────────────────────────────────────────────────────────

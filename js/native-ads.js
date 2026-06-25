@@ -18,6 +18,19 @@ export function getAdMob() {
 
 async function runInit(AdMob) {
   let canRequestAds = true;
+
+  // 1) iOS ATT zuerst: ein einzelner System-Dialog, bevor das UMP-Formular
+  //    erscheint. So sieht der Nutzer nicht zwei aufeinanderfolgende, leicht
+  //    verwirrende Consent-Dialoge (UMP-Sheet direkt gefolgt vom ATT-Prompt).
+  try {
+    if (typeof AdMob.requestTrackingAuthorization === 'function') {
+      await AdMob.requestTrackingAuthorization();
+    }
+  } catch (err) {
+    console.warn('native-ads: ATT-Dialog übersprungen:', err);
+  }
+
+  // 2) UMP-Consent (DSGVO) holen und ggf. Formular zeigen.
   try {
     let info = await AdMob.requestConsentInfo();
     if (info && info.status === 'REQUIRED' && info.isConsentFormAvailable) {
@@ -30,14 +43,7 @@ async function runInit(AdMob) {
     console.warn('native-ads: Consent-Schritt übersprungen:', err);
   }
 
-  try {
-    if (typeof AdMob.requestTrackingAuthorization === 'function') {
-      await AdMob.requestTrackingAuthorization();
-    }
-  } catch (err) {
-    console.warn('native-ads: ATT-Dialog übersprungen:', err);
-  }
-
+  // 3) Erst danach das SDK starten.
   await AdMob.initialize({ initializeForTesting: !!ADMOB.testing });
   return { canRequestAds };
 }

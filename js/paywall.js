@@ -1,6 +1,6 @@
 'use strict';
 
-import { SUB_TIERS, BILLING_MODE, WELCOME_BONUS_BONES } from './constants.js';
+import { SUB_TIERS, BILLING_MODE } from './constants.js';
 import { purchase, isActiveSubscription, restorePurchases } from './billing.js';
 import { getNativeProducts, IAP_PRODUCT_IDS } from './native-billing.js';
 import { loadSubscription, loadPaywallState, savePaywallState } from './storage.js';
@@ -115,8 +115,11 @@ export function showCelebration(result) {
   } else {
     if (title) title.textContent = 'Willkommen im Club!';
     if (sub)   sub.textContent   = SUB_TIERS[result.tier]?.label || '';
-    if (bones) bones.style.display = '';
-    animateBonesCounter(count, 0, result.welcomeBonus || WELCOME_BONUS_BONES, 2000);
+    // Fischgräten-Block nur zeigen, wenn tatsächlich welche gutgeschrieben
+    // wurden. Restore (welcomeBonus: 0) darf keine "+500"-Animation vorgaukeln.
+    const earnedBones = result.welcomeBonus ?? 0;
+    if (bones) bones.style.display = earnedBones > 0 ? '' : 'none';
+    if (earnedBones > 0) animateBonesCounter(count, 0, earnedBones, 2000);
   }
 
   if (cats) {
