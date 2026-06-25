@@ -157,7 +157,7 @@ export function trackUndo() {
   // Consume free undo token before counting against FREE_UNDOS
   const tokens = _freeUndoTokens();
   if (tokens > 0) {
-    localStorage.setItem('catsort_free_undos', String(tokens - 1));
+    try { localStorage.setItem('catsort_free_undos', String(tokens - 1)); } catch { /* quota */ }
     return;
   }
   _undosUsed += 1;
@@ -187,7 +187,7 @@ export function spendHint(tierName = 'EASY') {
   // Consume free hint token from Season Pass rewards before bones
   const freeHints = parseInt(localStorage.getItem('catsort_free_hints') || '0', 10);
   if (freeHints > 0) {
-    localStorage.setItem('catsort_free_hints', String(freeHints - 1));
+    try { localStorage.setItem('catsort_free_hints', String(freeHints - 1)); } catch { /* quota */ }
     return true;
   }
   return spend(getHintCost(tierName));

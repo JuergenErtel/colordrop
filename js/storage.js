@@ -21,6 +21,13 @@ function saveJSON(k, value) {
   try { localStorage.setItem(k, JSON.stringify(value)); } catch { /* quota */ }
 }
 
+// Roh-String speichern (für Werte, die NICHT JSON-serialisiert werden). Wie
+// saveJSON gegen QuotaExceeded / iOS-Privatmodus abgesichert, damit ein voller
+// Speicher keinen unbehandelten Fehler in einen Klick-Handler wirft.
+function saveRaw(k, str) {
+  try { localStorage.setItem(k, str); } catch { /* quota / private mode */ }
+}
+
 // ── Progress (stars per level) ─────────────────────────────────────────────
 export function loadProgress() {
   return loadJSON(key('progress'), {});
@@ -94,7 +101,7 @@ export function isTutorialDone() {
 }
 
 export function markTutorialDone() {
-  localStorage.setItem(key('tut_done'), '1');
+  saveRaw(key('tut_done'), '1');
 }
 
 export function hasSeenIntro(id) {
@@ -102,7 +109,7 @@ export function hasSeenIntro(id) {
 }
 
 export function markIntroSeen(id) {
-  localStorage.setItem(key('intro_' + id), '1');
+  saveRaw(key('intro_' + id), '1');
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────
@@ -114,7 +121,7 @@ export function loadSettings() {
 }
 
 export function saveSettings(obj) {
-  localStorage.setItem(`${PREFIX}-settings`, JSON.stringify(obj));
+  saveJSON(`${PREFIX}-settings`, obj);
 }
 
 // ── Endless best score ─────────────────────────────────────────────────────
@@ -125,7 +132,7 @@ export function loadEndlessBest() {
 
 export function saveEndlessBest(score) {
   const current = loadEndlessBest();
-  if (score > current) localStorage.setItem(`${PREFIX}-endless`, JSON.stringify(score));
+  if (score > current) saveJSON(`${PREFIX}-endless`, score);
 }
 
 // ── Collection ────────────────────────────────────────────────────────────
@@ -134,7 +141,7 @@ export function loadCollection() {
   catch { return []; }
 }
 export function saveCollection(ids) {
-  localStorage.setItem(`${PREFIX}-collection`, JSON.stringify(ids));
+  saveJSON(`${PREFIX}-collection`, ids);
 }
 
 // ── Mascot ───────────────────────────────────────────────────────────────
@@ -142,7 +149,7 @@ export function loadMascot() {
   return localStorage.getItem(`${PREFIX}-mascot`) || 'default';
 }
 export function saveMascot(id) {
-  localStorage.setItem(`${PREFIX}-mascot`, id);
+  saveRaw(`${PREFIX}-mascot`, id);
 }
 
 // ── Economy (coin balance) ────────────────────────────────────────────────
@@ -151,7 +158,7 @@ export function loadEconomy() {
   catch { return 0; }
 }
 export function saveEconomy(balance) {
-  localStorage.setItem(`${PREFIX}-economy`, JSON.stringify(balance));
+  saveJSON(`${PREFIX}-economy`, balance);
 }
 
 // ── Premium status ────────────────────────────────────────────────────────
@@ -160,7 +167,7 @@ export function loadPremium() {
   catch { return false; }
 }
 export function savePremium(val) {
-  localStorage.setItem(`${PREFIX}-premium`, JSON.stringify(!!val));
+  saveJSON(`${PREFIX}-premium`, !!val);
 }
 
 // ── Streak ────────────────────────────────────────────────────────────────
@@ -170,23 +177,29 @@ export function loadStreak() {
   catch { return def; }
 }
 export function saveStreak(obj) {
-  localStorage.setItem(`${PREFIX}-streak`, JSON.stringify(obj));
+  saveJSON(`${PREFIX}-streak`, obj);
 }
 
 // ── Migration ─────────────────────────────────────────────────────────────
 export function migrateIfNeeded() {
-  const versionKey = key('version');
-  if (localStorage.getItem(versionKey) === VERSION) return;
+  try {
+    const versionKey = key('version');
+    if (localStorage.getItem(versionKey) === VERSION) return;
 
-  // Remove all legacy and current game keys for a clean reset
-  const toRemove = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && (k.startsWith('colordrop_') || k.startsWith('catsort_') || k.startsWith('catsort-'))) toRemove.push(k);
+    // Remove all legacy and current game keys for a clean reset
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('colordrop_') || k.startsWith('catsort_') || k.startsWith('catsort-'))) toRemove.push(k);
+    }
+    toRemove.forEach(k => localStorage.removeItem(k));
+
+    localStorage.setItem(versionKey, VERSION);
+  } catch (err) {
+    // localStorage nicht verfügbar/voll (z. B. iOS-Privatmodus) — Migration
+    // überspringen statt den ganzen Bootstrap abzubrechen.
+    console.warn('migrateIfNeeded übersprungen:', err);
   }
-  toRemove.forEach(k => localStorage.removeItem(k));
-
-  localStorage.setItem(versionKey, VERSION);
 }
 
 // ── Milestones ────────────────────────────────────────────────────────────

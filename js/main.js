@@ -3342,6 +3342,11 @@ function loop(ts) {
 //  BOOTSTRAP
 // ══════════════════════════════════════════════════════════════════════════
 
+// Der gesamte synchrone Bootstrap läuft in try/finally: wirft ein einzelner
+// Init-Schritt (ein kaputter gespeicherter Wert, ein fehlendes DOM-Element …),
+// darf das NICHT den Boot-Loader für immer stehen lassen — das finally blendet
+// ihn IMMER aus, statt den Nutzer vor einem eingefrorenen Start sitzen zu lassen.
+try {
 migrateIfNeeded();
 initSkins();
 G.background = loadBackgrounds().active;
@@ -3400,11 +3405,13 @@ document.getElementById('splashPlayBtn').addEventListener('click', async () => {
   }
 });
 
-// ── Boot loader: modules are evaluated, the app is interactive ──────────────
-(function hideBootLoader() {
-  const b = document.getElementById('bootLoader');
-  if (b) b.classList.add('boot-hide');
-})();
+} catch (err) {
+  console.error('[bootstrap] Init-Fehler — App startet im Fallback-Zustand:', err);
+} finally {
+  // ── Boot loader IMMER ausblenden: Module sind evaluiert, App ist interaktiv.
+  const __boot = document.getElementById('bootLoader');
+  if (__boot) __boot.classList.add('boot-hide');
+}
 
 // ── Service Worker registration (PWA / offline) ─────────────────────────────
 // Im nativen Capacitor-Build (iOS-App) NICHT registrieren: die App lädt lokal
