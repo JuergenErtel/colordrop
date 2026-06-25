@@ -88,7 +88,13 @@ async function purchaseNativeFlow(tier) {
 export async function restorePurchases() {
   const owned = await restoreNative();
   if (!owned) return { ok: false, reason: 'nothing_to_restore' };
-  setEntitlement('lifetime');
+  // Ein bereits aktives Lifetime (z. B. Founder) NICHT überschreiben — Restore
+  // soll nur eine fehlende Berechtigung wiederherstellen, nicht den Tier ändern.
+  const existing = loadSubscription();
+  if (!(existing && existing.active && existing.lifetime)) {
+    const res = setEntitlement('lifetime');
+    if (!res.ok) return res;
+  }
   return { ok: true, restored: true };
 }
 

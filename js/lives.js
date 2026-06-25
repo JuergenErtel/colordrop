@@ -18,6 +18,12 @@ export function checkRegen() {
     return;
   }
   const elapsed = Date.now() - new Date(lastRegen).getTime();
+  if (elapsed < 0) {
+    // Uhr wurde zurückgestellt → lastRegen liegt in der Zukunft. Neu verankern,
+    // sonst füllt es später (Uhr wieder normal) schlagartig alle Leben auf.
+    saveLives({ count, lastRegen: new Date().toISOString() });
+    return;
+  }
   const regens = Math.floor(elapsed / REGEN_MS);
   if (regens <= 0) return;
   const newCount  = Math.min(MAX_LIVES, count + regens);

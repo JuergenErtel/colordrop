@@ -639,11 +639,19 @@ function stopConfetti(canvasId = 'confettiCanvas') {
 window.startConfetti = startConfetti;
 window.stopConfetti  = stopConfetti;
 
+// Lokales Datum (YYYY-MM-DD) — gleiche Basis wie Daily-Puzzle/-Completion,
+// damit der Streak nicht in negativen UTC-Zonen einen Tag zu früh/spät rollt.
+function localDateStr(d = new Date()) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
 function updateDailyStreak() {
   const streak = loadStreak();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   if (streak.lastDate === today) return;
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const yesterday = localDateStr(new Date(Date.now() - 86400000));
   streak.current = (streak.lastDate === yesterday) ? streak.current + 1 : 1;
   streak.best = Math.max(streak.best, streak.current);
   streak.lastDate = today;
