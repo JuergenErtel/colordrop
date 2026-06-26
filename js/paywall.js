@@ -81,6 +81,24 @@ function updateBuyLabel() {
 }
 
 // ── Purchase flow ───────────────────────────────────────────────────────
+function setPaywallHint(msg) {
+  const hint = document.getElementById('paywallRestoreHint');
+  if (!hint) return;
+  hint.hidden = false;
+  hint.textContent = msg;
+}
+
+// Sichtbares Feedback für jeden fehlgeschlagenen nativen Kauf — sonst wirkt der
+// Button "unresponsive" (App-Review 2.1b), wenn StoreKit das Produkt z. B.
+// wegen fehlendem Paid-Apps-Vertrag oder Sandbox-Problemen nicht laden kann.
+const NATIVE_FAIL_COPY = {
+  plugin_unavailable: 'Kauf momentan nicht verfügbar. Bitte versuche es später erneut.',
+  purchase_failed:    'Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut.',
+  native_failed:      'Kauf konnte nicht abgeschlossen werden. Bitte versuche es erneut.',
+  pending:            'Dein Kauf wartet noch auf Freigabe.',
+  unknown_tier:       'Dieses Produkt ist gerade nicht verfügbar.',
+};
+
 async function handleBuyClick() {
   const sub = loadSubscription();
   if (isActiveSubscription(sub)) {
@@ -94,16 +112,37 @@ async function handleBuyClick() {
     if (APP_STORE_LIVE) {
       window.open(APP_STORE_URL, '_blank', 'noopener');
     } else {
-      const hint = document.getElementById('paywallRestoreHint');
-      if (hint) { hint.hidden = false; hint.textContent = 'Die App wird gerade geprüft — bald im App Store! 🐱'; }
+      setPaywallHint('Die App wird gerade geprüft — bald im App Store! 🐱');
       playSound('click');
     }
     return;
   }
 
-  const result = await purchase(_selectedTier);
+  // Nativer Kauf: Button sperren + Status zeigen, damit ein langsamer
+  // StoreKit-Abruf nicht als "toter Button" wahrgenommen wird.
+  const btn   = document.getElementById('paywallBuyBtn');
+  const label = document.getElementById('paywallBuyLabel');
+  const prevLabel = label ? label.textContent : '';
+  if (btn) btn.disabled = true;
+  if (label) label.textContent = 'Verbinde mit dem App Store …';
+
+  let result;
+  try {
+    result = await purchase(_selectedTier);
+  } catch (err) {
+    console.warn('paywall: Kauf-Aufruf fehlgeschlagen:', err);
+    result = { ok: false, reason: 'purchase_failed' };
+  } finally {
+    if (btn) btn.disabled = false;
+    if (label) label.textContent = prevLabel;
+  }
+
   if (!result || !result.ok) {
-    playSound('invalid');
+    // Abbruch durch den Nutzer braucht keine Fehlermeldung.
+    if (!result || result.reason !== 'cancelled') {
+      setPaywallHint(NATIVE_FAIL_COPY[result?.reason] || NATIVE_FAIL_COPY.purchase_failed);
+      playSound('invalid');
+    }
     return;
   }
   if (result.redirecting) return;
