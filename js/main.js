@@ -6,6 +6,7 @@ import {
   ACHIEVEMENTS, TUTORIAL_SCRIPT,
   REWARDS, COSTS, REWARDED_LIMITS, MOVE_LIMIT,
   APP_STORE_URL, APP_STORE_LIVE,
+  COMPANION_ABILITIES,
 } from './constants.js';
 
 import { CATS, checkCatUnlocks } from './cats.js';
@@ -30,6 +31,7 @@ import {
   migrateIfNeeded,
   loadSettings, saveSettings,
   loadCollection, saveCollection,
+  loadSelectedCompanion, saveSelectedCompanion,
   loadStreak, saveStreak,
   loadMascot, saveMascot,
   loadBackgrounds, saveBackgrounds,
@@ -41,7 +43,7 @@ import {
   calcStars, checkWinState, isSolved, canMove, moveLimit,
   generateTubes, generateTutorialTubes, solveHint, findJokerTube,
   dailyLevelNum, generateDailyTubes, getIcePositions, isDogLevel,
-  isMouseLevel, mouseConfig,
+  isMouseLevel, mouseConfig, isSolvable,
 } from './engine.js';
 import { DOG, startDog, endDog, updateDog } from './dog.js';
 import { MOUSE, startMouse, endMouse, updateMouse, tapHole, mouseStars } from './mouse.js';
@@ -74,6 +76,8 @@ import {
 } from './lives.js';
 import { getCurrentSeason, getNextSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
+import { applyNapBasket, applyPawTrick, applyMagnet, pawTrickTargets } from './companion.js';
+import { companionCost } from './companion-cost.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -114,6 +118,11 @@ const G = {
   onHUDUpdate:    null,
   onTutAdvance:   null,
   background:     'cafe',
+  // Begleiter-Fähigkeit
+  companionMode:     null,   // null | 'pawFrom' | 'pawTo' | 'magnetColor'
+  companionPawFrom:  -1,
+  companionFreeUsed: false,  // Premium-Gratis-Einsatz in diesem Level verbraucht?
+  companionAim:      null,   // Set<number> | null — optionaler Render-Hinweis
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -715,6 +724,10 @@ function generateLevel(n) {
   G.hintTo       = -1;
   G.hintUntil    = 0;
   G.hintCooldown = false;
+  G.companionMode     = null;
+  G.companionPawFrom  = -1;
+  G.companionFreeUsed = false;
+  G.companionAim      = null;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
   G.jokerUsed    = findJokerTube(G.tubes) === -1; // false if joker present
@@ -1001,6 +1014,12 @@ function handleInput(lx, ly) {
     return;
   }
 
+  // Begleiter-Fähigkeit: Ziel-/Farbauswahl fängt den normalen Tap ab
+  if (G.companionMode !== null) {
+    handleCompanionTap(idx);
+    return;
+  }
+
   if (G.selected === -1) {
     if (G.tubes[idx].length > 0) {
       G.selected     = idx;
@@ -1107,6 +1126,204 @@ function updateHUD() {
       mlWrap.classList.toggle('moves-left--warn', left <= 3);
     }
   }
+  updateCompanionHUD();
+}
+
+// ── Kurzinfo-Toast ──────────────────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(msg, duration = 2000) {
+  const el = document.getElementById('gameToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ── Begleiter-Helfer ────────────────────────────────────────────────────────
+function activeCompanion() {
+  const id = loadSelectedCompanion();
+  let cat = CATS.find(c => c.id === id);
+  if (!cat) {
+    const owned = loadCollection();
+    cat = CATS.find(c => owned.includes(c.id)) || null;
+  }
+  if (!cat) return null;
+  const ability = COMPANION_ABILITIES.find(a => a.id === cat.ability) || null;
+  return ability ? { cat, ability } : null;
+}
+
+function currentCompanionCost() {
+  const ac = activeCompanion();
+  if (!ac) return 0;
+  return companionCost(ac.ability.id, { premium: isPremium(), freeUsedThisLevel: G.companionFreeUsed });
+}
+
+function updateCompanionHUD() {
+  const btn  = document.getElementById('companionBtn');
+  const icon = document.getElementById('companionBtnIcon');
+  const cost = document.getElementById('companionCost');
+  if (!btn) return;
+  const ac = activeCompanion();
+  // In Tetris-/Maus-/Tages-Challenge-Modi ausblenden
+  if (!ac || TETRIS.active || MOUSE.active || G.isDailyChallenge) {
+    btn.classList.add('hidden');
+    return;
+  }
+  btn.classList.remove('hidden');
+  icon.textContent = ac.ability.emoji;
+  const c = currentCompanionCost();
+  cost.innerHTML = c === 0 ? '👑' : `${FISHBONE_ICON}${c}`;
+  btn.disabled = G.tutorial || ANIM.busy || G.won || G.companionMode !== null;
+}
+
+// ── Begleiter-Einsatz-Logik ─────────────────────────────────────────────────
+function cancelCompanionMode() {
+  G.companionMode   = null;
+  G.companionPawFrom = -1;
+  G.companionAim    = null;
+  updateHUD();
+}
+
+function commitCompanion(next, cost) {
+  // Undo-Snapshot (gleiche Form wie doMove)
+  G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls), jokerUsed: G.jokerUsed });
+  if (G.history.length > 5) G.history.shift();
+
+  if (cost > 0) {
+    if (!spend(cost)) return;
+  } else {
+    G.companionFreeUsed = true; // Premium-Gratis verbraucht
+  }
+
+  G.tubes = next;
+  // solvedTubes neu berechnen
+  G.solvedTubes = new Set();
+  for (let i = 0; i < G.tubes.length; i++) {
+    if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
+  }
+
+  cancelCompanionMode();
+  playSound('select');
+  updateBonesDisplay();
+  updateHUD();
+
+  // Sieg prüfen — bei Companion-Zug kein Arc, daher direkt prüfen
+  if (checkWinState(G.tubes) && !G.won) {
+    G.won = true;
+    showWin();
+  }
+}
+
+function onCompanionClick() {
+  if (G.companionMode !== null) { cancelCompanionMode(); return; }
+  const ac = activeCompanion();
+  if (!ac) return;
+  if (G.won || ANIM.busy || G.tutorial) return;
+  const cost = currentCompanionCost();
+  if (cost > 0 && !canAfford(cost)) {
+    showToast('Zu wenig Fischgräten');
+    playSound('invalid');
+    return;
+  }
+
+  if (ac.ability.id === 'nap') {
+    // Sofort anwendbar, keine Zielauswahl; immer lösbar
+    commitCompanion(applyNapBasket(G.tubes), cost);
+  } else if (ac.ability.id === 'paw') {
+    G.companionMode   = 'pawFrom';
+    G.companionPawFrom = -1;
+    showToast('Pfoten-Trick: Quell-Röhre antippen');
+    updateHUD();
+  } else if (ac.ability.id === 'magnet') {
+    G.companionMode = 'magnetColor';
+    showToast('Magnet: Röhre mit Zielfarbe antippen');
+    updateHUD();
+  }
+}
+
+function handleCompanionTap(idx) {
+  const ac = activeCompanion();
+  if (!ac) { cancelCompanionMode(); return; }
+  const cost = currentCompanionCost();
+
+  if (G.companionMode === 'pawFrom') {
+    if (G.tubes[idx].length === 0) return; // leere Quelle ignorieren
+    G.companionPawFrom = idx;
+    G.companionMode    = 'pawTo';
+    G.companionAim     = new Set(pawTrickTargets(G.tubes, idx));
+    showToast('Pfoten-Trick: Ziel-Röhre antippen');
+    return;
+  }
+  if (G.companionMode === 'pawTo') {
+    const next = applyPawTrick(G.tubes, G.companionPawFrom, idx);
+    if (!next) { triggerFlash(idx); return; }    // ungültiges Ziel
+    if (isSolvable(next) < 0) {
+      triggerFlash(idx);
+      showToast('Das würde das Level blockieren');
+      return;
+    }
+    commitCompanion(next, cost);
+    return;
+  }
+  if (G.companionMode === 'magnetColor') {
+    const t = G.tubes[idx];
+    if (t.length === 0) return;
+    const color = t[t.length - 1];
+    const next = applyMagnet(G.tubes, color, idx);
+    if (isSolvable(next) < 0) {
+      triggerFlash(idx);
+      showToast('Das würde das Level blockieren');
+      return;
+    }
+    commitCompanion(next, cost);
+    return;
+  }
+}
+
+function openCompanionPick() {
+  const list = document.getElementById('companionPickList');
+  if (!list) return;
+  list.innerHTML = '';
+  const owned     = loadCollection();
+  const selectedId = loadSelectedCompanion();
+  for (const cat of CATS) {
+    const ability  = COMPANION_ABILITIES.find(a => a.id === cat.ability);
+    if (!ability) continue;
+    const unlocked = owned.includes(cat.id);
+    const row = document.createElement('div');
+    row.className = 'companion-item' +
+      (cat.id === selectedId ? ' active' : '') +
+      (unlocked ? '' : ' locked');
+    const portrait = document.createElement('canvas');
+    portrait.className = 'companion-portrait';
+    portrait.width  = 40;
+    portrait.height = 40;
+    const info = document.createElement('div');
+    const nameEl = document.createElement('b');
+    nameEl.textContent = cat.name;
+    const descEl = document.createElement('span');
+    descEl.className = 'muted';
+    descEl.textContent = `${ability.emoji} ${ability.label}`;
+    info.appendChild(nameEl);
+    info.appendChild(document.createElement('br'));
+    info.appendChild(descEl);
+    row.appendChild(portrait);
+    row.appendChild(info);
+    if (unlocked) {
+      row.addEventListener('click', () => {
+        saveSelectedCompanion(cat.id);
+        updateCompanionHUD();
+        openCompanionPick(); // neu rendern für active-Markierung
+      });
+    }
+    list.appendChild(row);
+    // Portrait zeichnen — echte Signatur: drawCatPortrait(ctx, cx, cy, size, params)
+    const ctx    = portrait.getContext('2d');
+    const params = CAT_PARAMS.find(p => p.id === cat.id);
+    if (params) drawCatPortrait(ctx, 20, 20, 17, params);
+  }
+  document.getElementById('companionPickOverlay').classList.remove('hidden');
 }
 
 function showWin() {
@@ -1874,6 +2091,10 @@ function startTutorial() {
   G.hintTo       = -1;
   G.hintUntil    = 0;
   G.hintCooldown = false;
+  G.companionMode     = null;
+  G.companionPawFrom  = -1;
+  G.companionFreeUsed = false;
+  G.companionAim      = null;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
   resetAnim();
@@ -2046,6 +2267,9 @@ document.getElementById('milestoneClose').addEventListener('click', () => {
 document.getElementById('menuBtnHud').addEventListener('click', () => { playSound('click'); openLevelSelect(); });
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('hintBtn').addEventListener('click', showHintAction);
+document.getElementById('companionBtn').addEventListener('click', () => { playSound('click'); onCompanionClick(); });
+document.getElementById('companionPickClose').addEventListener('click', () =>
+  document.getElementById('companionPickOverlay').classList.add('hidden'));
 document.getElementById('resetBtn').addEventListener('click', () =>
   G.tutorial ? startTutorial() : restartCurrentLevel()
 );
@@ -2142,6 +2366,10 @@ function startDailyChallenge() {
   G.hintTo       = -1;
   G.hintUntil    = 0;
   G.hintCooldown = false;
+  G.companionMode     = null;
+  G.companionPawFrom  = -1;
+  G.companionFreeUsed = false;
+  G.companionAim      = null;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
   G.jokerUsed    = findJokerTube(G.tubes) === -1;

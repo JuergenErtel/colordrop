@@ -79,6 +79,10 @@
                     <span class="hud-lives" id="livesDisplay"><span class="paw">🐾</span> <span id="livesCount">5</span></span>
                     <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
                     <button class="hud-btn hud-hint" id="hintBtn" aria-label="Hint">💡<span class="hud-hint-cost" id="hintCost"><i class="fishbone"></i>15</span></button>
+                    <button class="hud-btn hud-companion hidden" id="companionBtn" aria-label="Begleiter-Fähigkeit">
+                      <span id="companionBtnIcon">🐾</span>
+                      <span class="hud-hint-cost" id="companionCost"><i class="fishbone"></i>30</span>
+                    </button>
                     <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
                     <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
                 </div>
@@ -1011,6 +1015,19 @@
 
         <span class="splash-version">v2.0</span>
     </div>
+
+    <!-- Begleiter-Auswahl -->
+    <div id="companionPickOverlay" class="screen-overlay sheet-panel hidden">
+      <div class="album-card">
+        <h2>Begleiter wählen</h2>
+        <p class="muted">Jede Katze hilft anders beim Sortieren.</p>
+        <div id="companionPickList" class="companion-list"></div>
+        <button id="companionPickClose" class="btn">Schließen</button>
+      </div>
+    </div>
+
+    <!-- Toast / Kurzinfo -->
+    <div id="gameToast" class="game-toast" aria-live="polite"></div>
 
 <script type="module" src="js/main.js"></script>
 </body>
