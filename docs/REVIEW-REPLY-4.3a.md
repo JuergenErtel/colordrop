@@ -53,7 +53,7 @@ To see what makes this app distinct — step-by-step for the reviewer:
 1. Complete level 1.
 2. A companion cat ("Whisker", ability: magnet) is immediately unlocked and
    automatically set as your active companion.
-3. From level 2 onwards, a cat button appears in the bottom HUD (right side).
+3. From level 2 onwards, a cat button (her portrait) appears in the top toolbar.
 4. Tap the button, choose her ability — it is free, once per level.
 No in-game currency is required. The ability is accessible to all players from
 the second level without any purchase.
@@ -114,7 +114,7 @@ Wegbeschreibung zum Feature – Schritt für Schritt für den Prüfer:
 1. Level 1 abschließen.
 2. Direkt danach wird Begleiter-Katze „Whisker" (Fähigkeit: Magnet) freigeschaltet
    und automatisch als aktiver Begleiter gesetzt.
-3. Ab Level 2 erscheint der Katzen-Button im unteren HUD (rechts).
+3. Ab Level 2 erscheint der Katzen-Button (ihr Porträt) in der oberen Leiste.
 4. Button antippen, Fähigkeit wählen – kostenlos, einmal pro Level.
 Keine Spielwährung erforderlich. Die Fähigkeit ist ab dem zweiten Level für
 alle Spieler zugänglich, ohne Kauf.

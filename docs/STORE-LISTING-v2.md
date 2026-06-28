@@ -196,7 +196,7 @@ Download Kittysort, collect your favorite cats and puzzle yourself happy – you
 
 | Position | Pflichtinhalt | Zweck (4.3a) |
 |---|---|---|
-| **Screenshot 1** | Companion-Fähigkeit in Aktion (Katzen-Button unten rechts gedrückt, Fähigkeits-Overlay sichtbar) | Zeigt das differenzierende Feature auf dem ersten Bild |
+| **Screenshot 1** | Companion-Fähigkeit in Aktion (Katzen-Button oben in der Leiste gedrückt, Fähigkeits-Overlay sichtbar) | Zeigt das differenzierende Feature auf dem ersten Bild |
 | **Screenshot 2** | 34-Katzen-Sammelalbum (geöffnet, mehrere Katzen mit Fähigkeits-Icons sichtbar) | Belegt die Sammel-Identität visuell |
 | **Screenshot 3+** | Spielfeld, Modi-Auswahl, Raumdekoration — frei wählbar | Rundung des Erlebnisses |
 
