@@ -67,23 +67,29 @@
     <div class="wrap">
         <header class="header">
             <img class="title-logo" src="img/logo-mark.png" alt="Kittysort">
-            <p class="tagline">sort · schnurr · solve</p>
+            <p class="tagline">kuscheln · sammeln · schnurren</p>
         </header>
 
         <div class="canvas-wrap">
             <div class="canvas-inner">
                 <canvas id="c"></canvas>
                 <div class="hud-overlay">
-                    <button class="hud-btn" id="menuBtnHud" aria-label="Menu">☰</button>
-                    <span class="hud-bones" id="bonesDisplay"><i class="fishbone"></i> 0</span>
-                    <span class="hud-lives" id="livesDisplay"><span class="paw">🐾</span> <span id="livesCount">5</span></span>
-                    <button class="hud-btn" id="undoBtn" aria-label="Undo">↩</button>
-                    <button class="hud-btn hud-hint" id="hintBtn" aria-label="Hint">💡<span class="hud-hint-cost" id="hintCost"><i class="fishbone"></i>15</span></button>
-                    <button class="hud-btn hud-companion hidden" id="companionBtn" aria-label="Begleiter-Fähigkeit">
-                      <span id="companionBtnIcon">🐾</span>
-                    </button>
-                    <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
-                    <button class="hud-btn" id="resetBtn" aria-label="Reset">↺</button>
+                    <!-- Status-Cluster: Level · Gräten · Leben -->
+                    <div class="hud-status">
+                        <span class="hud-level" id="levelLabel">LEVEL 1 · EASY</span>
+                        <span class="hud-bones" id="bonesDisplay"><i class="fishbone"></i> 0</span>
+                        <span class="hud-lives" id="livesDisplay"><span class="heart">❤️</span><span id="livesCount">5</span></span>
+                    </div>
+                    <!-- Aktions-Cluster: Zurück · Tipp · Begleiter · Neustart · Menü -->
+                    <div class="hud-actions">
+                        <button class="hud-btn" id="undoBtn" aria-label="Zurück">↩</button>
+                        <button class="hud-btn hud-hint" id="hintBtn" aria-label="Tipp">💡<span class="hud-hint-cost" id="hintCost"><i class="fishbone"></i>15</span></button>
+                        <button class="hud-btn hud-companion hidden" id="companionBtn" aria-label="Begleiter-Fähigkeit">
+                            <canvas id="companionPortraitCanvas" width="36" height="36"></canvas>
+                        </button>
+                        <button class="hud-btn" id="resetBtn" aria-label="Neustart">↺</button>
+                        <button class="hud-btn" id="menuBtnHud" aria-label="Menü">☰</button>
+                    </div>
                 </div>
                 <div id="timerBar" class="timer-bar"></div>
                 <div id="timerCountdown" class="timer-countdown"></div>
@@ -105,7 +111,7 @@
             <canvas id="menuAmbient" class="menu-ambient" width="420" height="600"></canvas>
             <div class="ls-logo-wrap">
                 <img class="ls-title-logo" src="img/logo-mark.png" alt="Kittysort">
-                <p class="ls-tagline">sort · schnurr · solve</p>
+                <p class="ls-tagline">kuscheln · sammeln · schnurren</p>
             </div>
             <div class="ls-club-badge" id="lsClubBadge" style="display:none"></div>
             <button id="tutBtn" class="ls-tut-btn" type="button" aria-label="Tutorial starten">?</button>

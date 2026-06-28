@@ -1185,10 +1185,49 @@ function updateCompanionHUD() {
   const used = G.companionUsedThisLevel;
   btn.classList.toggle('used', used);
   btn.disabled = ANIM.busy || G.won || used;
-  // Portrait/Badge/Label setzt Task 4 (HUD-Redesign); hier nur Zustandslogik.
-  const aria = used
-    ? `Begleiter ${ac.cat.name} — in diesem Level bereits eingesetzt`
-    : `Begleiter ${ac.cat.name} — ${ac.ability.label} einsetzen (1× pro Level)`;
+
+  // ── Katzen-Portrait + Fähigkeits-Badge im Button rendern ──────────────
+  const canvas = document.getElementById('companionPortraitCanvas');
+  if (canvas && ac) {
+    const ctx = canvas.getContext('2d');
+    const w   = canvas.width;
+    const h   = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const params = CAT_PARAMS.find(p => p.id === ac.cat.id) || CAT_PARAMS[0];
+
+    // Portrait — bei Verbraucht-Zustand entsättigen
+    ctx.save();
+    if (used) {
+      ctx.filter      = 'grayscale(1)';
+      ctx.globalAlpha = 0.45;
+    }
+    drawCatPortrait(ctx, w / 2, h / 2, w * 0.40, params);
+    ctx.restore();
+
+    // Fähigkeits-Badge (Emoji) unten rechts
+    const badgePx = Math.round(w * 0.34);
+    ctx.font          = `${badgePx}px sans-serif`;
+    ctx.textAlign     = 'center';
+    ctx.textBaseline  = 'middle';
+    ctx.fillText(ac.ability.emoji, Math.round(w * 0.76), Math.round(h * 0.78));
+
+    // Verbraucht-Zustand: ✓ Overlay
+    if (used) {
+      ctx.font          = `bold ${Math.round(w * 0.52)}px sans-serif`;
+      ctx.textAlign     = 'center';
+      ctx.textBaseline  = 'middle';
+      ctx.fillStyle     = 'rgba(255,255,255,0.9)';
+      ctx.fillText('✓', w / 2, h / 2);
+    }
+  }
+
+  // Aria-Label aktualisieren
+  const aria = ac
+    ? (used
+        ? `Begleiter ${ac.cat.name} — in diesem Level bereits eingesetzt`
+        : `Begleiter ${ac.cat.name} — ${ac.ability.label} einsetzen (1× pro Level)`)
+    : 'Begleiter-Fähigkeit';
   btn.setAttribute('aria-label', aria);
 }
 

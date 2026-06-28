@@ -10,13 +10,31 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 8px 12px;
     background: linear-gradient(180deg, rgba(55,35,20,.62), rgba(60,40,25,.52));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(160,120,80,.18);
     border-radius: 20px 20px 0 0;
     z-index: 10;
+}
+
+/* ── Status-Cluster: Level · Gräten · Leben ──────────── */
+.hud-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* ── Aktions-Cluster: Zurück · Tipp · Begleiter · Reset · Menü ── */
+.hud-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .hud-btn {
@@ -84,11 +102,12 @@
 
 .hud-level {
     font-family: var(--f-head);
-    font-size: .95rem;
+    font-size: .8rem;
     letter-spacing: .06em;
-    flex: 1;
-    text-align: center;
-    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
     background: linear-gradient(180deg, #FFD700, #d4873f);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -299,11 +318,40 @@
   0%, 100% { box-shadow: 0 0 0 rgba(230,115,136,.3); }
   50%      { box-shadow: 0 0 10px rgba(230,115,136,.5); }
 }
-.hud-lives .paw { font-size: .8rem; }
-.hud-lives.premium .paw { filter: drop-shadow(0 0 4px rgba(255,215,0,.5)); }
+.hud-lives .heart { font-size: .8rem; }
+.hud-lives.premium .heart { filter: drop-shadow(0 0 4px rgba(255,215,0,.5)); }
 
-/* ── Begleiter-Button ──────────────────────────────────────────── */
+/* ── Begleiter-Button: Katzen-Portrait + rosa Akzent ───────────── */
 .hud-companion { position: relative; }
+
+#companionBtn {
+    width: 44px; height: 44px;
+    padding: 4px;
+    border: 2px solid #ffcad4;
+    background: rgba(255,202,212,.1);
+    box-shadow: 0 0 0 1px rgba(255,202,212,.25), 0 2px 0 rgba(160,70,90,.25), 0 3px 8px rgba(0,0,0,.25);
+    overflow: hidden;
+}
+#companionBtn:hover {
+    border-color: #ff9eb5;
+    background: rgba(255,202,212,.18);
+    box-shadow: 0 0 8px rgba(255,202,212,.45), 0 3px 0 rgba(160,70,90,.3), 0 5px 12px rgba(0,0,0,.35);
+}
+#companionBtn.used {
+    border-color: rgba(255,202,212,.35);
+    background: rgba(255,202,212,.05);
+    opacity: .7;
+}
+#companionBtn:disabled {
+    opacity: .5;
+    cursor: default;
+    pointer-events: none;
+}
+#companionPortraitCanvas {
+    display: block;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+}
 
 /* Begleiter-Auswahl-Button im Katzen-Detail (erbt .mascot-btn-Optik) */
 .companion-select-btn { background: linear-gradient(135deg, #ffcad4 0%, #ff9eb5 50%, #ff7fa3 100%); }
