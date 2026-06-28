@@ -1016,6 +1016,27 @@
         <span class="splash-version">v2.0</span>
     </div>
 
+    <!-- Begleiter Bestätigungs-/Erklär-Dialog -->
+    <div id="companionConfirmOverlay" class="blitz-overlay" style="--blitz-color:#ffcad4">
+        <div class="blitz-inner companion-confirm-inner">
+            <canvas id="ccPortrait" width="80" height="80" class="cc-portrait"></canvas>
+            <h2 class="blitz-title cc-name" id="ccName">Luna</h2>
+            <p class="cc-ability" id="ccAbility">🧺 Nickerchen-Korb</p>
+            <p class="cc-desc" id="ccDesc">Legt für dieses Level einen zusätzlichen leeren Korb an.</p>
+            <p class="cc-hint">Einmal pro Level · senkt die Sternwertung auf max. ⭐⭐</p>
+            <div class="cc-actions">
+                <button id="ccConfirmBtn" class="blitz-btn cc-confirm-btn" type="button">Einsetzen</button>
+                <button id="ccCancelBtn" class="cc-cancel-btn" type="button">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Begleiter Status-Leiste (Auswahl-Modus) -->
+    <div id="companionStatusBar" class="companion-status-bar hidden" aria-live="polite">
+        <span id="companionStatusText">Schritt 1/2: Quell-Röhre wählen</span>
+        <button id="companionStatusCancel" type="button">✕ Abbrechen</button>
+    </div>
+
     <!-- Toast / Kurzinfo -->
     <div id="gameToast" class="game-toast" aria-live="polite"></div>
 

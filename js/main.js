@@ -57,7 +57,7 @@ import { initNativeStatusBar } from './native-ui.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
 import { ANIM, resetAnim } from './animations.js';
-import { spawnFireflies, spawnConfetti, scheduleWinFireworks, triggerTubeExplosion } from './particles.js';
+import { spawnFireflies, spawnConfetti, scheduleWinFireworks, triggerTubeExplosion, spawnParticle } from './particles.js';
 import { playSound } from './audio.js';
 import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
 import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
@@ -1192,11 +1192,72 @@ function updateCompanionHUD() {
   btn.setAttribute('aria-label', aria);
 }
 
+// ── Begleiter Status-Leiste ──────────────────────────────────────────────────
+function setCompanionStatusBar(text) {
+  const bar  = document.getElementById('companionStatusBar');
+  const span = document.getElementById('companionStatusText');
+  if (!bar) return;
+  if (span) span.textContent = text;
+  bar.classList.remove('hidden');
+}
+
+function hideCompanionStatusBar() {
+  const bar = document.getElementById('companionStatusBar');
+  if (bar) bar.classList.add('hidden');
+}
+
+// ── Begleiter Bestätigungs-Dialog ───────────────────────────────────────────
+function openCompanionConfirm(ac) {
+  const overlay = document.getElementById('companionConfirmOverlay');
+  // Fallback: kein Dialog im DOM → direkt starten (sollte nie passieren)
+  if (!overlay) { startCompanionAbility(ac); return; }
+
+  // Katzen-Portrait zeichnen
+  const canvas = document.getElementById('ccPortrait');
+  if (canvas) {
+    const ctx2  = canvas.getContext('2d');
+    const params = CAT_PARAMS.find(p => p.id === ac.cat.id) || CAT_PARAMS[0];
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    drawCatPortrait(ctx2, canvas.width / 2, canvas.height / 2, canvas.width * 0.42, params);
+  }
+
+  // Texte befüllen
+  const nameEl    = document.getElementById('ccName');
+  const abilityEl = document.getElementById('ccAbility');
+  const descEl    = document.getElementById('ccDesc');
+  if (nameEl)    nameEl.textContent    = ac.cat.name;
+  if (abilityEl) abilityEl.textContent = `${ac.ability.emoji} ${ac.ability.label}`;
+  if (descEl)    descEl.textContent    = ac.ability.desc;
+
+  // Overlay einblenden
+  overlay.classList.add('show');
+
+  // Buttons verdrahten (je Öffnung einmalig)
+  const confirmBtn = document.getElementById('ccConfirmBtn');
+  const cancelBtn  = document.getElementById('ccCancelBtn');
+  const close = () => overlay.classList.remove('show');
+
+  const onConfirm = () => {
+    close();
+    confirmBtn.removeEventListener('click', onConfirm);
+    cancelBtn.removeEventListener('click',  onCancel);
+    startCompanionAbility(ac);
+  };
+  const onCancel = () => {
+    close();
+    confirmBtn.removeEventListener('click', onConfirm);
+    cancelBtn.removeEventListener('click',  onCancel);
+  };
+  confirmBtn.addEventListener('click', onConfirm);
+  cancelBtn.addEventListener('click',  onCancel);
+}
+
 // ── Begleiter-Einsatz-Logik ─────────────────────────────────────────────────
 function cancelCompanionMode() {
-  G.companionMode   = null;
+  G.companionMode    = null;
   G.companionPawFrom = -1;
-  G.companionAim    = null;
+  G.companionAim     = null;
+  hideCompanionStatusBar();
   updateHUD();
 }
 
@@ -1224,8 +1285,29 @@ function commitCompanion(next) {
   G.solvedTubes = new Set();
   for (let i = 0; i < G.tubes.length; i++) if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
 
+  // Einsatz-Feedback: Sound + Haptik (über playSound) + Partikel-Burst
+  const _fbAc = activeCompanion();
+  if (_fbAc) {
+    const _snd = _fbAc.ability.id === 'nap' ? 'pop'
+               : _fbAc.ability.id === 'paw' ? 'select'
+               : 'solved';
+    playSound(_snd);
+    // Kurzer Partikel-Burst in der Mitte des Spielfelds
+    const _px = CW / 2;
+    const _py = CH / 2;
+    for (let _i = 0; _i < 14; _i++) {
+      const _angle = (_i / 14) * Math.PI * 2;
+      const _spd   = 1.2 + Math.random() * 2.2;
+      spawnParticle(
+        _px + (Math.random() - 0.5) * 20,
+        _py + (Math.random() - 0.5) * 20,
+        Math.cos(_angle) * _spd,
+        Math.sin(_angle) * _spd - 0.8,
+        '#ffcad4', 4 + Math.random() * 4, 700, 0.06,
+      );
+    }
+  }
   cancelCompanionMode();
-  // (Task 3 fügt hier das Einsatz-Feedback ein.)
   updateHUD();
   if (checkWinState(G.tubes) && !G.won) { G.won = true; showWin(); }
 }
@@ -1236,19 +1318,40 @@ function onCompanionClick() {
   if (G.won || ANIM.busy) return;
   if (G.companionUsedThisLevel) { showToast('Begleiter in diesem Level schon eingesetzt'); return; }
   const ac = activeCompanion();
-  // Task 3 schaltet hier den Bestätigungs-/Erklär-Dialog davor; nach Bestätigung:
-  startCompanionAbility(ac);
+  openCompanionConfirm(ac);
+}
+
+/** Gibt ein Set der Röhren-Indizes zurück, deren oberste Farbe in mind. einer
+ *  anderen Röhre ebenfalls obenliegt — sinnvolle Magnet-Ziele. */
+function magnetAimCandidates(tubes) {
+  const topColors = tubes.map(t => t.length > 0 ? t[t.length - 1] : null);
+  const colorCount = {};
+  for (const c of topColors) {
+    if (c && c !== 'joker') colorCount[c] = (colorCount[c] || 0) + 1;
+  }
+  const result = new Set();
+  for (let i = 0; i < tubes.length; i++) {
+    const c = topColors[i];
+    if (c && colorCount[c] >= 2) result.add(i);
+  }
+  return result.size > 0 ? result : null;
 }
 
 function startCompanionAbility(ac) {
   if (ac.ability.id === 'nap') {
     commitCompanion(applyNapBasket(G.tubes));
   } else if (ac.ability.id === 'paw') {
-    G.companionMode = 'pawFrom'; G.companionPawFrom = -1;
-    showToast('Pfoten-Trick: Quell-Röhre antippen'); updateHUD();
+    G.companionMode    = 'pawFrom';
+    G.companionPawFrom = -1;
+    setCompanionStatusBar('Schritt 1/2: Quell-Röhre wählen');
+    updateHUD();
   } else if (ac.ability.id === 'magnet') {
     G.companionMode = 'magnetColor';
-    showToast('Magnet: Röhre mit Zielfarbe antippen'); updateHUD();
+    // Kandidaten-Röhren vorhervorheben: alle Röhren, deren oberste Farbe
+    // auch bei mind. einer anderen Röhre obenliegt (sinnvolle Ziele).
+    G.companionAim = magnetAimCandidates(G.tubes);
+    setCompanionStatusBar('Farbe wählen: Röhre mit Zielfarbe antippen');
+    updateHUD();
   }
 }
 
@@ -1272,7 +1375,7 @@ function handleCompanionTap(idx) {
     G.companionPawFrom = idx;
     G.companionMode    = 'pawTo';
     G.companionAim     = new Set(pawTrickTargets(G.tubes, idx));
-    showToast('Pfoten-Trick: Ziel-Röhre antippen');
+    setCompanionStatusBar('Schritt 2/2: Ziel-Röhre wählen');
     return;
   }
   if (G.companionMode === 'pawTo') {
@@ -2277,6 +2380,7 @@ document.getElementById('menuBtnHud').addEventListener('click', () => { playSoun
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('hintBtn').addEventListener('click', showHintAction);
 document.getElementById('companionBtn').addEventListener('click', () => { playSound('click'); onCompanionClick(); });
+document.getElementById('companionStatusCancel').addEventListener('click', () => { playSound('click'); cancelCompanionMode(); });
 document.getElementById('resetBtn').addEventListener('click', () =>
   G.tutorial ? startTutorial() : restartCurrentLevel()
 );

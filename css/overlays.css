@@ -791,3 +791,106 @@
 .hud-legend-text { display: flex; flex-direction: column; gap: .1rem; }
 .hud-legend-name { font-weight: 700; color: #fff; font-size: .95rem; }
 .hud-legend-desc { font-size: .82rem; color: rgba(255,255,255,.65); line-height: 1.35; }
+
+/* ── Begleiter Bestätigungs-Dialog ───────────────────────────────────── */
+.companion-confirm-inner {
+    max-width: 320px;
+    padding: 1.8rem 2rem;
+}
+.cc-portrait {
+    border-radius: 50%;
+    border: 2px solid rgba(255,202,212,.4);
+    margin: 0 auto .75rem;
+    display: block;
+    background: rgba(255,202,212,.06);
+}
+.cc-name {
+    font-size: 1.4rem;
+    margin: 0 0 .4rem;
+}
+.cc-ability {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.05rem;
+    color: #ffcad4;
+    margin: 0 0 .5rem;
+    font-weight: 600;
+}
+.cc-desc {
+    font-size: .88rem;
+    color: rgba(255,255,255,.75);
+    margin: 0 0 .5rem;
+    line-height: 1.45;
+}
+.cc-hint {
+    font-size: .75rem;
+    color: rgba(255,255,255,.38);
+    font-style: italic;
+    margin: 0 0 1.2rem;
+}
+.cc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    align-items: center;
+}
+.cc-confirm-btn {
+    width: 100%;
+    max-width: 190px;
+}
+.cc-cancel-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.42);
+    font-size: .84rem;
+    cursor: pointer;
+    padding: .3rem .8rem;
+    font-family: var(--f-body);
+    text-decoration: underline;
+    transition: color .15s;
+}
+.cc-cancel-btn:hover { color: rgba(255,255,255,.68); }
+
+/* ── Begleiter Status-Leiste ──────────────────────────────────────────── */
+.companion-status-bar {
+    position: fixed;
+    bottom: 74px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    background: rgba(40,24,12,.92);
+    border: 1px solid rgba(255,202,212,.35);
+    border-radius: 100px;
+    padding: 8px 12px 8px 18px;
+    z-index: 9400;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    white-space: nowrap;
+    color: #ffcad4;
+    font-family: var(--f-body);
+    font-size: .82rem;
+    font-weight: 600;
+    opacity: 1;
+    pointer-events: all;
+    transition: opacity .25s ease, transform .25s ease;
+}
+.companion-status-bar.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(12px);
+}
+#companionStatusCancel {
+    background: rgba(255,202,212,.14);
+    border: 1px solid rgba(255,202,212,.3);
+    color: rgba(255,255,255,.62);
+    font-size: .78rem;
+    font-weight: 600;
+    border-radius: 100px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: var(--f-body);
+    transition: background .15s;
+    white-space: nowrap;
+}
+#companionStatusCancel:hover { background: rgba(255,202,212,.28); }
