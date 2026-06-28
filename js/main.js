@@ -1187,12 +1187,18 @@ function updateCompanionHUD() {
   btn.disabled = ANIM.busy || G.won || used;
 
   // ── Katzen-Portrait + Fähigkeits-Badge im Button rendern ──────────────
+  // HiDPI: Backing-Store auf devicePixelRatio hochskalieren, danach in
+  // 36×36-Logikkoordinaten zeichnen. CSS-Größe bleibt 36×36px.
   const canvas = document.getElementById('companionPortraitCanvas');
   if (canvas && ac) {
-    const ctx = canvas.getContext('2d');
-    const w   = canvas.width;
-    const h   = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    const W   = 36;                          // Logik-Koordinaten (CSS-px)
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = Math.round(W * dpr);     // setzt Backing-Store + resettet Context
+    canvas.height = Math.round(W * dpr);
+    const ctx = canvas.getContext('2d');     // ctx NACH Größen-Set holen
+    ctx.setTransform(1, 0, 0, 1, 0, 0);      // idempotent: kein akkumuliertes Skalieren
+    ctx.scale(dpr, dpr);                      // einmalig pro Aufruf
+    ctx.clearRect(0, 0, W, W);
 
     const params = CAT_PARAMS.find(p => p.id === ac.cat.id) || CAT_PARAMS[0];
 
@@ -1202,23 +1208,23 @@ function updateCompanionHUD() {
       ctx.filter      = 'grayscale(1)';
       ctx.globalAlpha = 0.45;
     }
-    drawCatPortrait(ctx, w / 2, h / 2, w * 0.40, params);
+    drawCatPortrait(ctx, W / 2, W / 2, W * 0.40, params);
     ctx.restore();
 
     // Fähigkeits-Badge (Emoji) unten rechts
-    const badgePx = Math.round(w * 0.34);
+    const badgePx = Math.round(W * 0.40);
     ctx.font          = `${badgePx}px sans-serif`;
     ctx.textAlign     = 'center';
     ctx.textBaseline  = 'middle';
-    ctx.fillText(ac.ability.emoji, Math.round(w * 0.76), Math.round(h * 0.78));
+    ctx.fillText(ac.ability.emoji, Math.round(W * 0.76), Math.round(W * 0.78));
 
     // Verbraucht-Zustand: ✓ Overlay
     if (used) {
-      ctx.font          = `bold ${Math.round(w * 0.52)}px sans-serif`;
+      ctx.font          = `bold ${Math.round(W * 0.52)}px sans-serif`;
       ctx.textAlign     = 'center';
       ctx.textBaseline  = 'middle';
       ctx.fillStyle     = 'rgba(255,255,255,0.9)';
-      ctx.fillText('✓', w / 2, h / 2);
+      ctx.fillText('✓', W / 2, W / 2);
     }
   }
 
