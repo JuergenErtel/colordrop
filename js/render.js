@@ -401,7 +401,7 @@ function drawTubes(ctx, ts, G) {
     const tube  = G.tubes[i];
     const cx    = tubeCX(i, tubeCount);
     const sel   = G.selected === i && !ANIM.busy;
-    const solved   = isSolved(tube);
+    const solved   = isSolved(tube) && tube.length > 0;  // leere Röhren NICHT als „gelöst" (grün) markieren
     const flashing = G.flashTube === i && G.frameTime < G.flashUntil;
     const hintSrc  = G.hintFrom === i && G.frameTime < G.hintUntil;
     const hintDst  = G.hintTo === i && G.frameTime < G.hintUntil;

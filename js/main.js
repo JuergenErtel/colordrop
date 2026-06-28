@@ -530,11 +530,10 @@ function showCatUnlockCelebration(cat, extraCount = 0) {
   // Mehrfach-Unlock: "+N weitere" Hinweis anzeigen, sonst leer lassen
   const hintEl = clone.querySelector('#catUnlockHint');
   if (hintEl) {
-    if (extraCount > 0) {
-      hintEl.textContent = `+ ${extraCount} weitere Katze${extraCount === 1 ? '' : 'n'} freigeschaltet!`;
-    } else {
-      hintEl.textContent = '';
-    }
+    // Kein „+N weitere"-Hinweis mehr (verwirrend bei Migrations-Mehrfach-Unlock).
+    // Zusätzliche Katzen sind still im Album sichtbar; Onboarding läuft über den
+    // eigenständigen Begleiter-Intro-Dialog.
+    hintEl.textContent = '';
   }
 
   // Animate mascot cat on the cloned canvas

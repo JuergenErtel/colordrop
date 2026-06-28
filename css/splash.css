@@ -73,6 +73,13 @@
 
 /* ── Logo — hidden, image has it ── */
 .splash-logo { display: none; }
+.splash-logo-img {
+    display: block;
+    width: min(74%, 380px);
+    height: auto;
+    margin: 0 auto 6px;
+    filter: drop-shadow(0 4px 14px rgba(0,0,0,0.35));
+}
 @keyframes splashFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
 .splash-tagline { display: none; }
