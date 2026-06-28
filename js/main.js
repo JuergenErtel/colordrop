@@ -490,21 +490,21 @@ let unlockShowing = false;
 let _pendingAchs = [];
 let _pendingCats = [];
 
-function showCatUnlockToast(cat) {
-  unlockQueue.push(cat);
+function showCatUnlockToast(cat, extraCount = 0) {
+  unlockQueue.push({ cat, extraCount });
   if (!unlockShowing) processUnlockQueue();
 }
 
 function processUnlockQueue() {
   if (unlockQueue.length === 0) { unlockShowing = false; return; }
   unlockShowing = true;
-  const cat = unlockQueue.shift();
-  showCatUnlockCelebration(cat);
+  const { cat, extraCount } = unlockQueue.shift();
+  showCatUnlockCelebration(cat, extraCount);
 }
 
 let _unlockAnimId = 0;
 
-function showCatUnlockCelebration(cat) {
+function showCatUnlockCelebration(cat, extraCount = 0) {
   playSound('cat_unlock');
   if (_unlockAnimId) { cancelAnimationFrame(_unlockAnimId); _unlockAnimId = 0; }
 
@@ -527,14 +527,11 @@ function showCatUnlockCelebration(cat) {
   clone.querySelector('#catUnlockBreed').textContent = cat.breed;
   clone.querySelector('#catUnlockFact').textContent = cat.fact;
 
-  // Beim ersten Katzen-Unlock: Begleiter-Onboarding mit Fähigkeits-Info
+  // Mehrfach-Unlock: "+N weitere" Hinweis anzeigen, sonst leer lassen
   const hintEl = clone.querySelector('#catUnlockHint');
   if (hintEl) {
-    const collection = loadCollection();
-    if (collection.length <= 1) {
-      const abilityInfo = COMPANION_ABILITIES.find(a => a.id === cat.ability);
-      const abilityLabel = abilityInfo ? `${abilityInfo.emoji} ${abilityInfo.label}` : cat.ability;
-      hintEl.textContent = `${cat.name} begleitet dich jetzt! Tippe im Level unten den Katzen-Button, um ${abilityLabel} einzusetzen — 1× pro Level, gratis.`;
+    if (extraCount > 0) {
+      hintEl.textContent = `+ ${extraCount} weitere Katze${extraCount === 1 ? '' : 'n'} freigeschaltet!`;
     } else {
       hintEl.textContent = '';
     }
@@ -827,6 +824,10 @@ function generateLevel(n) {
   } else if (MOVE_LIMIT.enabled && n === MOVE_LIMIT.onsetLevel && !hasSeenIntro('movelimit')) {
     ANIM.busy = true;
     document.getElementById('moveLimitIntroOverlay').classList.add('show');
+  } else if (companionAvailable() && !hasSeenIntro('companion')) {
+    // Begleiter-Onboarding: einmalig zeigen, sobald im Standard-Level eine Katze aktiv ist
+    ANIM.busy = true;
+    document.getElementById('companionIntroOverlay').classList.add('show');
   }
 
   updateHUD();
@@ -1909,10 +1910,11 @@ function _waitForCatUnlock(onClosed) {
 
 function processPendingUnlocks(onDone) {
   if (_pendingAchs.length === 0) {
-    // No achievements, but maybe non-achievement cat unlocks
-    for (const id of _pendingCats) {
-      const cat = CATS.find(c => c.id === id);
-      if (cat) showCatUnlockToast(cat);
+    // Keine Achievements — evtl. nur Katzen-Unlocks
+    // Mehrere gleichzeitige Unlocks bündeln: nur erste Katze feiern, "+N" Hinweis
+    const allCats = _pendingCats.map(id => CATS.find(c => c.id === id)).filter(Boolean);
+    if (allCats.length > 0) {
+      showCatUnlockToast(allCats[0], allCats.length - 1);
     }
     _pendingAchs = [];
     _pendingCats = [];
@@ -1920,9 +1922,9 @@ function processPendingUnlocks(onDone) {
     return;
   }
 
-  // Show achievement overlays; cat unlocks for achievement-linked cats
-  // are handled inside showAchievementOverlays via unlocksCat.
-  // Non-achievement cat unlocks still use the old toast.
+  // Achievement-Overlays zeigen; achievement-verknüpfte Katzen werden
+  // innerhalb von showAchievementOverlays via unlocksCat behandelt.
+  // Nicht-achievement-verknüpfte Katzen gebündelt danach zeigen.
   const achCatIds = new Set();
   const achProgress = getAchievementProgress();
   for (const id of _pendingAchs) {
@@ -1931,12 +1933,13 @@ function processPendingUnlocks(onDone) {
   }
 
   showAchievementOverlays(_pendingAchs, () => {
-    // Show any non-achievement cat unlocks after
-    for (const id of _pendingCats) {
-      if (!achCatIds.has(id)) {
-        const cat = CATS.find(c => c.id === id);
-        if (cat) showCatUnlockToast(cat);
-      }
+    // Nicht-achievement-verknüpfte Katzen gebündelt anzeigen
+    const nonAchCats = _pendingCats
+      .filter(id => !achCatIds.has(id))
+      .map(id => CATS.find(c => c.id === id))
+      .filter(Boolean);
+    if (nonAchCats.length > 0) {
+      showCatUnlockToast(nonAchCats[0], nonAchCats.length - 1);
     }
     _pendingAchs = [];
     _pendingCats = [];
@@ -2141,6 +2144,7 @@ function openLevelSelect() {
   document.getElementById('jokerIntroOverlay').classList.remove('show');
   document.getElementById('iceIntroOverlay').classList.remove('show');
   document.getElementById('moveLimitIntroOverlay').classList.remove('show');
+  document.getElementById('companionIntroOverlay').classList.remove('show');
   document.getElementById('mouseOverlay').classList.remove('show');
   document.getElementById('mouseIntroOverlay').classList.remove('show');
   document.getElementById('mouseGameOverOverlay').classList.remove('show');
@@ -2775,6 +2779,13 @@ document.getElementById('moveLimitIntroBtn').addEventListener('click', () => {
   playSound('click');
   markIntroSeen('movelimit');
   document.getElementById('moveLimitIntroOverlay').classList.remove('show');
+  ANIM.busy = false;
+});
+
+document.getElementById('companionIntroBtn').addEventListener('click', () => {
+  playSound('click');
+  markIntroSeen('companion');
+  document.getElementById('companionIntroOverlay').classList.remove('show');
   ANIM.busy = false;
 });
 
