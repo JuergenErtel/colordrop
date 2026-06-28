@@ -60,7 +60,7 @@ import { ANIM, resetAnim } from './animations.js';
 import { spawnFireflies, spawnConfetti, scheduleWinFireworks, triggerTubeExplosion, spawnParticle } from './particles.js';
 import { playSound } from './audio.js';
 import { setSfxVolume, setSfxEnabled, isSfxEnabled, getSfxVolume } from './audio.js';
-import { renderFrame, tubeCX, ballCY, floatY, tubeAt } from './render.js';
+import { renderFrame, tubeCX, ballCY, floatY, tubeAt, triggerSolvedTubeClear } from './render.js';
 import { drawBall } from './balls.js';
 import { startMusic, stopMusic, setMusicVolume, setMusicEnabled, isMusicEnabled, getMusicVolume } from './music.js';
 import { initSplash, hideSplash, showSplash, updateSplashMascot } from './splash.js';
@@ -1356,8 +1356,17 @@ function commitCompanion(next) {
     }
   }
 
-  G.solvedTubes = new Set();
-  for (let i = 0; i < G.tubes.length; i++) if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
+  // Neu komplettierte (volle) Röhren wie bei einem normalen Zug auflösen lassen:
+  // Explosion + Clear-Animation + Leeren + Win-Check. Sonst bleiben per Magnet/
+  // Pfoten-Trick gefüllte Röhren bis zum Levelende sichtbar stehen.
+  let _clearedAny = false;
+  const _clearTs = performance.now();
+  for (let i = 0; i < G.tubes.length; i++) {
+    if (!G.solvedTubes.has(i) && isSolved(G.tubes[i]) && G.tubes[i].length > 0) {
+      triggerSolvedTubeClear(i, _clearTs, G.tubes.length, G);
+      _clearedAny = true;
+    }
+  }
 
   // Einsatz-Feedback: Sound + Haptik (über playSound) + Partikel-Burst
   const _fbAc = activeCompanion();
@@ -1383,7 +1392,10 @@ function commitCompanion(next) {
   }
   cancelCompanionMode();
   updateHUD();
-  if (checkWinState(G.tubes) && !G.won) { G.won = true; showWin(); }
+  // Win wird nach der Clear-Animation (in triggerSolvedTubeClear) ausgelöst.
+  // Fallback nur, wenn keine Röhre aufgelöst wurde, das Brett aber dennoch
+  // gewonnen ist (Sicherheitsnetz, tritt im Normalfall nicht ein).
+  if (!_clearedAny && checkWinState(G.tubes) && !G.won) { G.won = true; showWin(); }
 }
 
 function onCompanionClick() {

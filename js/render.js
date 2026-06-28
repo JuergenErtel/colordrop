@@ -118,6 +118,68 @@ function triggerWinSequence(ts, G, tubeCount) {
   }
 }
 
+// Eine voll gelöste Röhre auflösen lassen: Explosion + Clear-Animation, danach
+// Röhre leeren und Win prüfen. Wird sowohl beim normalen Zug (Arc-Abschluss) als
+// auch bei Begleiter-Zügen (Magnet/Pfoten-Trick) aufgerufen, damit komplettierte
+// Röhren überall gleich verschwinden. Idempotent: bereits gelöste/leere Röhren
+// werden übersprungen.
+export function triggerSolvedTubeClear(toTube, ts, tubeCount, G) {
+  if (G.solvedTubes.has(toTube) || !isSolved(G.tubes[toTube]) || G.tubes[toTube].length === 0) return;
+  G.solvedTubes.add(toTube);
+  triggerTubeExplosion(toTube, G.tubes, (idx) => tubeCX(idx, tubeCount));
+  playSound('solved');
+
+  // Schedule the clear animation
+  const clearDuration = 500;
+  ANIM.tubeClear.set(toTube, {
+    startTime: ts,
+    duration: clearDuration,
+    color: G.tubes[toTube][0], // all same color
+  });
+
+  // After animation: empty the tube and check win
+  const savedColor = G.tubes[toTube][0];
+  const savedTubeIdx = toTube;
+  const savedTubeCount = tubeCount;
+  setTimeout(() => {
+    // If clear was cancelled (e.g. by undo), skip
+    if (!ANIM.tubeClear.has(savedTubeIdx)) return;
+    ANIM.tubeClear.delete(savedTubeIdx);
+    G.tubes[savedTubeIdx].length = 0;
+    G.solvedTubes.delete(savedTubeIdx);
+    // Screen shake on clear
+    if (!REDUCED_MOTION) {
+      ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 3 };
+    }
+    // Final burst of particles at tube center
+    const burstCx = tubeCX(savedTubeIdx, savedTubeCount);
+    const pal = PALETTE[savedColor];
+    if (pal) {
+      for (let p = 0; p < 18; p++) {
+        const angle = (Math.PI * 2 * p) / 18 + Math.random() * 0.3;
+        const speed = 4 + Math.random() * 5;
+        spawnParticle(
+          burstCx, 320,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed - 3,
+          pal.bright,
+          5 + Math.random() * 4,
+          500 + Math.random() * 400,
+          0.12,
+        );
+      }
+    }
+
+    // Win check after clear
+    const won2 = G.tutorial ? checkWinTutorial(G.tubes) : checkWinState(G.tubes);
+    if (won2 && !G.won) {
+      G.won = true;
+      triggerWinSequence(performance.now(), G, savedTubeCount);
+    }
+    if (G.onHUDUpdate) G.onHUDUpdate();
+  }, clearDuration);
+}
+
 // ── Arc completion ───────────────────────────────────────────────────────
 
 function updateArc(ts, G) {
@@ -208,61 +270,7 @@ function updateArc(ts, G) {
   }
 
   // Tube solved → clear animation (balls vanish with effect)
-  if (!G.solvedTubes.has(toTube) && isSolved(G.tubes[toTube]) && G.tubes[toTube].length > 0) {
-    G.solvedTubes.add(toTube);
-    triggerTubeExplosion(toTube, G.tubes, (idx) => tubeCX(idx, tubeCount));
-    playSound('solved');
-
-    // Schedule the clear animation
-    const clearDuration = 500;
-    ANIM.tubeClear.set(toTube, {
-      startTime: ts,
-      duration: clearDuration,
-      color: G.tubes[toTube][0], // all same color
-    });
-
-    // After animation: empty the tube and check win
-    const savedColor = G.tubes[toTube][0];
-    const savedTubeIdx = toTube;
-    const savedTubeCount = tubeCount;
-    setTimeout(() => {
-      // If clear was cancelled (e.g. by undo), skip
-      if (!ANIM.tubeClear.has(savedTubeIdx)) return;
-      ANIM.tubeClear.delete(savedTubeIdx);
-      G.tubes[savedTubeIdx].length = 0;
-      G.solvedTubes.delete(savedTubeIdx);
-      // Screen shake on clear
-      if (!REDUCED_MOTION) {
-        ANIM.screenShake = { startTime: performance.now(), duration: 200, amplitude: 3 };
-      }
-      // Final burst of particles at tube center
-      const burstCx = tubeCX(savedTubeIdx, savedTubeCount);
-      const pal = PALETTE[savedColor];
-      if (pal) {
-        for (let p = 0; p < 18; p++) {
-          const angle = (Math.PI * 2 * p) / 18 + Math.random() * 0.3;
-          const speed = 4 + Math.random() * 5;
-          spawnParticle(
-            burstCx, 320,
-            Math.cos(angle) * speed,
-            Math.sin(angle) * speed - 3,
-            pal.bright,
-            5 + Math.random() * 4,
-            500 + Math.random() * 400,
-            0.12,
-          );
-        }
-      }
-
-      // Win check after clear
-      const won2 = G.tutorial ? checkWinTutorial(G.tubes) : checkWinState(G.tubes);
-      if (won2 && !G.won) {
-        G.won = true;
-        triggerWinSequence(performance.now(), G, savedTubeCount);
-      }
-      if (G.onHUDUpdate) G.onHUDUpdate();
-    }, clearDuration);
-  }
+  triggerSolvedTubeClear(toTube, ts, tubeCount, G);
 
   // Ice thaw: check if any frozen ball is now alone in its tube
   if (G.frozenBalls && G.frozenBalls.size > 0) {
