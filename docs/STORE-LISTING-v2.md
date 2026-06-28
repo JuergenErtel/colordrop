@@ -102,7 +102,7 @@ Ordne die bunten Wollknäuel in den Körben, bis jeder Korb nur noch eine Farbe 
 • Hund- und Maus-Speziallevel mit eigenen Regeln
 
 🏡 DEKORIEREN & SAMMELN
-Richte deine Räume gemütlich ein und füll dein Katzen-Album. Jedes gelöste Level bringt dich deiner kompletten Sammlung näher.
+Richte deine Räume gemütlich ein und füll dein Katzen-Album. Jedes abgeschlossene Level bringt dich deiner kompletten Sammlung näher.
 
 🎵 ALLES SELBST GEMACHT
 Eigene Musik aus einer selbstgebauten Synth-Engine mit Originaltracks, prozedural gezeichnete Katzen und vollständig eigener Code – keine gekaufte Vorlage, keine fertige Spiele-Engine. Lokalisiert in Deutsch und Englisch.
@@ -164,7 +164,7 @@ Arrange the colorful yarn balls into baskets until each basket holds a single co
 • Dog and Mouse special levels with their own rules
 
 🏡 DECORATE & COLLECT
-Cozy up your rooms and fill your cat album. Every level you solve brings your full collection closer.
+Cozy up your rooms and fill your cat album. Every level you complete brings your full collection closer.
 
 🎵 ALL HANDMADE
 Original music from a self-built synth engine, procedurally drawn cats and fully custom code – no bought template, no ready-made game engine. Localized in English and German.

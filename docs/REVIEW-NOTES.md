@@ -12,7 +12,7 @@ Kein Demo-Account nötig (kein Login, Spielstand nur lokal).
 ## 🇩🇪 Deutsch
 
 ```
-Kittysort: Cat Companions ist ein gemütliches Katzen-Sammelspiel mit
+Kittysort: Katzen-Begleiter ist ein gemütliches Katzen-Sammelspiel mit
 Puzzle-Einlagen. Kein Benutzerkonto, keine Anmeldung — der Spielstand wird
 ausschließlich lokal auf dem Gerät gespeichert. Die App ist vollständig
 offline spielbar.
