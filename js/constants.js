@@ -158,20 +158,20 @@ export const TIER_DEFS = [
 
 // ── Achievements ──────────────────────────────────────────────────────────
 export const ACHIEVEMENTS = [
-  { id: 'first_solve',    icon: '🐱', title: 'First Purr',        desc: 'Solve your first level.',                  target: 1 },
-  { id: 'cat_nap',        icon: '🐈', title: 'Cat Nap',           desc: 'Play 7 days in a row.',                    target: 7 },
-  { id: 'paw_print',      icon: '🐾', title: 'Paw Print',         desc: 'Solve 20 levels.',                         target: 20 },
-  { id: 'pride_of_lions', icon: '🦁', title: 'Pride of Lions',    desc: 'Solve 50 levels.',                         target: 50 },
-  { id: 'cat_king',       icon: '👑', title: 'Cat King',          desc: 'Reach level 30.',                          target: 30 },
-  { id: 'yarn_ball',      icon: '🧶', title: 'Yarn Ball',         desc: 'Collect 3 stars on 10 levels.',            target: 10 },
-  { id: 'tangled',        icon: '🧵', title: 'Tangled',           desc: 'Collect 3 stars on 20 levels.',            target: 20 },
-  { id: 'daily_player',   icon: '📅', title: 'Daily Player',      desc: 'Complete a daily puzzle.',                  target: 1 },
-  { id: 'sharpshooter',   icon: '🎯', title: 'Sharpshooter',      desc: 'Collect 3 stars on 3 levels.',             target: 3 },
-  { id: 'star_collector', icon: '⭐', title: 'Star Collector',    desc: 'Collect 60 stars total.',                  target: 60 },
-  { id: 'hot_streak',     icon: '🔥', title: 'Hot Streak',        desc: 'Solve 5 levels in a row without undo.',    target: 5 },
-  { id: 'purrfect',       icon: '💫', title: 'Purrfect',          desc: 'Get 3 stars on 10 levels.',                target: 10 },
-  { id: 'lightning_paw',  icon: '⚡', title: 'Lightning Paw',     desc: 'Solve a timed level with >50% time left.', target: 1 },
-  { id: 'legendary',      icon: '🌟', title: 'Legendary',         desc: 'Unlock all other achievements.',           target: 13 },
+  { id: 'first_solve',    icon: '🐱', title: 'Erstes Schnurren',  desc: 'Löse dein erstes Level.',                    target: 1 },
+  { id: 'cat_nap',        icon: '🐈', title: 'Katzennickerchen',  desc: 'Spiele 7 Tage in Folge.',                    target: 7 },
+  { id: 'paw_print',      icon: '🐾', title: 'Pfotenabdruck',     desc: 'Löse 20 Level.',                             target: 20 },
+  { id: 'pride_of_lions', icon: '🦁', title: 'Löwenrudel',        desc: 'Löse 50 Level.',                             target: 50 },
+  { id: 'cat_king',       icon: '👑', title: 'Katzenkönig',       desc: 'Erreiche Level 30.',                         target: 30 },
+  { id: 'yarn_ball',      icon: '🧶', title: 'Wollknäuel',        desc: 'Hol 3 Sterne in 10 Leveln.',                 target: 10 },
+  { id: 'tangled',        icon: '🧵', title: 'Verheddert',        desc: 'Hol 3 Sterne in 20 Leveln.',                 target: 20 },
+  { id: 'daily_player',   icon: '📅', title: 'Täglich dabei',     desc: 'Schließe ein Tagesrätsel ab.',               target: 1 },
+  { id: 'sharpshooter',   icon: '🎯', title: 'Scharfschütze',     desc: 'Hol 3 Sterne in 3 Leveln.',                  target: 3 },
+  { id: 'star_collector', icon: '⭐', title: 'Sternensammler',    desc: 'Sammle insgesamt 60 Sterne.',                target: 60 },
+  { id: 'hot_streak',     icon: '🔥', title: 'Heiße Serie',       desc: 'Löse 5 Level in Folge ohne Rückgängig.',     target: 5 },
+  { id: 'purrfect',       icon: '💫', title: 'Schnurrfekt',       desc: 'Hol 3 Sterne in 10 Leveln.',                 target: 10 },
+  { id: 'lightning_paw',  icon: '⚡', title: 'Blitzpfote',        desc: 'Löse ein Zeit-Level mit über 50 % Restzeit.', target: 1 },
+  { id: 'legendary',      icon: '🌟', title: 'Legendär',          desc: 'Schalte alle anderen Erfolge frei.',         target: 13 },
 ];
 
 // ── Tutorial data ─────────────────────────────────────────────────────────

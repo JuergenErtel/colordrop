@@ -2258,7 +2258,7 @@ function buildStatsScreen() {
   }
 
   document.getElementById('achCount').textContent =
-    'ACHIEVEMENTS ' + ach.length + ' / ' + ACHIEVEMENTS.length;
+    'ERFOLGE ' + ach.length + ' / ' + ACHIEVEMENTS.length;
   const achGrid = document.getElementById('achGrid');
   achGrid.innerHTML = '';
   for (const a of ACHIEVEMENTS) {
