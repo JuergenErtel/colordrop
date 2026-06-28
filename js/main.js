@@ -41,7 +41,7 @@ import {
 import {
   levelConfig, parForLevel, isTimedLevel, timerDuration,
   calcStars, checkWinState, isSolved, canMove, moveLimit,
-  generateTubes, generateTutorialTubes, solveHint, findJokerTube,
+  generateTubes, generateTutorialTubes, solveHint, findJokerTube, applyJokerRemoval,
   dailyLevelNum, generateDailyTubes, getIcePositions, isDogLevel,
   isMouseLevel, mouseConfig, isSolvable,
 } from './engine.js';
@@ -1208,11 +1208,24 @@ function commitCompanion(next) {
 
   G.companionUsedThisLevel = true;
   G.tubes = next;
+
+  // Begleiter-Zug kann den Joker erstmals mit Farben teilen → Überschussball
+  // entfernen und Joker als committet markieren (sonst bleibt das Level unlösbar).
+  if (!G.jokerUsed) {
+    const jti = findJokerTube(G.tubes);
+    if (jti !== -1) {
+      const jt = G.tubes[jti];
+      if (jt.length >= 2 && jt.some(c => c !== 'joker')) {
+        if (applyJokerRemoval(G.tubes, jti)) G.jokerUsed = true;
+      }
+    }
+  }
+
   G.solvedTubes = new Set();
   for (let i = 0; i < G.tubes.length; i++) if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
 
   cancelCompanionMode();
-  // (Task 2 fügt hier die Joker-Removal-Logik ein; Task 3 das Einsatz-Feedback.)
+  // (Task 3 fügt hier das Einsatz-Feedback ein.)
   updateHUD();
   if (checkWinState(G.tubes) && !G.won) { G.won = true; showWin(); }
 }
@@ -1245,6 +1258,8 @@ function handleCompanionTap(idx) {
   // Eis-Mechanik (Level ≥30): eingefrorene Knäuel dürfen nicht herausgezogen
   // werden. companion.js bleibt pur — die Info kommt als reine Callback rein.
   const isFrozen = (ti, bi) => G.frozenBalls.has(`${ti}-${bi}`);
+  // Hilfsfunktion: prüft, ob zwei Bretter inhaltlich identisch sind (No-Op-Schutz).
+  const same = (a, b) => a.length === b.length && a.every((t, i) => t.join() === b[i].join());
 
   if (G.companionMode === 'pawFrom') {
     if (G.tubes[idx].length === 0) return; // leere Quelle ignorieren
@@ -1263,7 +1278,9 @@ function handleCompanionTap(idx) {
   if (G.companionMode === 'pawTo') {
     const next = applyPawTrick(G.tubes, G.companionPawFrom, idx, isFrozen);
     if (!next) { triggerFlash(idx); return; }    // ungültiges Ziel / eingefroren
-    if (isSolvable(next) < 0) {
+    // No-Op-Schutz: Pfoten-Trick ohne Wirkung (identisches Brett) nicht verbrauchen.
+    if (same(next, G.tubes)) { triggerFlash(idx); showToast('Hier bewirkt das nichts'); return; }
+    if (isSolvable(next, G.jokerUsed) < 0) {
       triggerFlash(idx);
       showToast('Das würde das Level blockieren');
       return;
@@ -1276,7 +1293,9 @@ function handleCompanionTap(idx) {
     if (t.length === 0) return;
     const color = t[t.length - 1];
     const next = applyMagnet(G.tubes, color, idx, isFrozen);
-    if (isSolvable(next) < 0) {
+    // No-Op-Schutz: Magnet ohne Wirkung (kein Ball gezogen) nicht verbrauchen.
+    if (same(next, G.tubes)) { triggerFlash(idx); showToast('Hier bewirkt das nichts'); return; }
+    if (isSolvable(next, G.jokerUsed) < 0) {
       triggerFlash(idx);
       showToast('Das würde das Level blockieren');
       return;

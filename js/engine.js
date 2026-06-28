@@ -184,9 +184,31 @@ export function canMove(tubes, from, to) {
 }
 
 // ── Solvability check (BFS, returns move count or -1) ────────────────────
-export function isSolvable(tubes, limit = 200000) {
+export function isSolvable(tubes, jokerUsed = true, limit = 200000) {
   function serialize(ts) { return ts.map(t => t.join(',')).join('|'); }
   function cloneTs(ts)   { return ts.map(t => [...t]); }
+
+  // Nicht-committeter Joker: das Brett hat real einen Ball zu viel. Für die
+  // Lösbarkeitssuche den Überschuss konservativ vor-entfernen (analog solveHint),
+  // damit der Solver nicht fälschlich -1 liefert.
+  if (!jokerUsed) {
+    const work = cloneTs(tubes);
+    const jti = findJokerTube(work);
+    if (jti !== -1) {
+      const colors = new Set();
+      for (const t of work) for (const c of t) if (c !== 'joker') colors.add(c);
+      for (const color of colors) {
+        const copy = cloneTs(work);
+        let removed = false;
+        for (let ti = 0; ti < copy.length && !removed; ti++) {
+          const idx = copy[ti].lastIndexOf(color);
+          if (idx !== -1) { copy[ti].splice(idx, 1); removed = true; }
+        }
+        if (removed && isSolvable(copy, true, limit) >= 0) return 0;
+      }
+      return -1;
+    }
+  }
 
   if (checkWinState(tubes)) return 0;
   const visited = new Set([serialize(tubes)]);

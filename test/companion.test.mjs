@@ -111,3 +111,22 @@ test('applyMagnet zieht nichts, wenn das oberste Knäuel selbst eingefroren ist'
   assert.deepEqual(next[1], ['rot']); // bleibt liegen
   assert.deepEqual(next[0], ['rot']);
 });
+
+// ── Task 2: Joker-Lösbarkeit + Magnet-No-Op ────────────────────────────────
+
+test('isSolvable mit nicht-committetem Joker entfernt Überschussball und bleibt lösbar', () => {
+  // Brett mit Joker + Überschuss: ['a','a','a'] | ['a'] | ['joker'] | [] —
+  // jokerUsed=false signalisiert dem Solver, dass der Joker noch nicht committet
+  // ist und das Brett real einen Ball zu viel hat. isSolvable muss den Überschuss
+  // konservativ entfernen und dann trotzdem lösbar zurückgeben.
+  const tubes = [['a','a','a'], ['a'], ['joker'], []];
+  assert.ok(isSolvable(tubes, false) >= 0, 'mit jokerUsed=false muss lösbar sein');
+});
+
+test('applyMagnet ist No-Op, wenn keine andere Röhre die Farbe oben hat', () => {
+  // 'rot' liegt oben in Röhre 0, aber keine andere Röhre hat 'rot' oben.
+  // applyMagnet soll identisches Brett zurückgeben (tiefengleiche Kopie).
+  const tubes = [['rot'], ['blau','blau'], []];
+  const next = applyMagnet(tubes, 'rot', 0);
+  assert.deepEqual(next, tubes); // nichts gezogen → identisch
+});
