@@ -856,6 +856,8 @@ function doMove(from, to) {
 }
 
 function undo() {
+  // Laufende Begleiter-Auswahl sauber abbrechen (keine stale companionAim/PawFrom).
+  if (G.companionMode !== null) cancelCompanionMode();
   if (G.dailyModifier === 'noundo') return;
   if (!canUndo(G.history.length) || ANIM.busy) return;
   trackUndo();
@@ -946,6 +948,8 @@ function grantFreeHint() {
 }
 
 function showHintAction() {
+  // Laufende Begleiter-Auswahl sauber abbrechen (keine stale companionAim/PawFrom).
+  if (G.companionMode !== null) cancelCompanionMode();
   if (ANIM.busy || G.won || G.tutorial) return;
   const btn = document.getElementById('hintBtn');
 
@@ -1013,6 +1017,8 @@ function handleInput(lx, ly) {
   const idx = tubeAt(lx, ly, G.tubes.length);
 
   if (idx === -1) {
+    // Tap ins Leere bricht eine laufende Begleiter-Auswahl ab.
+    if (G.companionMode !== null) { cancelCompanionMode(); return; }
     G.selected     = -1;
     G.selectedTime = -1;
     return;
@@ -1163,14 +1169,23 @@ function currentCompanionCost() {
   return companionCost(ac.ability.id, { premium: isPremium(), freeUsedThisLevel: G.companionFreeUsed });
 }
 
+// Begleiter-Fähigkeit ist laut Spec NUR im Standard-Level-Modus erlaubt — nicht
+// in Tetris/Maus/Dog/Blitz(timed)/Tages-Challenge und nicht im Tutorial.
+function companionAvailable() {
+  if (!activeCompanion()) return false;
+  if (TETRIS.active || MOUSE.active || DOG.active) return false;
+  if (G.isDailyChallenge || G.tutorial) return false;
+  if (isTimedLevel(LEVEL.current) || isDogLevel(LEVEL.current)) return false;
+  return true;
+}
+
 function updateCompanionHUD() {
   const btn  = document.getElementById('companionBtn');
   const icon = document.getElementById('companionBtnIcon');
   const cost = document.getElementById('companionCost');
   if (!btn) return;
   const ac = activeCompanion();
-  // In Tetris-/Maus-/Tages-Challenge-Modi ausblenden
-  if (!ac || TETRIS.active || MOUSE.active || G.isDailyChallenge) {
+  if (!companionAvailable()) {
     btn.classList.add('hidden');
     return;
   }
@@ -1178,7 +1193,8 @@ function updateCompanionHUD() {
   icon.textContent = ac.ability.emoji;
   const c = currentCompanionCost();
   cost.innerHTML = c === 0 ? '👑' : `${FISHBONE_ICON}${c}`;
-  btn.disabled = G.tutorial || ANIM.busy || G.won || G.companionMode !== null;
+  // Im aktiven Auswahl-Modus bleibt der Button KLICKBAR (dient dann als Abbrechen).
+  btn.disabled = ANIM.busy || G.won;
 }
 
 // ── Begleiter-Einsatz-Logik ─────────────────────────────────────────────────
@@ -1223,10 +1239,11 @@ function commitCompanion(next, cost) {
 }
 
 function onCompanionClick() {
+  // Im aktiven Auswahl-Modus dient der Button als Abbrechen.
   if (G.companionMode !== null) { cancelCompanionMode(); return; }
+  if (!companionAvailable()) return;
   const ac = activeCompanion();
-  if (!ac) return;
-  if (G.won || ANIM.busy || G.tutorial) return;
+  if (G.won || ANIM.busy) return;
   const cost = currentCompanionCost();
   if (cost > 0 && !canAfford(cost)) {
     showToast('Zu wenig Fischgräten');
@@ -1253,9 +1270,18 @@ function handleCompanionTap(idx) {
   const ac = activeCompanion();
   if (!ac) { cancelCompanionMode(); return; }
   const cost = currentCompanionCost();
+  // Eis-Mechanik (Level ≥30): eingefrorene Knäuel dürfen nicht herausgezogen
+  // werden. companion.js bleibt pur — die Info kommt als reine Callback rein.
+  const isFrozen = (ti, bi) => G.frozenBalls.has(`${ti}-${bi}`);
 
   if (G.companionMode === 'pawFrom') {
     if (G.tubes[idx].length === 0) return; // leere Quelle ignorieren
+    // Eingefrorenes Top-Knäuel kann nicht Quelle sein.
+    if (isFrozen(idx, G.tubes[idx].length - 1)) {
+      triggerFlash(idx);
+      showToast('Dieses Knäuel ist eingefroren');
+      return;
+    }
     G.companionPawFrom = idx;
     G.companionMode    = 'pawTo';
     G.companionAim     = new Set(pawTrickTargets(G.tubes, idx));
@@ -1263,8 +1289,8 @@ function handleCompanionTap(idx) {
     return;
   }
   if (G.companionMode === 'pawTo') {
-    const next = applyPawTrick(G.tubes, G.companionPawFrom, idx);
-    if (!next) { triggerFlash(idx); return; }    // ungültiges Ziel
+    const next = applyPawTrick(G.tubes, G.companionPawFrom, idx, isFrozen);
+    if (!next) { triggerFlash(idx); return; }    // ungültiges Ziel / eingefroren
     if (isSolvable(next) < 0) {
       triggerFlash(idx);
       showToast('Das würde das Level blockieren');
@@ -1277,7 +1303,7 @@ function handleCompanionTap(idx) {
     const t = G.tubes[idx];
     if (t.length === 0) return;
     const color = t[t.length - 1];
-    const next = applyMagnet(G.tubes, color, idx);
+    const next = applyMagnet(G.tubes, color, idx, isFrozen);
     if (isSolvable(next) < 0) {
       triggerFlash(idx);
       showToast('Das würde das Level blockieren');

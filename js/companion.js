@@ -16,10 +16,13 @@ export function applyNapBasket(tubes) {
 
 // 🐾 Pfoten-Trick: verschiebt das oberste Knäuel von `from` nach `to` und
 // ignoriert dabei die Farbregel. Gibt null zurück, wenn der Zug unmöglich ist.
-export function applyPawTrick(tubes, from, to) {
+// `isFrozen(tubeIdx, ballIdx)` ist optional — ist das oberste Knäuel von `from`
+// eingefroren (Eis-Mechanik), wird der Zug abgelehnt (null).
+export function applyPawTrick(tubes, from, to, isFrozen) {
   if (from === to) return null;
   if (!tubes[from] || tubes[from].length === 0) return null;
   if (!tubes[to] || tubes[to].length >= CAPACITY) return null;
+  if (isFrozen && isFrozen(from, tubes[from].length - 1)) return null;
   const next = clone(tubes);
   next[to].push(next[from].pop());
   return next;
@@ -37,8 +40,10 @@ export function pawTrickTargets(tubes, from) {
 
 // 🧲 Magnet-Schnurren: zieht aus allen anderen Röhren die zusammenhängende
 // gleichfarbige Top-Gruppe der gewählten Farbe in `targetIdx`, soweit die
-// Kapazität reicht. Überschuss bleibt liegen.
-export function applyMagnet(tubes, color, targetIdx) {
+// Kapazität reicht. Überschuss bleibt liegen. `isFrozen(tubeIdx, ballIdx)` ist
+// optional — ein eingefrorenes Knäuel wird nicht herausgezogen, die Schleife
+// stoppt davor (das frozen Knäuel und alles darunter bleibt liegen).
+export function applyMagnet(tubes, color, targetIdx, isFrozen) {
   const next = clone(tubes);
   const target = next[targetIdx];
   for (let i = 0; i < next.length; i++) {
@@ -47,7 +52,8 @@ export function applyMagnet(tubes, color, targetIdx) {
     while (
       target.length < CAPACITY &&
       src.length > 0 &&
-      src[src.length - 1] === color
+      src[src.length - 1] === color &&
+      !(isFrozen && isFrozen(i, src.length - 1))
     ) {
       target.push(src.pop());
     }

@@ -75,3 +75,39 @@ test('applyMagnet respektiert Kapazität und lässt Überschuss liegen', () => {
   assert.equal(next[0].length, CAPACITY);          // genau bis 4 gefüllt
   assert.equal(next[1].length, 1);                 // 1 rot blieb liegen
 });
+
+// ── Eis-Mechanik: eingefrorene Knäuel werden respektiert ───────────────────
+
+test('applyPawTrick lehnt ab, wenn das oberste Knäuel von from eingefroren ist', () => {
+  const tubes = [['rot', 'blau'], ['gruen']];
+  // Position (0,1) — oberstes Knäuel von Röhre 0 — ist eingefroren.
+  const isFrozen = (ti, bi) => ti === 0 && bi === 1;
+  assert.equal(applyPawTrick(tubes, 0, 1, isFrozen), null);
+  // Ohne frozen-Callback wie bisher (Zug klappt).
+  const ok = applyPawTrick(tubes, 0, 1);
+  assert.deepEqual(ok[1], ['gruen', 'blau']);
+  // Callback der für diese Position false liefert → unverändertes Verhalten.
+  const ok2 = applyPawTrick(tubes, 0, 1, () => false);
+  assert.deepEqual(ok2[1], ['gruen', 'blau']);
+});
+
+test('applyMagnet stoppt vor einem eingefrorenen Knäuel und lässt es liegen', () => {
+  // Röhre 1: ['rot','rot'] — das untere rot (Position (1,0)) ist eingefroren.
+  const tubes = [['rot'], ['rot', 'rot']];
+  const isFrozen = (ti, bi) => ti === 1 && bi === 0;
+  const next = applyMagnet(tubes, 'rot', 0, isFrozen);
+  // Oberes rot von Röhre 1 wird gezogen, das eingefrorene untere bleibt.
+  assert.equal(next[0].filter(c => c === 'rot').length, 2);
+  assert.deepEqual(next[1], ['rot']);
+  // Ohne Callback würden beide gezogen.
+  const free = applyMagnet(tubes, 'rot', 0);
+  assert.deepEqual(free[1], []);
+});
+
+test('applyMagnet zieht nichts, wenn das oberste Knäuel selbst eingefroren ist', () => {
+  const tubes = [['rot'], ['rot']];
+  const isFrozen = (ti, bi) => ti === 1 && bi === 0; // einziges (= oberstes) Knäuel
+  const next = applyMagnet(tubes, 'rot', 0, isFrozen);
+  assert.deepEqual(next[1], ['rot']); // bleibt liegen
+  assert.deepEqual(next[0], ['rot']);
+});
