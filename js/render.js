@@ -459,6 +459,36 @@ function drawTubes(ctx, ts, G) {
 
     drawContainer(ctx, cx, theme.containerStyle, state, ts);
 
+    // Companion-aim highlight: dashed pink outline for paw-trick target tubes
+    if (G.companionAim && G.companionAim.has(i)) {
+      ctx.save();
+      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.005);
+      const rx = cx - TUBE_W / 2 - 5;
+      const ry = TUBE_TOP - 5;
+      const rw = TUBE_W + 10;
+      const rh = TUBE_H + 10;
+      const rr = 14;
+      ctx.strokeStyle = `rgba(255,202,212,${0.75 + pulse * 0.25})`;
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([6, 4]);
+      ctx.shadowColor = 'rgba(255,180,195,0.6)';
+      ctx.shadowBlur = 10 + 8 * pulse;
+      ctx.beginPath();
+      ctx.moveTo(rx + rr, ry);
+      ctx.lineTo(rx + rw - rr, ry);
+      ctx.arcTo(rx + rw, ry, rx + rw, ry + rr, rr);
+      ctx.lineTo(rx + rw, ry + rh - rr);
+      ctx.arcTo(rx + rw, ry + rh, rx + rw - rr, ry + rh, rr);
+      ctx.lineTo(rx + rr, ry + rh);
+      ctx.arcTo(rx, ry + rh, rx, ry + rh - rr, rr);
+      ctx.lineTo(rx, ry + rr);
+      ctx.arcTo(rx, ry, rx + rr, ry, rr);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
     // Tube-clear animation: shrink + glow balls before they vanish
     const clearAnim = ANIM.tubeClear.get(i);
     let clearScale = 1;
