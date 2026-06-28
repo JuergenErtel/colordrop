@@ -77,7 +77,6 @@ import {
 import { getCurrentSeason, getNextSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 import { applyNapBasket, applyPawTrick, applyMagnet, pawTrickTargets } from './companion.js';
-import { companionFree } from './companion-cost.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -1170,8 +1169,6 @@ function activeCompanion() {
   const ability = COMPANION_ABILITIES.find(a => a.id === cat.ability) || null;
   return ability ? { cat, ability } : null;
 }
-
-function companionUsed() { return G.companionUsedThisLevel; }
 
 // Begleiter-Fähigkeit ist laut Spec NUR im Standard-Level-Modus erlaubt — nicht
 // in Tetris/Maus/Dog/Blitz(timed)/Tages-Challenge und nicht im Tutorial.
@@ -3518,12 +3515,8 @@ function buildAlbumScreen() {
     if (isOwned && cat.premium) cell.classList.add('premium-unlocked');
     if (isOwned && cat.premium && isFounder()) cell.classList.add('founder-cat');
     if (isOwned && cat.season)  cell.classList.add('season-cat');
-    // Aktiver Begleiter: blauer Rahmen, klar unterscheidbar vom Maskottchen-Gold
-    if (isCompanion) {
-      cell.style.border = '2px solid rgba(100,200,255,.9)';
-      cell.style.boxShadow = '0 0 8px rgba(100,200,255,.4)';
-      cell.title = (cell.title || cat.name) + ' ★ Begleiter';
-    }
+    // Aktiver Begleiter: CSS-Klasse statt Inline-Stil (verträgt sich mit .mascot-Gold-Rahmen)
+    if (isCompanion) cell.classList.add('companion');
 
     if (isOwned) {
       // Draw cat portrait on a small canvas
@@ -3539,7 +3532,7 @@ function buildAlbumScreen() {
         drawCatPortrait(catCtx, 32, 34, 24, params);
       }
       cell.appendChild(canvas);
-      cell.title = cat.name;
+      cell.title = cat.name + (isCompanion ? ' ★ Begleiter' : '');
       cell.addEventListener('click', () => showCatDetail(cat));
     } else {
       cell.textContent = '?';
