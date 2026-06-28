@@ -264,7 +264,7 @@ export const CATS = [
     breed: 'Birma',
     emoji: '👑',
     fact: 'Birma-Katzen (Heilige Birma) haben nach der Legende weiße Pfoten als Symbol der Reinheit – ein Muster, das kein Züchter replizieren kann.',
-    unlock: { type: 'premium', value: true },
+    unlock: { type: 'level', value: 60 },
     premium: true,
     ability: 'paw',
   },
@@ -274,7 +274,7 @@ export const CATS = [
     breed: 'Colorpoint Langhaar',
     emoji: '🎨',
     fact: 'Colorpoint-Katzen entwickeln ihre Farbe erst mit der Körperwärme – kältere Körperstellen wie Ohren und Pfoten sind immer dunkler.',
-    unlock: { type: 'premium', value: true },
+    unlock: { type: 'level', value: 130 },
     premium: true,
     ability: 'magnet',
   },
@@ -284,7 +284,7 @@ export const CATS = [
     breed: 'Chausie',
     emoji: '👑',
     fact: 'Chausie-Katzen sind Hybride aus Dschungelkatze und Hauskatze – sie können bis zu 15 kg wiegen und brauchen viel Platz.',
-    unlock: { type: 'premium', value: true },
+    unlock: { type: 'level', value: 190 },
     premium: true,
     ability: 'nap',
   },
@@ -294,7 +294,7 @@ export const CATS = [
     breed: 'Lykoi',
     emoji: '🌌',
     fact: 'Lykoi-Katzen werden "Werwolfkatzen" genannt – eine natürliche Mutation lässt ihr Fell stellenweise fehlen und gibt ihnen ein gruselig-bezauberndes Aussehen.',
-    unlock: { type: 'premium', value: true },
+    unlock: { type: 'level', value: 270 },
     premium: true,
     ability: 'paw',
   },
@@ -304,7 +304,7 @@ export const CATS = [
     breed: 'Khao Manee',
     emoji: '💎',
     fact: 'Khao-Manee-Katzen (Weißes Edelsteinauge) waren in Thailand Jahrhunderte lang ausschließlich dem Königshaus vorbehalten.',
-    unlock: { type: 'premium', value: true },
+    unlock: { type: 'level', value: 330 },
     premium: true,
     ability: 'magnet',
   },
@@ -368,6 +368,11 @@ export function checkCatUnlocks(owned, state) {
 
   for (const cat of CATS) {
     if (owned.has(cat.id)) continue;
+
+    // Premium-Katzen bleiben exklusiv: nur mit Premium UND wenn die (jetzt
+    // level-basierte) Schwelle erreicht ist — verhindert den Sofort-Flut aller
+    // Premium-Katzen direkt nach dem Kauf bzw. beim Spielstart eines Premium-Nutzers.
+    if (cat.premium && !isPremium) continue;
 
     const { type, value } = cat.unlock;
     let shouldUnlock = false;

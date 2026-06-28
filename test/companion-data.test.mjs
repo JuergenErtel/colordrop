@@ -48,6 +48,33 @@ test('genau ein Starter-Begleiter direkt nach dem ersten Level', () => {
   assert.equal(newly.length, 1, `Erwartet 1 Starter, bekam ${newly.length} (${newly.join(', ')})`);
 });
 
+test('Premium-Nutzer flutet nicht: Level 1 schaltet nur den Starter frei', () => {
+  // Regression: Premium (z.B. nach Sandbox-Kauf) schaltete früher SOFORT alle
+  // 5 Premium-Katzen + Whisker = 6 Katzen frei und feierte die falsche Katze.
+  const newly = checkCatUnlocks(new Set(), {
+    maxLevel: 1,
+    achievements: ['first_solve'],
+    streak: 0,
+    endlessBest: 0,
+    isPremium: true,
+  });
+  assert.deepEqual(newly, ['whisker'], `Premium-Flut: ${newly.join(', ')}`);
+});
+
+test('Premium-Katzen bleiben exklusiv: ohne Premium nie freigeschaltet', () => {
+  const premiumIds = CATS.filter(c => c.premium).map(c => c.id);
+  const newly = checkCatUnlocks(new Set(), {
+    maxLevel: 9999,
+    achievements: [],
+    streak: 999,
+    endlessBest: 999,
+    isPremium: false,
+  });
+  for (const id of premiumIds) {
+    assert.ok(!newly.includes(id), `Premium-Katze ${id} ohne Premium freigeschaltet`);
+  }
+});
+
 test('keine zwei Level-Katzen teilen denselben Freischalt-Level (kein Doppel-Unlock)', () => {
   const levelValues = CATS
     .filter(c => c.unlock.type === 'level')
