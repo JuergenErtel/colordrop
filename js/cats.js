@@ -126,8 +126,8 @@ export const CATS = [
   },
   {
     id: 'simba',
-    name: 'Simba',
-    breed: 'Löwenkind-Mix',
+    name: 'Leo',
+    breed: 'Europäisch Kurzhaar',
     emoji: '🦁',
     fact: 'Hauskatzen teilen 95,6 % ihrer DNA mit Tigern – ihr Jagdinstinkt ist evolutionär tief verwurzelt.',
     unlock: { type: 'achievement', value: 'pride_of_lions' },

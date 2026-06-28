@@ -12,7 +12,7 @@ import {
 import { CATS, checkCatUnlocks } from './cats.js';
 import { drawCatPortrait, drawMascotCat, CAT_PARAMS, triggerCatShake, triggerCatWinJump } from './cat-renderer.js';
 import {
-  getBalance, setBalance, earn, calcWinReward, isPremium, setPremium,
+  getBalance, setBalance, earn, calcWinReward, isPremium,
   spend, canAfford,
   shouldShowAd, markAdShown, tickAdLevel,
   canUndo, trackUndo, resetUndos,
@@ -2817,7 +2817,6 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
 document.getElementById('settingsBackBtn').addEventListener('click', () => {
   document.getElementById('settingsScreen').classList.add('hidden');
 });
-// TODO: Remove reset button before production release
 document.getElementById('resetAllBtn').addEventListener('click', () => {
   if (confirm('Wirklich ALLES zurücksetzen?\nFortschritt, Katzen, Achievements — alles weg!')) {
     localStorage.clear();
