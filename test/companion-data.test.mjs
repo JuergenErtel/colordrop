@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CATS } from '../js/cats.js';
-import { COMPANION_ABILITIES, COMPANION_COSTS } from '../js/constants.js';
+import { COMPANION_ABILITIES } from '../js/constants.js';
 
 const ABILITY_IDS = ['nap', 'paw', 'magnet'];
 
@@ -19,8 +19,3 @@ test('COMPANION_ABILITIES deckt alle drei ids ab', () => {
   }
 });
 
-test('COMPANION_COSTS hat positive Kosten je Fähigkeit', () => {
-  for (const id of ABILITY_IDS) {
-    assert.ok(COMPANION_COSTS[id] > 0, `Kosten für ${id} fehlen`);
-  }
-});

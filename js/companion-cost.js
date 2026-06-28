@@ -1,10 +1,9 @@
 'use strict';
 
-// Reine Kosten-Logik für Begleiter-Fähigkeiten (testbar, ohne economy/DOM).
-import { COMPANION_COSTS } from './constants.js';
-
-// Liefert die Fischgräten-Kosten für den Einsatz. 0 = gratis (Premium-Freibetrag).
-export function companionCost(abilityId, { premium, freeUsedThisLevel }) {
-  if (premium && !freeUsedThisLevel) return 0;
-  return COMPANION_COSTS[abilityId] ?? 0;
+// Begleiter-Fähigkeiten sind ein reines Gameplay-Feature: genau 1 Gratis-Einsatz
+// pro Level für alle Spieler (kein Fischgräten-Abzug). Das Balancing erfolgt über
+// den Sterne-Deckel (siehe showWin), nicht über Kosten.
+// Liefert true, wenn in diesem Level noch ein Einsatz frei ist.
+export function companionFree(usedThisLevel) {
+  return !usedThisLevel;
 }

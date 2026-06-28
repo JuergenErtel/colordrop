@@ -77,7 +77,7 @@ import {
 import { getCurrentSeason, getNextSeason } from './season-content.js';
 import { initSkins, getActiveSkin, setActiveSkin, ownsSkin, unlockSkin, SKIN_DEFS, BG_DEFS, ownsBg, unlockBg, getActiveBg, setActiveBg, setSkinPreviewOverride } from './skins.js';
 import { applyNapBasket, applyPawTrick, applyMagnet, pawTrickTargets } from './companion.js';
-import { companionCost } from './companion-cost.js';
+import { companionFree } from './companion-cost.js';
 
 // ══════════════════════════════════════════════════════════════════════════
 //  GAME STATE
@@ -119,10 +119,10 @@ const G = {
   onTutAdvance:   null,
   background:     'cafe',
   // Begleiter-Fähigkeit
-  companionMode:     null,   // null | 'pawFrom' | 'pawTo' | 'magnetColor'
-  companionPawFrom:  -1,
-  companionFreeUsed: false,  // Premium-Gratis-Einsatz in diesem Level verbraucht?
-  companionAim:      null,   // Set<number> | null — optionaler Render-Hinweis
+  companionMode:          null,   // null | 'pawFrom' | 'pawTo' | 'magnetColor'
+  companionPawFrom:       -1,
+  companionUsedThisLevel: false,  // 1 Gratis-Einsatz pro Level für alle Spieler
+  companionAim:           null,   // Set<number> | null — optionaler Render-Hinweis
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -724,10 +724,10 @@ function generateLevel(n) {
   G.hintTo       = -1;
   G.hintUntil    = 0;
   G.hintCooldown = false;
-  G.companionMode     = null;
-  G.companionPawFrom  = -1;
-  G.companionFreeUsed = false;
-  G.companionAim      = null;
+  G.companionMode          = null;
+  G.companionPawFrom       = -1;
+  G.companionUsedThisLevel = false;
+  G.companionAim           = null;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
   G.jokerUsed    = findJokerTube(G.tubes) === -1; // false if joker present
@@ -863,6 +863,7 @@ function undo() {
   trackUndo();
   playSound('undo');
   const snapshot = G.history.pop();
+  if (snapshot && snapshot.companion) G.companionUsedThisLevel = false;
   if (Array.isArray(snapshot)) {
     G.tubes = snapshot;
     G.frozenBalls = new Set();
@@ -1163,11 +1164,7 @@ function activeCompanion() {
   return ability ? { cat, ability } : null;
 }
 
-function currentCompanionCost() {
-  const ac = activeCompanion();
-  if (!ac) return 0;
-  return companionCost(ac.ability.id, { premium: isPremium(), freeUsedThisLevel: G.companionFreeUsed });
-}
+function companionUsed() { return G.companionUsedThisLevel; }
 
 // Begleiter-Fähigkeit ist laut Spec NUR im Standard-Level-Modus erlaubt — nicht
 // in Tetris/Maus/Dog/Blitz(timed)/Tages-Challenge und nicht im Tutorial.
@@ -1181,20 +1178,18 @@ function companionAvailable() {
 
 function updateCompanionHUD() {
   const btn  = document.getElementById('companionBtn');
-  const icon = document.getElementById('companionBtnIcon');
-  const cost = document.getElementById('companionCost');
   if (!btn) return;
   const ac = activeCompanion();
-  if (!companionAvailable()) {
-    btn.classList.add('hidden');
-    return;
-  }
+  if (!companionAvailable()) { btn.classList.add('hidden'); return; }
   btn.classList.remove('hidden');
-  icon.textContent = ac.ability.emoji;
-  const c = currentCompanionCost();
-  cost.innerHTML = c === 0 ? '👑' : `${FISHBONE_ICON}${c}`;
-  // Im aktiven Auswahl-Modus bleibt der Button KLICKBAR (dient dann als Abbrechen).
-  btn.disabled = ANIM.busy || G.won;
+  const used = G.companionUsedThisLevel;
+  btn.classList.toggle('used', used);
+  btn.disabled = ANIM.busy || G.won || used;
+  // Portrait/Badge/Label setzt Task 4 (HUD-Redesign); hier nur Zustandslogik.
+  const aria = used
+    ? `Begleiter ${ac.cat.name} — in diesem Level bereits eingesetzt`
+    : `Begleiter ${ac.cat.name} — ${ac.ability.label} einsetzen (1× pro Level)`;
+  btn.setAttribute('aria-label', aria);
 }
 
 // ── Begleiter-Einsatz-Logik ─────────────────────────────────────────────────
@@ -1205,71 +1200,48 @@ function cancelCompanionMode() {
   updateHUD();
 }
 
-function commitCompanion(next, cost) {
-  // Erst den Einsatz bezahlen — schlägt spend fehl, bleibt kein Geister-
-  // History-Eintrag zurück (Snapshot erst danach pushen).
-  if (cost > 0) {
-    if (!spend(cost)) return;
-  } else {
-    G.companionFreeUsed = true; // Premium-Gratis verbraucht
-  }
-
-  // Undo-Snapshot (gleiche Form wie doMove, aber als Begleiter-Zug markiert,
-  // damit undo() den Zug-Zähler nicht fälschlich dekrementiert).
+function commitCompanion(next) {
+  // Undo-Snapshot (als Begleiter-Zug markiert, damit undo() den Zug-Zähler
+  // nicht dekrementiert und den Einsatz erstattet).
   G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls), jokerUsed: G.jokerUsed, companion: true });
   if (G.history.length > 5) G.history.shift();
 
+  G.companionUsedThisLevel = true;
   G.tubes = next;
-  // solvedTubes neu berechnen
   G.solvedTubes = new Set();
-  for (let i = 0; i < G.tubes.length; i++) {
-    if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
-  }
+  for (let i = 0; i < G.tubes.length; i++) if (isSolved(G.tubes[i])) G.solvedTubes.add(i);
 
   cancelCompanionMode();
-  playSound('select');
-  updateBonesDisplay();
+  // (Task 2 fügt hier die Joker-Removal-Logik ein; Task 3 das Einsatz-Feedback.)
   updateHUD();
-
-  // Sieg prüfen — bei Companion-Zug kein Arc, daher direkt prüfen
-  if (checkWinState(G.tubes) && !G.won) {
-    G.won = true;
-    showWin();
-  }
+  if (checkWinState(G.tubes) && !G.won) { G.won = true; showWin(); }
 }
 
 function onCompanionClick() {
-  // Im aktiven Auswahl-Modus dient der Button als Abbrechen.
   if (G.companionMode !== null) { cancelCompanionMode(); return; }
   if (!companionAvailable()) return;
-  const ac = activeCompanion();
   if (G.won || ANIM.busy) return;
-  const cost = currentCompanionCost();
-  if (cost > 0 && !canAfford(cost)) {
-    showToast('Zu wenig Fischgräten');
-    playSound('invalid');
-    return;
-  }
+  if (G.companionUsedThisLevel) { showToast('Begleiter in diesem Level schon eingesetzt'); return; }
+  const ac = activeCompanion();
+  // Task 3 schaltet hier den Bestätigungs-/Erklär-Dialog davor; nach Bestätigung:
+  startCompanionAbility(ac);
+}
 
+function startCompanionAbility(ac) {
   if (ac.ability.id === 'nap') {
-    // Sofort anwendbar, keine Zielauswahl; immer lösbar
-    commitCompanion(applyNapBasket(G.tubes), cost);
+    commitCompanion(applyNapBasket(G.tubes));
   } else if (ac.ability.id === 'paw') {
-    G.companionMode   = 'pawFrom';
-    G.companionPawFrom = -1;
-    showToast('Pfoten-Trick: Quell-Röhre antippen');
-    updateHUD();
+    G.companionMode = 'pawFrom'; G.companionPawFrom = -1;
+    showToast('Pfoten-Trick: Quell-Röhre antippen'); updateHUD();
   } else if (ac.ability.id === 'magnet') {
     G.companionMode = 'magnetColor';
-    showToast('Magnet: Röhre mit Zielfarbe antippen');
-    updateHUD();
+    showToast('Magnet: Röhre mit Zielfarbe antippen'); updateHUD();
   }
 }
 
 function handleCompanionTap(idx) {
   const ac = activeCompanion();
   if (!ac) { cancelCompanionMode(); return; }
-  const cost = currentCompanionCost();
   // Eis-Mechanik (Level ≥30): eingefrorene Knäuel dürfen nicht herausgezogen
   // werden. companion.js bleibt pur — die Info kommt als reine Callback rein.
   const isFrozen = (ti, bi) => G.frozenBalls.has(`${ti}-${bi}`);
@@ -1296,7 +1268,7 @@ function handleCompanionTap(idx) {
       showToast('Das würde das Level blockieren');
       return;
     }
-    commitCompanion(next, cost);
+    commitCompanion(next);
     return;
   }
   if (G.companionMode === 'magnetColor') {
@@ -1309,7 +1281,7 @@ function handleCompanionTap(idx) {
       showToast('Das würde das Level blockieren');
       return;
     }
-    commitCompanion(next, cost);
+    commitCompanion(next);
     return;
   }
 }
@@ -1364,6 +1336,8 @@ function showWin() {
   } else {
     stars = calcStars(G.moves, par);
   }
+  // Begleiter-Nutzung deckelt die Wertung auf 2 Sterne — 3 Sterne bleiben Können.
+  if (G.companionUsedThisLevel) stars = Math.min(stars, 2);
   const isBlitz  = isTimedLevel(LEVEL.current) && !G.isDailyChallenge;
   const blitzWon = isBlitz && G.timer !== null;
 
@@ -2107,10 +2081,10 @@ function startTutorial() {
   G.hintTo       = -1;
   G.hintUntil    = 0;
   G.hintCooldown = false;
-  G.companionMode     = null;
-  G.companionPawFrom  = -1;
-  G.companionFreeUsed = false;
-  G.companionAim      = null;
+  G.companionMode          = null;
+  G.companionPawFrom       = -1;
+  G.companionUsedThisLevel = false;
+  G.companionAim           = null;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
   resetAnim();
@@ -2380,10 +2354,10 @@ function startDailyChallenge() {
   G.hintTo       = -1;
   G.hintUntil    = 0;
   G.hintCooldown = false;
-  G.companionMode     = null;
-  G.companionPawFrom  = -1;
-  G.companionFreeUsed = false;
-  G.companionAim      = null;
+  G.companionMode          = null;
+  G.companionPawFrom       = -1;
+  G.companionUsedThisLevel = false;
+  G.companionAim           = null;
   G.solvedTubes  = new Set();
   G.frozenBalls  = new Set();
   G.jokerUsed    = findJokerTube(G.tubes) === -1;

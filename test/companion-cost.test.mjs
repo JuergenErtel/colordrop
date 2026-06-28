@@ -1,16 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { companionCost } from '../js/companion-cost.js';
+import { companionFree } from '../js/companion-cost.js';
 
-test('Nicht-Premium zahlt vollen Preis', () => {
-  assert.equal(companionCost('paw', { premium: false, freeUsedThisLevel: false }), 30);
-  assert.equal(companionCost('magnet', { premium: false, freeUsedThisLevel: true }), 50);
+test('Begleiter-Einsatz ist gratis, solange in diesem Level noch nicht genutzt', () => {
+  assert.equal(companionFree(false), true);
 });
 
-test('Premium: erste Nutzung pro Level gratis', () => {
-  assert.equal(companionCost('magnet', { premium: true, freeUsedThisLevel: false }), 0);
-});
-
-test('Premium: nach Gratis-Nutzung normaler Preis', () => {
-  assert.equal(companionCost('magnet', { premium: true, freeUsedThisLevel: true }), 50);
+test('Begleiter-Einsatz ist nicht mehr verfügbar, wenn in diesem Level schon genutzt', () => {
+  assert.equal(companionFree(true), false);
 });

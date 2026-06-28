@@ -241,8 +241,6 @@ export const COMPANION_ABILITIES = [
   { id: 'magnet', emoji: '🧲', label: 'Magnet-Schnurren', desc: 'Zieht alle obenliegenden Knäuel einer Farbe zusammen.' },
 ];
 
-export const COMPANION_COSTS = { paw: 30, nap: 40, magnet: 50 };
-
 // ── Billing mode (flip to 'stripe' at launch) ────────────────────────────
 export const BILLING_MODE = 'preview';    // 'preview' | 'stripe' | 'native'
 
