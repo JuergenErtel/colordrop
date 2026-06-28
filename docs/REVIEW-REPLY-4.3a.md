@@ -29,11 +29,13 @@ elements are original and unique to Kittysort:
 - 34 cats that are procedurally drawn on an HTML canvas, each with a real cat
   breed and a fun fact.
 - A "Companion Cat" system (new in this build): each collected cat can be
-  brought into a level as a companion with one of three helper abilities you
-  spend in-game currency on — an extra empty basket, a move that ignores the
-  color rule, and a pull-together magnet move. This ties our collection
-  meta-game directly into how each level is solved and is, to our knowledge,
-  not present in the titles our app may resemble at a glance.
+  brought into a level as a companion with one of three helper abilities —
+  an extra empty basket, a move that ignores the color rule, and a
+  pull-together magnet move. Using an ability is free, once per level (no
+  in-game currency); using it caps that level's star rating at 2 stars so
+  players who want the full 3 stars are still rewarded for skill. This ties
+  our collection meta-game directly into how each level is played and is, to
+  our knowledge, not present in the titles our app may resemble at a glance.
 - A collection meta-game: a cat album plus decoratable rooms.
 - Multiple distinct modes: Daily, Blitz, Endless, a Weekly Challenge, and
   special Dog and Mouse levels with their own rules.
@@ -44,8 +46,17 @@ We acknowledge that our previous Store listing did not communicate this well —
 the subtitle and keywords leaned on generic genre wording, which understandably
 made the app look interchangeable. We have rewritten the name, subtitle,
 keywords, promotional text and description so they lead with the cat-collecting
-identity and the new companion abilities. The sorting mechanic is now presented
+identity and the new companion abilities. The puzzle mechanic is now presented
 as just one part of a broader, original experience.
+
+To see what makes this app distinct — step-by-step for the reviewer:
+1. Complete level 1.
+2. A companion cat ("Whisker", ability: magnet) is immediately unlocked and
+   automatically set as your active companion.
+3. From level 2 onwards, a cat button appears in the bottom HUD (right side).
+4. Tap the button, choose her ability — it is free, once per level.
+No in-game currency is required. The ability is accessible to all players from
+the second level without any purchase.
 
 If any concerns remain, we would be grateful for specific feedback on which
 element still reads as a duplicate, so we can address it directly. Thank you
@@ -81,9 +92,11 @@ Elemente original und einzigartig für Kittysort:
   und Fun-Fact.
 - Ein „Begleiter-Katzen"-System (neu in diesem Build): jede gesammelte Katze
   kann als Begleiter mit einer von drei Helfer-Fähigkeiten ins Level genommen
-  werden, die man gegen Spielwährung einsetzt – ein zusätzlicher leerer Korb,
-  ein Zug, der die Farbregel ignoriert, und ein Magnet-Zug. Das verbindet unser
-  Sammel-Meta-Game direkt mit dem Lösen jedes Levels.
+  werden – ein zusätzlicher leerer Korb, ein Zug, der die Farbregel ignoriert,
+  und ein Magnet-Zug. Die Fähigkeit ist KOSTENLOS, einmal pro Level nutzbar
+  (keine Spielwährung nötig); wer sie nutzt, erhält höchstens 2 von 3 Sternen,
+  sodass Skill weiterhin belohnt wird. Das verbindet unser Sammel-Meta-Game
+  direkt mit dem Spielen jedes Levels.
 - Ein Sammel-Meta-Game: ein Katzen-Album und dekorierbare Räume.
 - Mehrere eigene Modi: Daily, Blitz, Endless, eine Wochen-Challenge sowie
   Hund- und Maus-Speziallevel mit eigenen Regeln.
@@ -94,8 +107,17 @@ Wir räumen ein, dass unsere bisherige Store-Beschreibung das schlecht vermittel
 hat – Untertitel und Keywords nutzten generische Genre-Begriffe, wodurch die App
 verständlicherweise austauschbar wirkte. Wir haben Name, Untertitel, Keywords,
 Werbetext und Beschreibung neu geschrieben, sodass sie die Katzen-Sammel-
-Identität und die neuen Begleiter-Fähigkeiten in den Vordergrund stellen. Das
-Sortieren ist jetzt nur ein Teil eines größeren, eigenständigen Erlebnisses.
+Identität und die neuen Begleiter-Fähigkeiten in den Vordergrund stellen. Der
+Puzzle-Mechanismus ist jetzt nur ein Teil eines größeren, eigenständigen Erlebnisses.
+
+Wegbeschreibung zum Feature – Schritt für Schritt für den Prüfer:
+1. Level 1 abschließen.
+2. Direkt danach wird Begleiter-Katze „Whisker" (Fähigkeit: Magnet) freigeschaltet
+   und automatisch als aktiver Begleiter gesetzt.
+3. Ab Level 2 erscheint der Katzen-Button im unteren HUD (rechts).
+4. Button antippen, Fähigkeit wählen – kostenlos, einmal pro Level.
+Keine Spielwährung erforderlich. Die Fähigkeit ist ab dem zweiten Level für
+alle Spieler zugänglich, ohne Kauf.
 
 Falls weiterhin Bedenken bestehen, wären wir für konkretes Feedback dankbar,
 welches Element noch wie ein Duplikat wirkt, damit wir es gezielt beheben können.

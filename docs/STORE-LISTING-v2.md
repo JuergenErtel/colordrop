@@ -63,9 +63,9 @@ Kittysort: Katzen-Begleiter
 
 **Untertitel** (≤30) — *vorher: „Farben sortieren mit Katzen"*
 ```
-Sammle Katzen, löse Puzzles
+Sammle Katzen, knacke Puzzles
 ```
-*(27 Zeichen — „sortieren" raus, „Sammeln" zuerst)*
+*(29 Zeichen — „sortieren" und „löse" raus, „Sammeln" zuerst)*
 
 **Keywords** (≤100, kommagetrennt, keine Leerzeichen)
 ```
@@ -125,9 +125,9 @@ Kittysort: Cat Companions
 
 **Subtitle** (≤30) — *was: „Color sorting with cats"*
 ```
-Collect cats, solve puzzles
+Collect cats, crack puzzles
 ```
-*(27 chars — „sort" removed, collecting first)*
+*(27 chars — „sort" and „solve" removed, collecting first)*
 
 **Keywords** (≤100)
 ```
@@ -154,7 +154,7 @@ Every cat is hand-drawn, has a real breed and a little fun fact. And every cat i
 Your collection becomes part of the game: the cat you bring changes how you crack a level.
 
 🧶 THE PUZZLE
-Sort the colorful yarn balls into baskets until each basket holds a single color – easy to learn, wonderfully tricky to master. A relaxing brain workout for any moment, anytime and fully offline.
+Arrange the colorful yarn balls into baskets until each basket holds a single color – easy to learn, wonderfully tricky to master. A relaxing brain workout for any moment, anytime and fully offline.
 
 🎮 MODES FOR EVERY DAY
 • Daily – a fresh puzzle every day
@@ -182,19 +182,38 @@ Download Kittysort, collect your favorite cats and puzzle yourself happy – you
 | Feld | Vorher | Nachher | Warum (4.3a) |
 |---|---|---|---|
 | **Name** | Kittysort: Color Drop | Kittysort: Cat Companions / Katzen-Begleiter | „Color Drop" = generisches Genre-Label → ersetzt durch eigenständige Companion-Identität |
-| **Untertitel** | Color sorting with cats / Farben sortieren mit Katzen | Collect cats, solve puzzles / Sammle Katzen, löse Puzzles | „color sorting/Farben sortieren" sagte wörtlich „Klon". Jetzt Sammeln+Puzzle, kein Genre-Klischee |
+| **Untertitel** | Color sorting with cats / Farben sortieren mit Katzen | Collect cats, crack puzzles / Sammle Katzen, knacke Puzzles | „color sorting/Farben sortieren" sagte wörtlich „Klon"; „solve/löse" entfernt. Jetzt Sammeln+Puzzle, kein Genre-Klischee |
 | **Keywords** | color sort, water sort, farbsortieren, wassersortieren | komplett entfernt; cats/collect/companion/pets/decorate/daily bzw. katzen/sammeln/begleiter/räume/hund | Genau diese Keywords stellen die App neben „die anderen hundert". Jetzt Differenzierungs-Terme |
 | **Promo-Text** | „Sortiere die Farben, befreie die Kätzchen" | Begleiter-Katzen + Modi + Originalmusik + „ohne Vorlage" | Erste Zeile signalisiert jetzt Eigenständigkeit statt Sortier-Mechanik |
 | **Beschreibung** | Eröffnung = Sortier-Puzzle | Eröffnung = Katzen sammeln + Begleiter-Fähigkeiten; Sortieren erst als zweiter Block | Reviewer sieht zuerst den einzigartigen Content, der bisher unsichtbar war |
 
 ---
 
+## 📸 Screenshot-Anforderungen
+
+> **Wichtig: Screenshots müssen vom Nutzer neu aufgenommen werden — das kann
+> nicht automatisiert erfolgen. Bitte vor dem Einreichen erledigen.**
+
+| Position | Pflichtinhalt | Zweck (4.3a) |
+|---|---|---|
+| **Screenshot 1** | Companion-Fähigkeit in Aktion (Katzen-Button unten rechts gedrückt, Fähigkeits-Overlay sichtbar) | Zeigt das differenzierende Feature auf dem ersten Bild |
+| **Screenshot 2** | 34-Katzen-Sammelalbum (geöffnet, mehrere Katzen mit Fähigkeits-Icons sichtbar) | Belegt die Sammel-Identität visuell |
+| **Screenshot 3+** | Spielfeld, Modi-Auswahl, Raumdekoration — frei wählbar | Rundung des Erlebnisses |
+
+Screenshots 1 und 2 müssen zwingend die Begleiter-Katzen zeigen, nicht nur das
+Puzzle-Spielfeld — sonst ist die 4.3a-Differenzierung auf der Produktseite
+unsichtbar.
+
+---
+
 ## ⚠️ Vor Einreichung prüfen
 - **Begleiter-Katzen-Fähigkeiten** müssen im eingereichten Build (parallel in
   Arbeit) tatsächlich live sein – Texte bewerben sie als vorhandenes Feature.
+- **Screenshots 1–2 neu aufnehmen** (siehe Abschnitt oben): Companion-Ability-UI
+  und 34-Katzen-Album müssen auf der Produktseite sichtbar sein.
 - Anzahl **34 Katzen** und die **Modi** (Daily/Blitz/Endless/Wochen-Challenge,
   Hund-/Maus-Level) gegen den finalen Build abgleichen.
-- Screenshots sollten mindestens 1× das **Begleiter-Fähigkeiten-UI** und das
-  **Sammelalbum** zeigen (verstärkt die 4.3a-Differenzierung visuell).
 - IAP-Preis **2,99 €** und Produkt-ID `de.kittysort.app.lifetime` unverändert.
 - Keyword-Längen final: **DE 98** / **EN 98** Zeichen (beide ≤100).
+- Untertitel DE (`Sammle Katzen, knacke Puzzles`, 29 Z.) und EN
+  (`Collect cats, crack puzzles`, 27 chars) enthalten kein „sort/solve/löse".
