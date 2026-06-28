@@ -5,7 +5,7 @@ import {
   TUTORIAL_TUBES, MOVE_LIMIT,
 } from './constants.js';
 
-const CAPACITY = 4; // balls per tube (fixed)
+export const CAPACITY = 4; // balls per tube (fixed)
 
 // ── PRNG ──────────────────────────────────────────────────────────────────
 export function mulberry32(seed) {
@@ -184,7 +184,7 @@ export function canMove(tubes, from, to) {
 }
 
 // ── Solvability check (BFS, returns move count or -1) ────────────────────
-function isSolvable(tubes, limit = 200000) {
+export function isSolvable(tubes, limit = 200000) {
   function serialize(ts) { return ts.map(t => t.join(',')).join('|'); }
   function cloneTs(ts)   { return ts.map(t => [...t]); }
 
