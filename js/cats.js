@@ -112,7 +112,7 @@ export const CATS = [
     fact: 'Abessinier-Katzen sind extrem neugierig und klug – sie öffnen selbstständig Türen und Schubladen.',
     unlock: { type: 'achievement', value: 'first_solve' },
     premium: false,
-    ability: 'paw',
+    ability: 'magnet',
   },
   {
     id: 'pebble',

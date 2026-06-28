@@ -292,7 +292,7 @@ export const TUTORIAL_SCRIPT = [
   {
     step:    4,
     heading: 'Katzen sammeln!',
-    body:    'Löse Level um Katzen zu entdecken. Jede Katze kannst du als dein Maskottchen wählen!',
+    body:    'Löse Level um Katzen zu entdecken. Jede Katze wird dein Begleiter im Level — mit einer Fähigkeit, die du 1× gratis einsetzt!',
     waitFor: 'dismiss',
   },
 ];

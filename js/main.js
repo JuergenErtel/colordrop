@@ -528,12 +528,17 @@ function showCatUnlockCelebration(cat) {
   clone.querySelector('#catUnlockBreed').textContent = cat.breed;
   clone.querySelector('#catUnlockFact').textContent = cat.fact;
 
-  // Show mascot hint only on first-ever cat unlock
+  // Beim ersten Katzen-Unlock: Begleiter-Onboarding mit Fähigkeits-Info
   const hintEl = clone.querySelector('#catUnlockHint');
   if (hintEl) {
     const collection = loadCollection();
-    hintEl.textContent = collection.length <= 1
-      ? 'Öffne das Katzen-Album um dein Maskottchen zu wählen!' : '';
+    if (collection.length <= 1) {
+      const abilityInfo = COMPANION_ABILITIES.find(a => a.id === cat.ability);
+      const abilityLabel = abilityInfo ? `${abilityInfo.emoji} ${abilityInfo.label}` : cat.ability;
+      hintEl.textContent = `${cat.name} begleitet dich jetzt! Tippe im Level unten den Katzen-Button, um ${abilityLabel} einzusetzen — 1× pro Level, gratis.`;
+    } else {
+      hintEl.textContent = '';
+    }
   }
 
   // Animate mascot cat on the cloned canvas
@@ -1154,9 +1159,11 @@ function showToast(msg, duration = 2000) {
 // ── Begleiter-Helfer ────────────────────────────────────────────────────────
 function activeCompanion() {
   const id = loadSelectedCompanion();
-  let cat = CATS.find(c => c.id === id);
+  const owned = loadCollection();
+  // Primärpfad: ausgewählte Katze muss auch wirklich besessen werden
+  let cat = CATS.find(c => c.id === id && owned.includes(c.id));
   if (!cat) {
-    const owned = loadCollection();
+    // Fallback: erste besessene Katze (verhindert Geist-Begleiter durch veraltete ID)
     cat = CATS.find(c => owned.includes(c.id)) || null;
   }
   if (!cat) return null;
@@ -1579,6 +1586,11 @@ function showWin() {
   if (newCats.length) {
     newCats.forEach(id => owned.add(id));
     saveCollection([...owned]);
+    // Ersten neuen Begleiter automatisch setzen, wenn noch keiner gewählt ist
+    if (!loadSelectedCompanion()) {
+      const firstNew = CATS.find(c => newCats.includes(c.id));
+      if (firstNew) saveSelectedCompanion(firstNew.id);
+    }
   }
 
   _pendingAchs = newAchs;
@@ -3491,11 +3503,13 @@ document.querySelectorAll('.shop-tab').forEach(tab => {
 function buildAlbumScreen() {
   const owned = new Set(loadCollection());
   const currentMascot = loadMascot();
+  const currentCompanion = loadSelectedCompanion();
   document.getElementById('albumCount').textContent = owned.size + ' / ' + CATS.length;
   const grid = document.getElementById('albumGrid');
   grid.innerHTML = '';
   for (const cat of CATS) {
     const isOwned = owned.has(cat.id);
+    const isCompanion = isOwned && cat.id === currentCompanion;
     const cell = document.createElement('div');
     cell.className = 'album-cell'
       + (!isOwned ? ' locked' : '')
@@ -3504,6 +3518,12 @@ function buildAlbumScreen() {
     if (isOwned && cat.premium) cell.classList.add('premium-unlocked');
     if (isOwned && cat.premium && isFounder()) cell.classList.add('founder-cat');
     if (isOwned && cat.season)  cell.classList.add('season-cat');
+    // Aktiver Begleiter: blauer Rahmen, klar unterscheidbar vom Maskottchen-Gold
+    if (isCompanion) {
+      cell.style.border = '2px solid rgba(100,200,255,.9)';
+      cell.style.boxShadow = '0 0 8px rgba(100,200,255,.4)';
+      cell.title = (cell.title || cat.name) + ' ★ Begleiter';
+    }
 
     if (isOwned) {
       // Draw cat portrait on a small canvas
@@ -3549,28 +3569,42 @@ function showCatDetail(cat) {
   document.getElementById('catBreed').textContent = cat.breed;
   document.getElementById('catFact').textContent = cat.fact;
 
-  // Mascot button
+  // Fähigkeits-Zeile immer anzeigen (auch bei nicht gewählter Katze)
+  const ability = COMPANION_ABILITIES.find(a => a.id === cat.ability);
+  let abilityEl = document.getElementById('catAbility');
+  if (!abilityEl) {
+    abilityEl = document.createElement('p');
+    abilityEl.id = 'catAbility';
+    abilityEl.style.cssText = 'font-size:.8rem;opacity:.8;margin:.4rem 0;';
+    const factEl = document.getElementById('catFact');
+    factEl.insertAdjacentElement('afterend', abilityEl);
+  }
+  abilityEl.textContent = ability
+    ? `Fähigkeit: ${ability.emoji} ${ability.label} — ${ability.desc}`
+    : '';
+
+  // Maskottchen-Button (Café-Deko — kosmetisch)
   const mascotBtn = document.getElementById('mascotBtn');
   const current = loadMascot();
   if (current === cat.id) {
-    mascotBtn.textContent = 'Dein Maskottchen ✓';
+    mascotBtn.textContent = 'Maskottchen im Café ✓';
     mascotBtn.classList.add('active');
     mascotBtn.onclick = null;
   } else {
-    mascotBtn.textContent = 'Als Maskottchen wählen';
+    mascotBtn.textContent = 'Als Maskottchen wählen (Café-Deko)';
     mascotBtn.classList.remove('active');
     mascotBtn.onclick = () => {
       saveMascot(cat.id);
       updateMascotParams();
       updateSplashMascot(cat.id);
-      mascotBtn.textContent = 'Dein Maskottchen ✓';
+      mascotBtn.textContent = 'Maskottchen im Café ✓';
       mascotBtn.classList.add('active');
       mascotBtn.onclick = null;
       buildAlbumScreen(); // refresh gold border
     };
   }
 
-  // Begleiter-Auswahl (Fähigkeit der Katze)
+  // Begleiter-Auswahl (Fähigkeit im Level einsetzen)
   setupCompanionDetailBtn(cat);
 
   document.getElementById('catDetailOverlay').classList.remove('hidden');
