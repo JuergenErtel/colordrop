@@ -527,6 +527,20 @@ function showCatUnlockCelebration(cat, extraCount = 0) {
   clone.querySelector('#catUnlockBreed').textContent = cat.breed;
   clone.querySelector('#catUnlockFact').textContent = cat.fact;
 
+  // Begleiter-Fähigkeit immer prominent erklären (jede Katze ist ein Begleiter).
+  const abilityBox = clone.querySelector('#catUnlockAbility');
+  const ability = COMPANION_ABILITIES.find(a => a.id === cat.ability) || null;
+  if (abilityBox) {
+    if (ability) {
+      abilityBox.hidden = false;
+      clone.querySelector('#catUnlockAbilityEmoji').textContent = ability.emoji;
+      clone.querySelector('#catUnlockAbilityLabel').textContent = ability.label;
+      clone.querySelector('#catUnlockAbilityDesc').textContent  = ability.desc;
+    } else {
+      abilityBox.hidden = true;
+    }
+  }
+
   // Mehrfach-Unlock: "+N weitere" Hinweis anzeigen, sonst leer lassen
   const hintEl = clone.querySelector('#catUnlockHint');
   if (hintEl) {
