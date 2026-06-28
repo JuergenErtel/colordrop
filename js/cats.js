@@ -10,6 +10,7 @@ export const CATS = [
     fact: 'Russisch-Blau-Katzen gelten als hypoallergen – sie produzieren weniger Fel-d-1-Protein als andere Rassen.',
     unlock: { type: 'level', value: 20 },
     premium: false,
+    ability: 'nap',
   },
   {
     id: 'mochi',
@@ -19,6 +20,7 @@ export const CATS = [
     fact: 'Schottische Faltohren kommunizieren mit leisen, melodischen Miau-Lauten und gelten als besonders sanftmütig.',
     unlock: { type: 'level', value: 40 },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'felix',
@@ -28,6 +30,7 @@ export const CATS = [
     fact: 'Maine Coons sind die größte Hauskatzenrasse der Welt – Männchen erreichen oft über 8 kg Körpergewicht.',
     unlock: { type: 'level', value: 75 },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'nala',
@@ -37,6 +40,7 @@ export const CATS = [
     fact: 'Siamkatzen sind für ihre Gesprächigkeit bekannt – sie "unterhalten" sich gerne stundenlang mit ihren Besitzern.',
     unlock: { type: 'level', value: 100 },
     premium: false,
+    ability: 'nap',
   },
   {
     id: 'kuro',
@@ -46,6 +50,7 @@ export const CATS = [
     fact: 'Bombay-Katzen werden wegen ihres glänzend-schwarzen Fells und ihrer goldenen Augen oft als "Miniatur-Panther" bezeichnet.',
     unlock: { type: 'level', value: 150 },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'freya',
@@ -55,6 +60,7 @@ export const CATS = [
     fact: 'Norwegische Waldkatzen haben ein doppeltes, wasserabweisendes Fell – perfekt für die rauen skandinavischen Winter.',
     unlock: { type: 'level', value: 200 },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'sora',
@@ -64,6 +70,7 @@ export const CATS = [
     fact: 'Türkisch-Angora-Katzen sind oft zweifarbig-äugig (Heterochromie) und gehören zu den ältesten Reinzuchtrassen der Welt.',
     unlock: { type: 'level', value: 250 },
     premium: false,
+    ability: 'nap',
   },
   {
     id: 'mika',
@@ -73,6 +80,7 @@ export const CATS = [
     fact: 'Britisch-Kurzhaar-Katzen haben das dichteste Fell aller Hauskatzenrassen und wurden als Vorbild für den Cheshire Cat verwendet.',
     unlock: { type: 'level', value: 300 },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'zenith',
@@ -82,6 +90,7 @@ export const CATS = [
     fact: 'Savannah-Katzen sind Hybriden aus Serval und Hauskatze – sie können bis zu einem Meter Höhe springen.',
     unlock: { type: 'level', value: 350 },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'cosmos',
@@ -91,6 +100,7 @@ export const CATS = [
     fact: 'Ragdolls werden nach einem Griff hochgenommen schlaff wie eine Puppe – daher ihr Name. Sie gelten als "Hunde unter den Katzen".',
     unlock: { type: 'level', value: 25 },
     premium: false,
+    ability: 'nap',
   },
 
   // ── Achievement-based ─────────────────────────────────────────────────────
@@ -102,6 +112,7 @@ export const CATS = [
     fact: 'Abessinier-Katzen sind extrem neugierig und klug – sie öffnen selbstständig Türen und Schubladen.',
     unlock: { type: 'achievement', value: 'first_solve' },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'pebble',
@@ -111,6 +122,7 @@ export const CATS = [
     fact: 'Devon-Rex-Katzen haben riesige Ohren und krauses Fell – ihr Erbgut unterscheidet sie vollständig von Cornish Rex.',
     unlock: { type: 'achievement', value: 'paw_print' },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'simba',
@@ -120,6 +132,7 @@ export const CATS = [
     fact: 'Hauskatzen teilen 95,6 % ihrer DNA mit Tigern – ihr Jagdinstinkt ist evolutionär tief verwurzelt.',
     unlock: { type: 'achievement', value: 'pride_of_lions' },
     premium: false,
+    ability: 'nap',
   },
   {
     id: 'ember',
@@ -129,6 +142,7 @@ export const CATS = [
     fact: 'Bengalkatzen lieben Wasser und springen freiwillig in die Badewanne – ein sehr unkatzenartiges Verhalten!',
     unlock: { type: 'achievement', value: 'hot_streak' },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'starla',
@@ -138,6 +152,7 @@ export const CATS = [
     fact: 'Türkisch-Van-Katzen sind als "Schwimmkatzen" bekannt – sie springen von sich aus ins Wasser und schwimmen gerne.',
     unlock: { type: 'achievement', value: 'star_collector' },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'tansy',
@@ -147,6 +162,7 @@ export const CATS = [
     fact: 'Manx-Katzen sind von Natur aus ohne Schwanz – eine natürliche Mutation, die auf der Isle of Man entstand.',
     unlock: { type: 'achievement', value: 'yarn_ball' },
     premium: false,
+    ability: 'nap',
   },
   {
     id: 'arrow',
@@ -156,6 +172,7 @@ export const CATS = [
     fact: 'Ocicats sehen aus wie Wildkatzen, sind aber vollständig domestiziert – ihr Fleckenmuster entstand durch reinen Zufall.',
     unlock: { type: 'achievement', value: 'sharpshooter' },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'bolt',
@@ -165,6 +182,7 @@ export const CATS = [
     fact: 'Cornish-Rex-Katzen sind die Sprinter unter den Hauskatzen – ihr schlanker Körper und lange Beine machen sie außergewöhnlich schnell.',
     unlock: { type: 'achievement', value: 'lightning_paw' },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'rex',
@@ -174,6 +192,7 @@ export const CATS = [
     fact: 'Selkirk-Rex-Katzen haben lockiges Fell – sogar ihre Schnurrhaare sind gewellt. Sie werden liebevoll "Katze im Schafspelz" genannt.',
     unlock: { type: 'achievement', value: 'cat_king' },
     premium: false,
+    ability: 'nap',
   },
 
   // ── Daily Streak ──────────────────────────────────────────────────────────
@@ -185,6 +204,7 @@ export const CATS = [
     fact: 'Europäisch-Kurzhaar-Katzen sind die häufigsten Hauskatzen in Europa und für ihre Robustheit und Langlebigkeit bekannt.',
     unlock: { type: 'streak', value: 3 },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'lucky',
@@ -194,6 +214,7 @@ export const CATS = [
     fact: 'Japanische Stummelschwanzkatzen (Bobtail) gelten in Japan als Glücksbringer – die berühmte Maneki-Neko-Figur zeigt diese Rasse.',
     unlock: { type: 'streak', value: 7 },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'nova',
@@ -203,6 +224,7 @@ export const CATS = [
     fact: 'Sphynx-Katzen sind nicht wirklich haarlos – sie haben einen feinen Flaum und fühlen sich an wie warmes Wildleder.',
     unlock: { type: 'streak', value: 14 },
     premium: false,
+    ability: 'nap',
   },
   {
     id: 'sage',
@@ -212,6 +234,7 @@ export const CATS = [
     fact: 'Burmesische Katzen haben eine ungewöhnliche Eigenschaft: Sie behalten ihr verspieltes Wesen oft ein Leben lang.',
     unlock: { type: 'streak', value: 30 },
     premium: false,
+    ability: 'paw',
   },
   {
     id: 'blaze',
@@ -221,6 +244,7 @@ export const CATS = [
     fact: 'Somali-Katzen werden als "Fuchs unter den Katzen" bezeichnet – ihr buschiger Schwanz und das getickte Fell erinnern an einen Fuchs.',
     unlock: { type: 'streak', value: 60 },
     premium: false,
+    ability: 'magnet',
   },
   {
     id: 'legend',
@@ -230,6 +254,7 @@ export const CATS = [
     fact: 'Persische Katzen wurden bereits im 17. Jahrhundert in Europa als Statussymbole der Adeligen gehalten.',
     unlock: { type: 'streak', value: 100 },
     premium: false,
+    ability: 'nap',
   },
 
   // ── Premium-only ──────────────────────────────────────────────────────────
@@ -241,6 +266,7 @@ export const CATS = [
     fact: 'Birma-Katzen (Heilige Birma) haben nach der Legende weiße Pfoten als Symbol der Reinheit – ein Muster, das kein Züchter replizieren kann.',
     unlock: { type: 'premium', value: true },
     premium: true,
+    ability: 'paw',
   },
   {
     id: 'prism',
@@ -250,6 +276,7 @@ export const CATS = [
     fact: 'Colorpoint-Katzen entwickeln ihre Farbe erst mit der Körperwärme – kältere Körperstellen wie Ohren und Pfoten sind immer dunkler.',
     unlock: { type: 'premium', value: true },
     premium: true,
+    ability: 'magnet',
   },
   {
     id: 'imperial',
@@ -259,6 +286,7 @@ export const CATS = [
     fact: 'Chausie-Katzen sind Hybride aus Dschungelkatze und Hauskatze – sie können bis zu 15 kg wiegen und brauchen viel Platz.',
     unlock: { type: 'premium', value: true },
     premium: true,
+    ability: 'nap',
   },
   {
     id: 'galaxy',
@@ -268,6 +296,7 @@ export const CATS = [
     fact: 'Lykoi-Katzen werden "Werwolfkatzen" genannt – eine natürliche Mutation lässt ihr Fell stellenweise fehlen und gibt ihnen ein gruselig-bezauberndes Aussehen.',
     unlock: { type: 'premium', value: true },
     premium: true,
+    ability: 'paw',
   },
   {
     id: 'diamond',
@@ -277,6 +306,7 @@ export const CATS = [
     fact: 'Khao-Manee-Katzen (Weißes Edelsteinauge) waren in Thailand Jahrhunderte lang ausschließlich dem Königshaus vorbehalten.',
     unlock: { type: 'premium', value: true },
     premium: true,
+    ability: 'magnet',
   },
 
   // ── Season 2026-05 "Kirschblüte" ──────────────────────────────────────
@@ -289,6 +319,7 @@ export const CATS = [
     unlock: { type: 'season', value: '2026-05-free-15' },
     premium: false,
     season: '2026-05',
+    ability: 'nap',
   },
   {
     id: 'sakura',
@@ -299,6 +330,7 @@ export const CATS = [
     unlock: { type: 'season', value: '2026-05-premium-30' },
     premium: true,
     season: '2026-05',
+    ability: 'paw',
   },
   {
     id: 'tsubaki',
@@ -309,6 +341,7 @@ export const CATS = [
     unlock: { type: 'season', value: '2026-05-premium-40' },
     premium: true,
     season: '2026-05',
+    ability: 'magnet',
   },
   {
     id: 'hoshi',
@@ -319,6 +352,7 @@ export const CATS = [
     unlock: { type: 'season', value: '2026-05-premium-50' },
     premium: true,
     season: '2026-05',
+    ability: 'nap',
   },
 ];
 

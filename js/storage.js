@@ -152,6 +152,15 @@ export function saveMascot(id) {
   saveRaw(`${PREFIX}-mascot`, id);
 }
 
+// ── Begleiter-Auswahl ─────────────────────────────────────────────────────
+export function loadSelectedCompanion() {
+  const v = localStorage.getItem(`${PREFIX}-companion`);
+  return v || null;
+}
+export function saveSelectedCompanion(catId) {
+  saveRaw(`${PREFIX}-companion`, catId);
+}
+
 // ── Economy (coin balance) ────────────────────────────────────────────────
 export function loadEconomy() {
   try { return JSON.parse(localStorage.getItem(`${PREFIX}-economy`) || '0'); }

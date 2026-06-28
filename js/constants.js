@@ -234,6 +234,15 @@ export const HINT_COSTS = {
 // Legacy single-value cost (used until hint call sites adopt getHintCost)
 export const COSTS = { hint: 15, extraUndo: 10 };
 
+// ── Begleiter-Fähigkeiten (Helfer-Katzen) ────────────────────────────────
+export const COMPANION_ABILITIES = [
+  { id: 'nap',    emoji: '🧺', label: 'Nickerchen-Korb', desc: 'Legt für dieses Level einen zusätzlichen leeren Korb an.' },
+  { id: 'paw',    emoji: '🐾', label: 'Pfoten-Trick',    desc: 'Ein Zug, der die Farbregel ignoriert.' },
+  { id: 'magnet', emoji: '🧲', label: 'Magnet-Schnurren', desc: 'Zieht alle obenliegenden Knäuel einer Farbe zusammen.' },
+];
+
+export const COMPANION_COSTS = { paw: 30, nap: 40, magnet: 50 };
+
 // ── Billing mode (flip to 'stripe' at launch) ────────────────────────────
 export const BILLING_MODE = 'preview';    // 'preview' | 'stripe' | 'native'
 
