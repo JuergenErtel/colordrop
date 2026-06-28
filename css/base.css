@@ -55,7 +55,9 @@ body {
     align-items: center;
     gap: 1.25rem;
     width: 100%;
-    max-width: 480px;
+    /* Auf iPad bis zu 720 px für das größere Canvas; JS begrenzt das Canvas
+       selbst korrekt — dieser Wert ist nur das Layout-Dach. */
+    max-width: 720px;
 }
 
 /* ── Header ─────────────────────────────────────────── */

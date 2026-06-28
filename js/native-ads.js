@@ -43,8 +43,16 @@ async function runInit(AdMob) {
     console.warn('native-ads: Consent-Schritt übersprungen:', err);
   }
 
-  // 3) Erst danach das SDK starten.
-  await AdMob.initialize({ initializeForTesting: !!ADMOB.testing });
+  // 3) Erst danach das SDK starten — kindgerechte Inhaltsfilterung setzen:
+  //    maxAdContentRating: 'General' → nur G-geeignete Werbung (Enum-String aus
+  //    @capacitor-community/admob MaxAdContentRating.General)
+  //    tagForChildDirectedTreatment + tagForUnderAgeOfConsent → COPPA/TFUA-Flags.
+  await AdMob.initialize({
+    initializeForTesting:      !!ADMOB.testing,
+    maxAdContentRating:        'General',
+    tagForChildDirectedTreatment: true,
+    tagForUnderAgeOfConsent:   true,
+  });
   return { canRequestAds };
 }
 

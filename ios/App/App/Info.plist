@@ -54,7 +54,7 @@
 	<string>ca-app-pub-6440829707267793~6903635482</string>
 	<!-- App Tracking Transparency: Begründungstext für den iOS-Systemdialog. -->
 	<key>NSUserTrackingUsageDescription</key>
-	<string>Kittysort nutzt deine Daten, um dir relevantere Werbung in den freiwilligen Belohnungs-Videos anzuzeigen.</string>
+	<string>Mit deiner Erlaubnis zeigen wir dir relevantere Werbung.</string>
 	<!-- SKAdNetwork-IDs für Werbe-Attribution (ohne Tracking). Google + gängige
 	     Mediation-Netzwerke. TODO vor Release: aktuelle vollständige Liste von
 	     https://developers.google.com/admob/ios/3p-skadnetwork-ids einsetzen. -->

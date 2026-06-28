@@ -13,7 +13,7 @@ const out = new URL('../www/', import.meta.url);
 
 // Einzeldateien + Verzeichnisse, die ins Bundle gehören.
 const FILES = ['index.html', 'datenschutz.html', 'impressum.html', 'manifest.json', 'sw.js', 'version.txt'];
-const DIRS = ['css', 'js', 'img', 'audio'];
+const DIRS = ['css', 'js', 'img', 'audio', 'fonts'];
 
 async function main() {
   // Sauberer Neuaufbau, damit gelöschte Assets nicht im Bundle hängenbleiben.

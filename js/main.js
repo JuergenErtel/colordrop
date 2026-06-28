@@ -688,8 +688,19 @@ const ctx    = canvas.getContext('2d');
 function resizeCanvas() {
   canvas.width  = CW;
   canvas.height = CH;
-  const maxPx   = Math.min(window.innerWidth - 32, 480);
-  const scale   = maxPx / CW;
+  // Auf großen Displays (iPad ≥ 600 CSS-px Breite) bis zu 720 px statt 480 px,
+  // damit das Brett den vorhandenen Platz nutzt. Zusätzlich höhenbasiert skalieren
+  // (budget = Platz für Header + HUD + Abstände + Safe-Area ≈ 250 px), damit
+  // das Canvas nie aus dem Viewport herausragt. Telefone bleiben unverändert.
+  const pad    = 32;
+  const budget = 250;
+  const cap    = window.innerWidth >= 600 ? 720 : 480;
+  const maxPx  = Math.min(
+    window.innerWidth  - pad,
+    Math.round((window.innerHeight - budget) * CW / CH),
+    cap
+  );
+  const scale  = maxPx / CW;
   canvas.style.width  = maxPx + 'px';
   canvas.style.height = Math.round(CH * scale) + 'px';
 }
