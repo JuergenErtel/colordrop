@@ -871,7 +871,11 @@ function undo() {
   G.jokerUsed    = snapshot.jokerUsed ?? true;
   G.selected     = -1;
   G.selectedTime = -1;
-  G.moves        = Math.max(0, G.moves - 1);
+  // Begleiter-Einsätze zählen nicht als Zug → beim Rückgängigmachen den
+  // Zug-Zähler nur für echte doMove-Snapshots dekrementieren.
+  if (!(snapshot && snapshot.companion)) {
+    G.moves      = Math.max(0, G.moves - 1);
+  }
   G.won          = false;
   G.hintFrom     = G.hintTo = -1;
   G.hintUntil    = 0;
@@ -1186,15 +1190,18 @@ function cancelCompanionMode() {
 }
 
 function commitCompanion(next, cost) {
-  // Undo-Snapshot (gleiche Form wie doMove)
-  G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls), jokerUsed: G.jokerUsed });
-  if (G.history.length > 5) G.history.shift();
-
+  // Erst den Einsatz bezahlen — schlägt spend fehl, bleibt kein Geister-
+  // History-Eintrag zurück (Snapshot erst danach pushen).
   if (cost > 0) {
     if (!spend(cost)) return;
   } else {
     G.companionFreeUsed = true; // Premium-Gratis verbraucht
   }
+
+  // Undo-Snapshot (gleiche Form wie doMove, aber als Begleiter-Zug markiert,
+  // damit undo() den Zug-Zähler nicht fälschlich dekrementiert).
+  G.history.push({ tubes: G.tubes.map(t => [...t]), frozen: new Set(G.frozenBalls), jokerUsed: G.jokerUsed, companion: true });
+  if (G.history.length > 5) G.history.shift();
 
   G.tubes = next;
   // solvedTubes neu berechnen
@@ -1281,49 +1288,32 @@ function handleCompanionTap(idx) {
   }
 }
 
-function openCompanionPick() {
-  const list = document.getElementById('companionPickList');
-  if (!list) return;
-  list.innerHTML = '';
-  const owned     = loadCollection();
-  const selectedId = loadSelectedCompanion();
-  for (const cat of CATS) {
-    const ability  = COMPANION_ABILITIES.find(a => a.id === cat.ability);
-    if (!ability) continue;
-    const unlocked = owned.includes(cat.id);
-    const row = document.createElement('div');
-    row.className = 'companion-item' +
-      (cat.id === selectedId ? ' active' : '') +
-      (unlocked ? '' : ' locked');
-    const portrait = document.createElement('canvas');
-    portrait.className = 'companion-portrait';
-    portrait.width  = 40;
-    portrait.height = 40;
-    const info = document.createElement('div');
-    const nameEl = document.createElement('b');
-    nameEl.textContent = cat.name;
-    const descEl = document.createElement('span');
-    descEl.className = 'muted';
-    descEl.textContent = `${ability.emoji} ${ability.label}`;
-    info.appendChild(nameEl);
-    info.appendChild(document.createElement('br'));
-    info.appendChild(descEl);
-    row.appendChild(portrait);
-    row.appendChild(info);
-    if (unlocked) {
-      row.addEventListener('click', () => {
-        saveSelectedCompanion(cat.id);
-        updateCompanionHUD();
-        openCompanionPick(); // neu rendern für active-Markierung
-      });
-    }
-    list.appendChild(row);
-    // Portrait zeichnen — echte Signatur: drawCatPortrait(ctx, cx, cy, size, params)
-    const ctx    = portrait.getContext('2d');
-    const params = CAT_PARAMS.find(p => p.id === cat.id);
-    if (params) drawCatPortrait(ctx, 20, 20, 17, params);
+// Begleiter-Auswahl ist im Katzen-Detail integriert (entdeckbar beim Antippen
+// einer freigeschalteten Katze im Album). Setzt diese Katze als aktiven
+// Begleiter und zeigt deren Fähigkeit an.
+function setupCompanionDetailBtn(cat) {
+  const btn = document.getElementById('companionSelectBtn');
+  if (!btn) return;
+  const ability = COMPANION_ABILITIES.find(a => a.id === cat.ability);
+  if (!ability) { btn.classList.add('hidden'); return; }
+  btn.classList.remove('hidden');
+
+  const apply = () => {
+    btn.textContent = `Begleiter: ${ability.emoji} ${ability.label} ✓`;
+    btn.classList.add('active');
+    btn.onclick = null;
+  };
+  if (loadSelectedCompanion() === cat.id) {
+    apply();
+  } else {
+    btn.textContent = `Als Begleiter wählen (${ability.emoji} ${ability.label})`;
+    btn.classList.remove('active');
+    btn.onclick = () => {
+      saveSelectedCompanion(cat.id);
+      updateCompanionHUD();
+      apply();
+    };
   }
-  document.getElementById('companionPickOverlay').classList.remove('hidden');
 }
 
 function showWin() {
@@ -2268,8 +2258,6 @@ document.getElementById('menuBtnHud').addEventListener('click', () => { playSoun
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('hintBtn').addEventListener('click', showHintAction);
 document.getElementById('companionBtn').addEventListener('click', () => { playSound('click'); onCompanionClick(); });
-document.getElementById('companionPickClose').addEventListener('click', () =>
-  document.getElementById('companionPickOverlay').classList.add('hidden'));
 document.getElementById('resetBtn').addEventListener('click', () =>
   G.tutorial ? startTutorial() : restartCurrentLevel()
 );
@@ -3413,6 +3401,9 @@ function showCatDetail(cat) {
       buildAlbumScreen(); // refresh gold border
     };
   }
+
+  // Begleiter-Auswahl (Fähigkeit der Katze)
+  setupCompanionDetailBtn(cat);
 
   document.getElementById('catDetailOverlay').classList.remove('hidden');
 }
