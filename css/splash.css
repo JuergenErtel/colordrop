@@ -21,11 +21,9 @@
 /* ── Background image ── */
 .splash-bg {
     position: absolute; inset: 0; z-index: 0;
-    /* Compressed WebP (~104 KB) with PNG fallback for old browsers.
-       The .splash backdrop (#2a1f10) shows instantly, so this never blocks paint. */
-    background-image: url('../img/splash-bg.png');
-    background-image: -webkit-image-set(url('../img/splash-bg.webp') type('image/webp'), url('../img/splash-bg.png') type('image/png'));
-    background-image: image-set(url('../img/splash-bg.webp') type('image/webp'), url('../img/splash-bg.png') type('image/png'));
+    /* Gemütliche Katzen-Café-Splash-Illustration (JPEG ~300 KB).
+       Der .splash-Hintergrund zeigt sofort, daher blockt das nie den Paint. */
+    background-image: url('../img/splash-bg.jpg');
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
