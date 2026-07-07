@@ -253,7 +253,7 @@ export const STRIPE_LINKS = {
 // schenken. APP_STORE_LIVE erst auf true setzen, wenn die App im Store
 // freigegeben ist — sonst zeigen Badge/CTA einen toten Link.
 export const APP_STORE_URL  = 'https://apps.apple.com/app/id6783642547';
-export const APP_STORE_LIVE = false;
+export const APP_STORE_LIVE = true;
 
 // ── Purchase-tier constants ───────────────────────────────────────────────
 // Einmalkauf-Modell: ein einziger Lifetime-Unlock, niedrige Kaufhürde.
