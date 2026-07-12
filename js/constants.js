@@ -203,6 +203,9 @@ export const ADMOB = {
   appId:   'ca-app-pub-6440829707267793~6903635482',
   rewardedUnitId: 'ca-app-pub-6440829707267793/1623388647',
   interstitialUnitId: 'ca-app-pub-6440829707267793/4056156468',
+  // Banner-Unit im AdMob-Konto anlegen (Format „Banner") und ID hier einsetzen.
+  // Leer lassen = Banner deaktiviert (showBanner() macht dann sauber nichts).
+  bannerUnitId: '',
 };
 
 export const REWARDED_LIMITS = {

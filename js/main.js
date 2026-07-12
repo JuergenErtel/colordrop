@@ -53,6 +53,7 @@ import { getDailyModifier, getDailyCat, getDailyMissionText, getDailyGenerationO
 import { showRewarded, canShowRewarded, canClaimFree, claimFree } from './rewarded.js';
 import { initNativeAds } from './native-ads.js';
 import { prepareInterstitial, showInterstitialIfReady } from './native-interstitial.js';
+import { showBanner, hideBanner } from './native-banner.js';
 import { initNativeStatusBar } from './native-ui.js';
 import { TETRIS, isTetrisLevel, startTetris, tetrisNextBall, endTetris, canPlaceTetris, isTetrisWon, tetrisMoveTo, tetrisBallProgress } from './tetris.js';
 
@@ -724,6 +725,7 @@ function generateLevel(n) {
   G.isDailyChallenge = false;
   G.dailyModifier = null;
   G.adDueOnAdvance = false;
+  hideBanner(); // defensiv: nie Banner über dem aktiven Spielbrett
   LEVEL.current = n;
   const cfg     = levelConfig(n);
 
@@ -2181,6 +2183,7 @@ function openLevelSelect() {
   const playBtn = document.getElementById('playBtn');
   playBtn.textContent = nextLevel <= 1 ? '▶ Spiel starten' : '▶ Level ' + nextLevel;
   document.getElementById('levelSelect').classList.add('show');
+  if (!isPremium()) showBanner(); // Bottom-Banner nur im Menü, nie im Spiel
   updateMenuPremiumSignals();
   checkSeasonEndTrigger();
   updatePassBtnTimer();
@@ -2190,6 +2193,7 @@ function openLevelSelect() {
 
 function closeLevelSelect() {
   document.getElementById('levelSelect').classList.remove('show');
+  hideBanner(); // Banner weg, bevor das Spielbrett kommt
   stopMenuAmbient();
   hideSplash();
 }
