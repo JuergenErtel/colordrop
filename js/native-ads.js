@@ -1,6 +1,7 @@
 'use strict';
 
-/* Geteilte AdMob-Basis: Consent (UMP) → ATT → SDK-Init, einmalig dedupliziert.
+/* Geteilte AdMob-Basis: Consent (UMP/DSGVO) → SDK-Init, einmalig dedupliziert.
+   Kein ATT/IDFA-Tracking (child-directed, nicht-personalisierte Ads).
    Wird von native-rewarded.js und native-interstitial.js genutzt. Zugriff nur
    über window.Capacitor.Plugins.AdMob, damit der Web-Bundle unberührt bleibt. */
 
@@ -19,18 +20,12 @@ export function getAdMob() {
 async function runInit(AdMob) {
   let canRequestAds = true;
 
-  // 1) iOS ATT zuerst: ein einzelner System-Dialog, bevor das UMP-Formular
-  //    erscheint. So sieht der Nutzer nicht zwei aufeinanderfolgende, leicht
-  //    verwirrende Consent-Dialoge (UMP-Sheet direkt gefolgt vom ATT-Prompt).
-  try {
-    if (typeof AdMob.requestTrackingAuthorization === 'function') {
-      await AdMob.requestTrackingAuthorization();
-    }
-  } catch (err) {
-    console.warn('native-ads: ATT-Dialog übersprungen:', err);
-  }
+  // Kein ATT/IDFA-Tracking: Bei child-directed (kindgerechte, nicht-
+  // personalisierte Ads) nutzt der AdMob-SDK die Werbe-ID nicht → es findet
+  // kein Tracking i. S. d. ATT statt (NSPrivacyTracking=false). Deshalb KEIN
+  // requestTrackingAuthorization()-Prompt. Nur der DSGVO-Consent via UMP bleibt.
 
-  // 2) UMP-Consent (DSGVO) holen und ggf. Formular zeigen.
+  // UMP-Consent (DSGVO) holen und ggf. Formular zeigen.
   try {
     let info = await AdMob.requestConsentInfo();
     if (info && info.status === 'REQUIRED' && info.isConsentFormAvailable) {

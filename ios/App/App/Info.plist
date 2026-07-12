@@ -54,12 +54,12 @@
 	     Echte AdMob-App-ID (muss zu ADMOB.appId in js/constants.js passen). -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-6440829707267793~6903635482</string>
-	<!-- App Tracking Transparency: Begründungstext für den iOS-Systemdialog. -->
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Mit deiner Erlaubnis zeigen wir dir relevantere Werbung.</string>
+	<!-- Kein NSUserTrackingUsageDescription / kein ATT-Prompt: Ads sind
+	     child-directed + nicht-personalisiert → kein IDFA-Tracking
+	     (NSPrivacyTracking=false). ASC-Datenschutz-Label „Tracking" = Nein. -->
 	<!-- SKAdNetwork-IDs für Werbe-Attribution (ohne Tracking). Google + gängige
-	     Mediation-Netzwerke. TODO vor Release: aktuelle vollständige Liste von
-	     https://developers.google.com/admob/ios/3p-skadnetwork-ids einsetzen. -->
+	     Mediation-Netzwerke. TODO vor Release: vollständige Liste von der Google-
+	     „privacy/strategies"-Seite manuell einsetzen (LLM-Extraktion vermieden). -->
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
