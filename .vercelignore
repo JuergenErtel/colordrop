@@ -5,6 +5,10 @@ docs
 .superpowers
 .claude
 
+# Lokaler Kram / Marketing-Assets — nicht auf die Website
+.DS_Store
+store-assets
+
 # Native/Build-Artefakte und Tooling — gehören nicht auf die Website
 ios
 build
