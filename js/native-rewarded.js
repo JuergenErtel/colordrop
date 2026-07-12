@@ -53,6 +53,7 @@ export async function playNativeRewarded(/* surface */) {
     }
 
     await AdMob.prepareRewardVideoAd({ adId: ADMOB.rewardedUnitId });
+    console.info('[ad-metrics] rewarded: geladen (fill ok)');
 
     // WICHTIG: showRewardVideoAd() ruft call.resolve() nur im
     // userDidEarnRewardHandler auf — wird die Ad ohne Belohnung geschlossen,
@@ -94,7 +95,7 @@ export async function playNativeRewarded(/* surface */) {
         .catch((err) => { console.warn('native-rewarded: show error:', err); finish(false); });
     });
   } catch (err) {
-    console.warn('native-rewarded: Ad fehlgeschlagen/abgebrochen:', err);
+    console.warn('[ad-metrics] rewarded: KEIN fill/Fehler/Abbruch:', err && err.message || err);
     return { completed: false };
   }
 }

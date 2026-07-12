@@ -20,8 +20,9 @@ export async function prepareInterstitial() {
       if (!canRequestAds) return;
       await AdMob.prepareInterstitial({ adId: ADMOB.interstitialUnitId });
       _ready = true;
+      console.info('[ad-metrics] interstitial: geladen (fill ok)');
     } catch (err) {
-      console.warn('native-interstitial: prepare fehlgeschlagen:', err);
+      console.warn('[ad-metrics] interstitial: KEIN fill/prepare-Fehler:', err && err.message || err);
       _ready = false;
     } finally {
       _preparing = null;
