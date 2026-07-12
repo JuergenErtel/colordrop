@@ -90,7 +90,7 @@ export function calcWinReward(stars, isDaily, isBlitz) {
 
 // ── Ad timing ─────────────────────────────────────────────────────────────────
 const AD_INTERVAL_LEVELS = 3;
-const AD_COOLDOWN_MS     = 3 * 60 * 1000; // 3 minutes
+const AD_COOLDOWN_MS     = 2 * 60 * 1000; // 2 minutes (war 3)
 const _adCadenceKey      = 'catsort-ad-cadence';
 
 // Persistiert, damit der 3-Minuten-Cooldown einen App-Neustart überlebt. Ohne
@@ -117,11 +117,23 @@ function _saveAdCadence() {
 
 let { levelsSinceAd: _levelsSinceAd, lastAdTime: _lastAdTime } = _loadAdCadence();
 
-export function shouldShowAd() {
-  if (isPremium()) return false;
-  if (_levelsSinceAd < AD_INTERVAL_LEVELS) return false;
-  if (Date.now() - _lastAdTime < AD_COOLDOWN_MS) return false;
+// Reine Cadence-Entscheidung (unit-testbar; kein Modul-State, kein Date.now()).
+export function adDecision({ levelsSinceAd, lastAdTime, now, premium,
+                            intervalLevels = AD_INTERVAL_LEVELS,
+                            cooldownMs = AD_COOLDOWN_MS }) {
+  if (premium) return false;
+  if (levelsSinceAd < intervalLevels) return false;
+  if (now - lastAdTime < cooldownMs) return false;
   return true;
+}
+
+export function shouldShowAd() {
+  return adDecision({
+    levelsSinceAd: _levelsSinceAd,
+    lastAdTime:    _lastAdTime,
+    now:           Date.now(),
+    premium:       isPremium(),
+  });
 }
 
 export function markAdShown() {
