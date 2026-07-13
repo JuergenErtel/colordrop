@@ -10,22 +10,16 @@
    window.Capacitor.Plugins.AdMob — KEIN statischer Paket-Import, damit der
    Web-Bundle (www/) unberührt bleibt.
 
-   Reihenfolge (Apple ATT zuerst, dann DSGVO/UMP):
-     1. requestTrackingAuthorization() — iOS ATT-Dialog zuerst (ein Prompt)
-     2. requestConsentInfo()           — UMP-Consent-Status holen
-     3. showConsentForm()              — falls REQUIRED & Formular verfügbar
-     4. initialize()                   — erst danach SDK starten
-     5. prepare/showRewardVideoAd()    — Ads laden/zeigen
+   Reihenfolge (kein ATT — child-directed, nicht-personalisierte Ads; nur DSGVO/UMP):
+     1. requestConsentInfo()           — UMP-Consent-Status holen
+     2. showConsentForm()              — falls REQUIRED & Formular verfügbar
+     3. initialize()                   — erst danach SDK starten
+     4. prepare/showRewardVideoAd()    — Ads laden/zeigen
+   Kein requestTrackingAuthorization()/ATT-Dialog, kein NSUserTrackingUsageDescription
+   in der Info.plist (NSPrivacyTracking=false). Siehe native-ads.js.
 
    IDs + Test-Flag stehen in constants.js (ADMOB). Test-Units liefern immer
    Fill und zählen NICHT als echte Impressions.
-
-   ── TODO am Mac / vor Release ───────────────────────────────────────────────
-   1. npm i @capacitor-community/admob   (+ npm run cap:sync)
-   2. AdMob-Konto: App + Rewarded-Ad-Unit → echte IDs in constants.js (ADMOB)
-      und Info.plist (GADApplicationIdentifier) eintragen, ADMOB.testing=false.
-   3. Info.plist: NSUserTrackingUsageDescription, SKAdNetworkItems.
-      Privacy-Manifest PrivacyInfo.xcprivacy ergänzen.
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { ADMOB } from './constants.js';
