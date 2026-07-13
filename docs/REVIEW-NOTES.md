@@ -34,11 +34,15 @@ So kommt der Prüfer zum Feature:
 4. Button antippen → Fähigkeit auswählen → kostenlos einsetzen.
 
 WERBUNG (AdMob):
-- Es gibt ausschließlich FREIWILLIGE Rewarded-Videos (z. B. „Video ansehen
+- Ein kleiner Banner erscheint ausschließlich in den Menüs (Hauptmenü /
+  Level-Auswahl), niemals über dem Spielbrett während des Spielens.
+- Zusätzlich gibt es FREIWILLIGE Rewarded-Videos (z. B. „Video ansehen
   für +1 Leben / +5 Züge”). Werbung wird nie erzwungen, um weiterzuspielen.
 - Gelegentlich erscheint ein Interstitial zwischen Leveln.
-- Beim ersten Start zeigt iOS den App-Tracking-Transparency-Dialog (ATT)
-  sowie ggf. einen Consent-Dialog (UMP/DSGVO). Beides ist gewollt.
+- Die App ist kindgerecht ausgerichtet: Es findet KEIN Tracking statt (kein
+  IDFA, kein ATT-Dialog). Alle Anzeigen sind nicht-personalisiert und auf die
+  Inhaltsfreigabe „General/G” beschränkt. Beim ersten Start kann ein
+  DSGVO-Einwilligungsdialog (UMP) erscheinen — das ist gewollt.
 
 IN-APP-KAUF (StoreKit 2):
 - Ein einmaliger, nicht-verbrauchbarer Kauf „Kittysort Club Lifetime”
@@ -79,11 +83,14 @@ How to reach the feature:
 4. Tap the button → choose her ability → it's free, once per level.
 
 ADVERTISING (AdMob):
-- Only OPTIONAL rewarded videos exist (e.g. “watch a video for +1 life /
-  +5 moves”). Ads are never forced in order to continue playing.
+- A small banner appears only in the menus (main menu / level select), never
+  over the game board while playing.
+- In addition, there are OPTIONAL rewarded videos (e.g. “watch a video for
+  +1 life / +5 moves”). Ads are never forced in order to continue playing.
 - An occasional interstitial may appear between levels.
-- On first launch iOS shows the App Tracking Transparency (ATT) prompt and,
-  where applicable, a consent dialog (UMP/GDPR). Both are intended.
+- The app is child-directed: there is NO tracking (no IDFA, no ATT prompt).
+  All ads are non-personalized and limited to the “General/G” content rating.
+  On first launch a GDPR consent dialog (UMP) may appear — this is intended.
 
 IN-APP PURCHASE (StoreKit 2):
 - A single non-consumable purchase “Kittysort Club Lifetime”
@@ -105,3 +112,9 @@ Contact: info@codingbrothers.de
 - Produkt-ID `de.kittysort.app.lifetime` stimmt mit dem in ASC angelegten IAP überein.
 - IAP-Status „Bereit zur Übermittlung“ und der Version 1.0 zur Review angehängt.
 - Sandbox-Kauf + Restore einmal selbst getestet.
+- **ASC-Datenschutz-Label „Tracking“ = Nein** — muss zum entfernten ATT-Prompt
+  + `NSPrivacyTracking=false` passen (seit Build 15). Widersprüchliches Label
+  (Tracking = Ja) wäre ein Reviewer-Flag.
+- Banner lädt erst nach bis zu ~1 Std (neuer AdMob-Anzeigenblock) — bei einem
+  Reviewer-Test kurz nach Upload kann die Bannerfläche noch leer sein; das ist
+  kein Fehler und kein Grund zur Sorge.
